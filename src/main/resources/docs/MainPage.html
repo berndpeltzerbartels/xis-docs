@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:xis="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>XIS1 - ${global.title}</title>
+</head>
+
+<body>
+<div class="wrapper">
+
+
+    <!-- ------------------------------ HEADER ------------------------------ -->
+    <nav class="nav">
+        <div class="logo">
+            <img alt="Logo" src="Xis1.svg">
+        </div>
+        <ul>
+            <li><a href="#">Introduction</a></li>
+            <li><a page="/index.html">Documentation</a></li>
+            <li><a href="#">Quickstart</a></li>
+            <li><a href="#">Create Project</a></li>
+        </ul>
+    </nav>
+
+
+    <!-- ------------------------------ SIDEBAR ------------------------------ -->
+    <div class="sidebar">
+        <div class="contenttable">
+            <h5>Table of Content</h5>
+            <ul>
+                <li xis:repeat="item:naviItems">
+                    <strong><a xis:target-container="main" xis:widget="${item.widgetId}">${item.label}</a></strong>
+                    <ul>
+                        <li xis:repeat="subItem:item.subItems">
+                            <a xis:target-container="main" xis:widget="${subItem.widgetId}">${subItem.label}</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+
+    <div class="maincontent">
+        <h3>${global.headline1}</h3>
+        <h4>${global.headline2}</h4>
+        <xis:widget-container container-id="main"></xis:widget-container>
+    </div>
+
+
+</div>
+</body>
+
+</html>
+

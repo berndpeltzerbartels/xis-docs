@@ -1,0 +1,87 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <p>XIS-Framework-Attribute können als Attribute oder als Tags verwendet werden. Attribute werden beim Parsen zu Framework-Tags normalisiert. Die wichtigsten Attribute und ihre Anwendung:</p>
+
+    <h6>xis:foreach</h6>
+    <p>Wiederholt Inhalt für jedes Element einer Collection.</p>
+    <p><strong>Attribut-Syntax:</strong></p>
+    <xis:raw text="true">
+&lt;div xis:foreach="user:${users}"&gt;
+    &lt;span&gt;${user.name}&lt;/span&gt;
+&lt;/div&gt;
+    </xis:raw>
+    <p><strong>Element-Syntax:</strong></p>
+    <xis:raw text="true">
+&lt;xis:foreach var="user" array="${users}"&gt;
+    &lt;span&gt;${user.name}&lt;/span&gt;
+&lt;/xis:foreach&gt;
+    </xis:raw>
+
+    <h6>xis:repeat</h6>
+    <p>Alternative zu <code>xis:foreach</code>, gleiche Wirkung.</p>
+    <p><strong>Attribut-Syntax:</strong></p>
+    <xis:raw text="true">
+&lt;div xis:repeat="user:${users}"&gt;
+    &lt;span&gt;${user.name}&lt;/span&gt;
+&lt;/div&gt;
+    </xis:raw>
+
+    <h6>xis:if</h6>
+    <p>Bedingte Sichtbarkeit (umhüllt den Inhalt, nicht das Element selbst).</p>
+    <p><strong>Attribut-Syntax:</strong></p>
+    <xis:raw text="true">
+&lt;div xis:if="${user.active}"&gt;
+    &lt;span&gt;Aktiv!&lt;/span&gt;
+&lt;/div&gt;
+    </xis:raw>
+    <p><strong>Element-Syntax:</strong></p>
+    <xis:raw text="true">
+&lt;xis:if condition="${user.active}"&gt;
+    &lt;span&gt;Aktiv!&lt;/span&gt;
+&lt;/xis:if&gt;
+    </xis:raw>
+
+    <h6>xis:visible</h6>
+    <p>Bedingte Sichtbarkeit (umhüllt das Element selbst).</p>
+    <p><strong>Attribut-Syntax:</strong></p>
+    <xis:raw text="true">
+&lt;div xis:visible="${user.active}"&gt;
+    &lt;span&gt;Aktiv!&lt;/span&gt;
+&lt;/div&gt;
+    </xis:raw>
+
+    <h6>xis:widget-container</h6>
+    <p>Definiert einen Bereich für dynamische Widgets.</p>
+    <p><strong>Attribut-Syntax:</strong></p>
+    <xis:raw text="true">
+&lt;div xis:widget-container="main"&gt;&lt;/div&gt;
+    </xis:raw>
+    <p><strong>Element-Syntax:</strong></p>
+    <xis:raw text="true">
+&lt;xis:widget-container container-id="main" default-widget="MyWidget"&gt;&lt;/xis:widget-container&gt;
+    </xis:raw>
+
+    <h6>xis:default-widget</h6>
+    <p>Standard-Widget für einen Widget-Container.</p>
+    <p><strong>Attribut-Syntax (nur mit widget-container):</strong></p>
+    <xis:raw text="true">
+&lt;div xis:widget-container="main" xis:default-widget="MyWidget"&gt;&lt;/div&gt;
+    </xis:raw>
+    <p><strong>Element-Syntax:</strong></p>
+    <xis:raw text="true">
+&lt;xis:widget-container container-id="main" default-widget="MyWidget"&gt;&lt;/xis:widget-container&gt;
+    </xis:raw>
+
+    <h6>xis:message-for</h6>
+    <p>Bindet eine Fehlermeldung an ein Feld.</p>
+    <p><strong>Attribut-Syntax:</strong></p>
+    <xis:raw text="true">
+&lt;input name="email" xis:message-for="email"&gt;
+    </xis:raw>
+    <p><strong>Element-Syntax:</strong></p>
+    <xis:raw text="true">
+&lt;xis:message message-for="email"/&gt;
+    </xis:raw>
+
+    <h6>Hinweis</h6>
+    <p>Weitere Framework-Tags und fortgeschrittene Beispiele findest du in <a href="FrameworkTags.html">FrameworkTags</a>.</p>
+</xis:template>

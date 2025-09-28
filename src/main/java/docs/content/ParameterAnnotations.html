@@ -1,0 +1,391 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <p>XIS provides a comprehensive set of parameter annotations to inject various types of data into controller method parameters. These annotations handle everything from URL parameters to reactive state injection.</p>
+
+    <h6>@QueryParameter</h6>
+    <p>Injects URL query parameters from requests like <code>page.html?userId=123&amp;tab=profile</code>.</p>
+    <pre><code class="language-java">@Page("/profile.html")
+class UserProfilePage {
+    
+    @ModelData("user")
+    User getUser(@QueryParameter("userId") String userId) {
+        return userService.findById(userId);
+    }
+    
+    @Action("updateProfile")
+    void updateProfile(@QueryParameter("userId") String userId,
+                      @FormData("profile") UserProfile profile) {
+        profile.setUserId(userId);
+        userService.updateProfile(profile);
+    }
+}</code></pre>
+
+    <h6>@PathVariable</h6>
+    <p>Alternative annotation for injecting URL path variables - similar to @URLParameter.</p>
+    <pre><code class="language-java">@Page("/products/{categoryId}/{productId}.html")
+class ProductDetailsPage {
+    
+    @ModelData("product")
+    Product getProduct(@PathVariable("categoryId") String categoryId,
+                      @PathVariable("productId") String productId) {
+        return productService.findProduct(categoryId, productId);
+    }
+}</code></pre>
+
+    <h6>@ActionParameter</h6>
+    <p>Injects parameters passed from template actions using &lt;xis:parameter&gt; elements.</p>
+    <xis:raw text="true">
+@Action("selectOption")
+void selectOption(@ActionParameter("optionId") String optionId,
+                 @ActionParameter("value") String value) {
+    selectionService.updateSelection(optionId, value);
+}
+    </xis:raw>
+    <p>Used with action parameters in templates:</p>
+    <xis:raw text="true">
+&lt;button xis:action="selectOption"&gt;
+    &lt;xis:parameter name="optionId" value="${option.id}"/&gt;
+    &lt;xis:parameter name="value" value="${option.selectedValue}"/&gt;
+    Select Option
+&lt;/button&gt;
+    </xis:raw>
+
+    <h6>@WidgetParameter</h6>
+    <p>Injects parameters passed to widgets, either through widget links (URL-style) or via <code>&lt;xis:parameter&gt;</code> elements (just like <code>@ActionParameter</code>).</p>
+    <xis:raw text="true">
+@Widget
+class ProductListWidget {
+    @ModelData("products")
+    List&lt;Product> getProducts(@WidgetParameter("categoryId") String categoryId,
+                             @WidgetParameter("sortBy") String sortBy) {
+        return productService.findByCategory(categoryId, sortBy);
+    }
+}
+    </xis:raw>
+    <p>Pass parameters to widgets through links (URL-style):</p>
+    <xis:raw text="true">
+&lt;a xis:widget="ProductListWidget?categoryId=${category.id}&amp;sortBy=name"&gt;
+    View Products
+&lt;/a&gt;
+    </xis:raw>
+    <p>Or pass parameters using <code>&lt;xis:parameter&gt;</code> (either inside a widget link or a widget container):</p>
+    <xis:raw text="true">
+&lt;a xis:widget="ProductListWidget"&gt;
+    &lt;xis:parameter name="categoryId" value="${category.id}"/&gt;
+    &lt;xis:parameter name="sortBy" value="name"/&gt;
+    View Products
+&lt;/a&gt;
+
+&lt;xis:widget-container container-id="main"&gt;
+    &lt;xis:parameter name="categoryId" value="${category.id}"/&gt;
+    &lt;xis:parameter name="sortBy" value="name"/&gt;
+&lt;/xis:widget-container&gt;
+    </xis:raw>
+
+    <h6>@FormData</h6>
+    <p>Injects form data bound from HTML forms with automatic validation support.</p>
+    <pre><code class="language-java">@Action("saveUser")
+void saveUser(@FormData("user") User user) {
+    userService.save(user);
+}</code></pre>
+    <p>Used with form binding in templates:</p>
+    <pre><code class="language-html">&lt;form xis:binding="user"&gt;
+    &lt;input xis:binding="name" type="text" required&gt;
+    &lt;input xis:binding="email" type="email" required&gt;
+    &lt;button xis:action="saveUser" type="submit"&gt;Save&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+
+    <h6>@GlobalVariable</h6>
+    <p>Injects reactive global variables that are shared across all components during request processing.</p>
+    <pre><code class="language-java">@Action("updateProfile")
+void updateProfile(@FormData("profile") UserProfile profile,
+                   @GlobalVariable("currentUser") User currentUser) {
+    if (currentUser.getId().equals(profile.getUserId())) {
+        userService.updateProfile(profile);
+    }
+}</code></pre>
+
+    <h6>@ClientState</h6>
+    <p>Injects client-side reactive state using the browser's sessionStorage.</p>
+    <pre><code class="language-java">@Action("updateSettings")
+void updateSettings(@ClientState("userPreferences") UserPreferences prefs,
+                   @ActionParameter("setting") String setting,
+                   @ActionParameter("value") String value) {
+    prefs.setSetting(setting, value);
+    preferencesService.updatePreferences(prefs);
+}</code></pre>
+
+    <h6>@LocalStorage</h6>
+    <p>Injects data from the browser's localStorage for persistent client-side storage.</p>
+    <pre><code class="language-java">@Action("applyTheme") 
+void applyTheme(@LocalStorage("selectedTheme") String theme,
+                @ActionParameter("newTheme") String newTheme) {
+    if (!theme.equals(newTheme)) {
+        themeService.applyTheme(newTheme);
+    }
+}</code></pre>
+
+    <h6>@LocalDatabase</h6>
+    <p>Injects data from the browser's IndexedDB for client-side database storage.</p>
+    <pre><code class="language-java">@Action("syncOfflineData")
+void syncOfflineData(@LocalDatabase("offlineItems") List&lt;Item&gt; offlineItems) {
+    for (Item item : offlineItems) {
+        if (item.needsSync()) {
+            itemService.syncToServer(item);
+        }
+    }
+}</code></pre>
+
+    <h6>@RequestScope</h6>
+    <p>Injects request-scoped data that is available throughout the current request lifecycle.</p>
+    <pre><code class="language-java">@Action("updatePermissions")
+void updatePermissions(@RequestScope("currentUser") User user,
+                      @FormData("permissions") List&lt;Permission&gt; permissions) {
+    permissionService.updateUserPermissions(user.getId(), permissions);
+}</code></pre>
+
+    <h6>@ClientId</h6>
+    <p>Injects the anonymous client identifier used to associate actions with a specific browser session. Perfect for shopping baskets of non-logged-in users.</p>
+    <pre><code class="language-java">@Action("addToCart")
+void addToCart(@ClientId String clientId,
+               @ActionParameter("productId") String productId,
+               @ActionParameter("quantity") int quantity) {
+    // Associate cart with anonymous user's browser session
+    cartService.addToCart(clientId, productId, quantity);
+}</code></pre>
+
+    <h6>@UserId</h6>
+    <p>Injects the user identifier of a currently logged-in user from the active session. Only available when the <code>xis-authentication</code> dependency is added. See Security section for more details.</p>
+    <pre><code class="language-java">@Action("deleteAccount")
+void deleteAccount(@UserId String userId,
+                   @ActionParameter("confirmationCode") String code) {
+    if (securityService.validateDeletion(userId, code)) {
+        userService.deleteUser(userId);
+    }
+}</code></pre>
+
+
+
+    <h5>Validation Annotations</h5>
+    <p>XIS provides validation annotations that can be applied to method parameters:</p>
+
+    <h6>@Mandatory</h6>
+    <p>Validates that a parameter value is not null or empty. For collections, validates that they contain elements.</p>
+    <pre><code class="language-java">@Action("createUser")
+void createUser(@FormData("user") @Mandatory User user,
+                @ActionParameter("email") @Mandatory String email) {
+    userService.create(user);
+}</code></pre>
+
+    <h6>@MinLength</h6>
+    <p>Validates minimum length for strings or minimum number of elements for collections.</p>
+    <pre><code class="language-java">@Action("updatePassword")
+void updatePassword(@ActionParameter("password") @MinLength(8) String password,
+                   @UserId String userId) {
+    userService.updatePassword(userId, password);
+}</code></pre>
+
+    <h6>@AllElementsMandatory</h6>
+    <p>For collection or array parameters, validates that all elements are non-null.</p>
+    <pre><code class="language-java">@Action("processBatch")
+void processBatch(@FormData("items") @AllElementsMandatory List&lt;Item&gt; items) {
+    batchService.processAll(items);
+}</code></pre>
+
+    <h6>@UseFormatter</h6>
+    <p>Specifies a custom formatter for parsing parameter values from string input.</p>
+    <pre><code class="language-java">@Action("scheduleEvent")
+void scheduleEvent(@ActionParameter("eventDate") @UseFormatter(DateTimeFormatter.class) LocalDateTime eventDate,
+                   @FormData("event") Event event) {
+    eventService.schedule(event, eventDate);
+}</code></pre>
+
+    <h5>Parameter Combination Examples</h5>
+    <p>Multiple annotations can be combined on the same parameter:</p>
+    <pre><code class="language-java">@Page("/admin/users/{userId}/edit.html")
+class UserEditPage {
+    
+    @Action("updateUser")
+    void updateUser(@QueryParameter("userId") String userId,
+                   @FormData("user") User user,
+                   @ClientState("editMode") String editMode,
+                   @UserId String currentUserId) {
+        
+        // Validate permissions
+        if (securityService.canEdit(currentUserId, userId)) {
+            userService.update(user);
+        }
+    }
+    
+    @Action("assignRoles")
+    void assignRoles(@QueryParameter("userId") String targetUserId,
+                    @ActionParameter("roles") @AllElementsMandatory List&lt;String&gt; roles,
+                    @UserId String adminUserId,
+                    @RequestScope("currentUser") User currentUser) {
+        
+        if (currentUser.hasRole("ADMIN")) {
+            roleService.assignRoles(targetUserId, roles);
+        }
+    }
+}</code></pre>
+
+</xis:template>
+@Widget
+class UserHeaderWidget {
+    @GlobalVariable("currentUserName")
+    String getCurrentUserName() {
+        return securityContext.getCurrentUser().getName();
+    }
+}
+
+// UserProfileWidget.java  
+@Widget
+class UserProfileWidget {
+    @Action("updateProfile")
+    void updateProfile(@FormData("profile") UserProfile profile) {
+        userService.update(profile);
+        // Global variable will automatically update in UserHeaderWidget
+    }
+}</code></pre>
+    <p>In templates, global variables are accessed with the <code>global.</code> prefix and update reactively across all components:</p>
+    <pre><code class="language-html">&lt;!-- UserHeaderWidget.html --&gt;
+&lt;header&gt;
+    &lt;div&gt;Welcome ${global.currentUserName}!&lt;/div&gt;
+    &lt;span xis:if="${global.currentUserName != null}"&gt;
+        Status: Logged in
+    &lt;/span&gt;
+&lt;/header&gt;
+
+&lt;!-- UserProfileWidget.html --&gt;
+&lt;div class="profile"&gt;
+    &lt;h2&gt;Profile for ${global.currentUserName}&lt;/h2&gt;
+    &lt;form xis:binding="profile"&gt;
+        &lt;input xis:binding="displayName" value="${global.currentUserName}"&gt;
+        &lt;button xis:action="updateProfile"&gt;Update&lt;/button&gt;
+    &lt;/form&gt;
+&lt;/div&gt;</code></pre>
+
+    <h6>@ClientState</h6>
+    <p>Manages client-side reactive state using the browser's sessionStorage. Data persists across page navigations within the same browser session but is cleared when the session ends. Perfect for maintaining UI state like selected tabs, form data, or user preferences during a session.</p>
+    <pre><code class="language-java">// NavigationWidget.java
+@Widget
+class NavigationWidget {
+    @ClientState("selectedTab")
+    String getSelectedTab() {
+        return this.currentTab != null ? this.currentTab : "dashboard";
+    }
+}
+
+// ContentWidget.java
+@Widget  
+class ContentWidget {
+    // Can access the same state from different widget
+    String getActiveContent(@ClientState("selectedTab") String tab) {
+        return contentService.getContentForTab(tab);
+    }
+}</code></pre>
+    <p>In templates, client state is accessed with the <code>state.</code> prefix and updates reactively across all components:</p>
+    <pre><code class="language-html">&lt;!-- NavigationWidget.html --&gt;
+&lt;nav&gt;
+    &lt;button class="${state.selectedTab == 'dashboard' ? 'active' : ''}"&gt;
+        Dashboard
+    &lt;/button&gt;
+    &lt;button class="${state.selectedTab == 'profile' ? 'active' : ''}"&gt;
+        Profile  
+    &lt;/button&gt;
+&lt;/nav&gt;
+
+&lt;!-- ContentWidget.html --&gt;
+&lt;main&gt;
+    &lt;div xis:if="${state.selectedTab == 'dashboard'}"&gt;
+        &lt;h2&gt;Dashboard Content&lt;/h2&gt;
+        &lt;p&gt;Current tab: ${state.selectedTab}&lt;/p&gt;
+    &lt;/div&gt;
+    &lt;div xis:if="${state.selectedTab == 'profile'}"&gt;
+        &lt;h2&gt;Profile Content&lt;/h2&gt;
+    &lt;/div&gt;
+&lt;/main&gt;</code></pre>
+
+    <h6>@LocalStorage</h6>
+    <p>Accesses the browser's localStorage for persistent client-side data storage. Data survives page reloads, browser restarts, and even computer restarts - until explicitly cleared by the user or application. Perfect for user preferences, settings, and long-term state.</p>
+    <pre><code class="language-java">// ThemeWidget.java
+@Widget
+class ThemeWidget {
+    @LocalStorage("userTheme") 
+    String getUserTheme() {
+        return "dark"; // Default value
+    }
+    
+    @Action("changeTheme")
+    void changeTheme(@ActionParameter("theme") String theme) {
+        // Will automatically save to localStorage
+    }
+}
+
+// LayoutWidget.java
+@Widget
+class LayoutWidget {
+    // Can access same localStorage from different widget
+    String getLayoutClass(@LocalStorage("userTheme") String theme) {
+        return "layout-" + theme;
+    }
+}</code></pre>
+    <p>In templates, localStorage values are accessed with the <code>localStorage.</code> prefix and update reactively across all components:</p>
+    <pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html xmlns:xis="https://xis.one/xsd"&gt;
+&lt;body class="theme-${localStorage.userTheme}"&gt;
+    &lt;!-- ThemeWidget.html --&gt;
+    &lt;div class="theme-selector"&gt;
+        &lt;h3&gt;Choose Theme&lt;/h3&gt;
+        &lt;button class="${localStorage.userTheme == 'light' ? 'selected' : ''}"
+                xis:action="changeTheme"&gt;
+            &lt;xis:parameter name="theme" value="light"/&gt;
+            Light Theme
+        &lt;/button&gt;
+        &lt;button class="${localStorage.userTheme == 'dark' ? 'selected' : ''}"
+                xis:action="changeTheme"&gt;
+            &lt;xis:parameter name="theme" value="dark"/&gt;
+            Dark Theme
+        &lt;/button&gt;
+        &lt;p&gt;Current theme: ${localStorage.userTheme}&lt;/p&gt;
+    &lt;/div&gt;
+    
+    &lt;!-- LayoutWidget.html --&gt;
+    &lt;main class="layout-${localStorage.userTheme}"&gt;
+        &lt;div xis:if="${localStorage.userTheme == 'dark'}"&gt;
+            &lt;style&gt;.content { background: #333; color: white; }&lt;/style&gt;
+        &lt;/div&gt;
+        &lt;div class="content"&gt;
+            &lt;p&gt;This content adapts to the stored theme: ${localStorage.userTheme}&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/main&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <h6>@RequestScope</h6>
+    <p>Injects request-scoped data that is available throughout the current request lifecycle. This is particularly useful when you need to pass data between different methods during the same request processing. The output of one method becomes available as input to subsequent methods within the same request cycle.</p>
+        <p><strong>Note:</strong> Using <code>@RequestScope</code> only makes sense if a value with the given key is actually provided, typically by a <code>@ModelData</code> method. Otherwise, the injected value will be <code>null</code>. See example below.</p>
+    <pre><code class="language-java">@Page("/user-details.html")
+        class UserDetailsPage {
+            // This method provides the value for @RequestScope("user")
+            @ModelData("user")
+            User loadUser() {
+                return userService.getCurrentUser();
+            }
+
+            // This method can now inject the user from request scope
+            @ModelData("permissions")
+            List&lt;Permission&gt; loadPermissions(@RequestScope("user") User user) {
+                return permissionService.getPermissionsForUser(user.getId());
+            }
+
+            // If no @ModelData("user") method exists, @RequestScope("user") would be null:
+            @Action("doSomething")
+            void doSomething(@RequestScope("user") User user) {
+                if (user == null) {
+                    // No value was provided for this key in the request scope
+                }
+            }
+        }</code></pre>
+    <p>XIS automatically makes the return values of @ModelData methods available in the request scope using the same key. You can then inject this data into other methods using @RequestScope. This creates a clean data flow where expensive operations (like database queries) only happen once per request, and the results are shared across all methods that need them.</p>
+
+</xis:template>

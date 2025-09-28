@@ -1,0 +1,65 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+  <xis:raw>
+    <h2>XIS Expression Language</h2>
+    <p>
+      Die XIS Expression Language (EL) ermöglicht dynamische Ausdrücke in Attributen, <code>${...}</code>-Blöcken und Template-Logik. Sie ist JavaScript-ähnlich, aber sicher und auf Template-Bedürfnisse zugeschnitten.
+    </p>
+
+    <h3>Grundsyntax</h3>
+    <ul>
+      <li><b>Variablenzugriff:</b> <code>${user.name}</code>, <code>${item.price}</code></li>
+      <li><b>Funktionen:</b> <code>${toUpperCase(user.name)}</code>, <code>${formatDate(order.date, 'de-DE')}</code></li>
+      <li><b>Operatoren:</b> <code>${a + b}</code>, <code>${count > 0 ? 'ok' : 'leer'}</code></li>
+      <li><b>Arrays/Objekte:</b> <code>${items[0]}</code>, <code>${order['status']}</code></li>
+    </ul>
+
+    <h3>Operatoren</h3>
+    <ul>
+      <li><b>Arithmetik:</b> <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code></li>
+      <li><b>Vergleich:</b> <code>==</code>, <code>!=</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&lt;=</code></li>
+      <li><b>Logik:</b> <code>&amp;&amp;</code>, <code>||</code>, <code>!</code></li>
+      <li><b>Ternär:</b> <code>bedingung ? wert1 : wert2</code></li>
+      <li><b>Array/Object Access:</b> <code>arr[0]</code>, <code>obj['key']</code></li>
+    </ul>
+
+    <h3>Funktionen (Auswahl)</h3>
+    <ul>
+      <li><b>String:</b> <code>toUpperCase(str)</code>, <code>toLowerCase(str)</code>, <code>substring(str, start, end)</code>, <code>replace(str, search, replace)</code>, <code>trim(str)</code>, <code>split(str, sep)</code>, <code>join(arr, sep)</code></li>
+      <li><b>Array/Objekt:</b> <code>length(obj)</code>, <code>empty(obj)</code>, <code>notEmpty(obj)</code>, <code>keys(obj)</code>, <code>values(obj)</code>, <code>hasKey(obj, key)</code>, <code>contains(arr, val)</code></li>
+      <li><b>Zahlen:</b> <code>round(val, digits)</code>, <code>floor(val)</code>, <code>ceil(val)</code>, <code>abs(val)</code></li>
+      <li><b>Logik:</b> <code>default(val, fallback)</code></li>
+      <li><b>Datum/Zeit:</b> <code>formatDate(date, locale)</code>, <code>formatDateTime(date, locale)</code>, <code>formatTime(date, locale)</code>, <code>year(date)</code>, <code>month(date)</code>, <code>day(date)</code>, <code>hour(date)</code>, <code>minute(date)</code></li>
+    </ul>
+
+    <h3>Variablen &amp; Scoping</h3>
+    <ul>
+      <li><b>Modelldaten:</b> Alle im Controller bereitgestellten Daten sind direkt verfügbar (<code>${user}</code>, <code>${orderList}</code>).</li>
+      <li><b>Widget/Page-Parameter:</b> Über <code>xis:parameter</code> oder <code>xis:foreach</code> bereitgestellte Werte.</li>
+      <li><b>Reaktive Variablen:</b> <code>global.xxx</code>, <code>clientState.xxx</code>, <code>localStorage.xxx</code> (automatisch synchronisiert)</li>
+      <li><b>Shadowing:</b> Lokale Variablen überschreiben äußere mit gleichem Namen.</li>
+    </ul>
+
+    <h3>Beispiele</h3>
+    <pre><code>&lt;div&gt;Hallo ${toUpperCase(user.name)}!&lt;/div&gt;
+&lt;span&gt;${count &gt; 0 ? 'Gefunden' : 'Keine Ergebnisse'}&lt;/span&gt;
+&lt;xis:foreach array=\"${items}\" var=\"item\"&gt;
+  &lt;div&gt;${item.title} - ${formatDate(item.date, 'de-DE')}&lt;/div&gt;
+&lt;/xis:foreach&gt;
+&lt;div&gt;${default(user.email, 'Keine E-Mail hinterlegt')}&lt;/div&gt;
+</code></pre>
+
+    <h3>Besonderheiten</h3>
+    <ul>
+      <li>Alle Ausdrücke werden sicher ausgewertet (kein Zugriff auf Window/DOM/unsichere Objekte).</li>
+      <li>Funktionen können beliebig verschachtelt werden.</li>
+      <li>Datumsfunktionen akzeptieren Date-Objekte, ISO-Strings oder Timestamps.</li>
+      <li>Eigene Utility-Funktionen können im Projekt ergänzt werden.</li>
+    </ul>
+
+    <h3>Weitere Hinweise</h3>
+    <ul>
+      <li>Für komplexe Logik empfiehlt sich die Auslagerung in Controller-Methoden.</li>
+      <li>Die Expression Language ist bewusst auf Template-Bedürfnisse beschränkt und sicher.</li>
+    </ul>
+  </xis:raw>
+</xis:template>

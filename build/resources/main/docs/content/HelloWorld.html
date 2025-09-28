@@ -1,0 +1,30 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <div class="col2">
+        <div class="span2">
+            <pre><code class="language-java"><xis:raw>
+              /**
+              * Controller for handling local authentication callbacks.
+              * This controller is responsible for processing the authentication callback for IDPs
+              * and local authentication.
+              * It retrieves the authorization code and state from the request parameters,
+              * decodes and verifies the state, fetches new tokens using the IDP client service,
+              * and returns the tokens along with a redirect URL.
+              */
+
+              @Controller("/xis/auth")
+              @RequiredArgsConstructor
+              class AuthenticationController &#123;
+              private final TokenService tokenService;
+              private final LocalTokenService localTokenService;
+              private final AppContext appContext;
+              private final ExternalIDPServices externalIDPServices;
+              private final CodeStore
+              }
+            </xis:raw></code></pre>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+
+</xis:template>

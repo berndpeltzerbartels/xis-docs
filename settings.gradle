@@ -1,0 +1,13 @@
+pluginManagement {
+    repositories {
+        // Für lokal veröffentlichte Plugins (via publishToMavenLocal)
+        mavenLocal()
+
+        // Wenn das Plugin auf Maven Central veröffentlicht ist
+        mavenCentral()
+
+        // Standard-Repository für Gradle-Plugins
+        gradlePluginPortal()
+    }
+}
+rootProject.name = 'xis-docs'
