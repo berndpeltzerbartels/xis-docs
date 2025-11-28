@@ -1,0 +1,29 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+   <h3>Gradle Plugin</h3>
+    <p>
+        The XIS Gradle plugin simplifies the integration of XIS into your Gradle-based projects by automating several key tasks.
+        It automatically manages version configuration for all XIS dependencies, ensuring consistency across your project.
+        One of its core features is enabling HTML template files to be placed alongside Java source files in the same directory structure,
+        with the plugin automatically copying them to the resources folder during build. This allows for a transparent one-to-one
+        binding between controllers and their templates, making the relationship between code and markup immediately clear.
+    </p>
+    <p>
+        The plugin registers a Gradle task under <code>xis/templates</code> that generates simple HTML skeleton templates
+        for all annotated controllers (<code>@Page</code> or <code>@Widget</code>). Future enhancements will include
+        generating templates with details from the controller, such as forms with proper field bindings.
+    </p>
+    <p>
+        Additionally, the plugin will register an annotation processor to handle validation tasks for XIS annotations and conventions.
+        When using xis-boot, the plugin provides a task under <code>xis/runnableJar</code> that creates a standalone executable JAR file.
+    </p>
+    <p>
+        To enable the XIS plugin in your project, add it to your <code>build.gradle</code> plugins block as shown below.
+        Once applied, all the features described above become available automatically:
+    </p>
+    <pre><code> 
+plugins {
+    id 'one.xis.plugin' version '${xisVersion}'
+}
+
+
+</xis:template>

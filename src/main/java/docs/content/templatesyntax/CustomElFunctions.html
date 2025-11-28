@@ -1,0 +1,300 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>Custom EL Functions</h3>
+    <p>
+        XIS provides a rich set of built-in Expression Language functions, but you can also add your own custom 
+        functions to extend template capabilities. Custom functions are added by providing JavaScript files through 
+        the classpath extension mechanism. This approach allows you to create modular, reusable libraries and 
+        integrate seamlessly with themes.
+    </p>
+
+    <h5>Creating Custom EL Functions</h5>
+    <p>
+        Custom EL functions are added by providing JavaScript files that register functions using 
+        <code>elFunctions.addFunction()</code>. These JavaScript files are loaded automatically through XIS's 
+        classpath extension mechanism, making your custom functions available in all templates.
+    </p>
+
+    <h6>Step 1: Create Your JavaScript File</h6>
+    <p>Create a JavaScript file with your custom functions using <code>elFunctions.addFunction()</code>:</p>
+
+    <pre><code class="language-javascript">// src/main/resources/js/custom-el-functions.js
+
+// Add custom EL functions
+elFunctions.addFunction('formatCurrency', (value, currency) => {
+    return new Intl.NumberFormat('en-US', { 
+        style: 'currency', 
+        currency: currency || 'USD' 
+    }).format(value);
+});
+
+elFunctions.addFunction('capitalize', (str) => {
+    if (!str || typeof str !== 'string') return str;
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+});
+
+elFunctions.addFunction('pluralize', (count, singular, plural) => {
+    return count === 1 ? singular : (plural || singular + 's');
+});
+
+elFunctions.addFunction('truncate', (str, maxLength) => {
+    if (!str || typeof str !== 'string') return str;
+    if (str.length <= maxLength) return str;
+    return str.substring(0, maxLength) + '...';
+});</code></pre>
+
+    <h6>Step 2: Register the JavaScript File</h6>
+    <p>Create a registry file that lists your JavaScript resources:</p>
+    <pre><code class="language-plaintext"># src/main/resources/META-INF/xis/js/extensions
+js/custom-el-functions.js</code></pre>
+
+    <p>
+        <strong>How it works:</strong> XIS automatically discovers all <code>META-INF/xis/js/extensions</code> files 
+        on the classpath during startup. Each line in this file should contain a resource path to a JavaScript file. 
+        Lines starting with <code>#</code> are treated as comments. All referenced JavaScript files are loaded and 
+        executed in the browser automatically.
+    </p>
+
+    <p>
+        <strong>Note:</strong> The <code>META-INF/xis/js/extensions</code> mechanism is a general-purpose way to 
+        add any custom JavaScript code to your XIS application. While primarily designed for framework extensions, 
+        it works perfectly for adding custom EL functions by using <code>elFunctions.addFunction()</code> in your 
+        JavaScript files.
+    </p>
+
+    <h6>Step 3: Use in Templates</h6>
+    <p>Once registered, custom functions work exactly like built-in functions:</p>
+
+    <pre><code class="language-html">&lt;div&gt;Price: $&#8203;{formatCurrency(product.price, 'USD')}&lt;/div&gt;
+&lt;div&gt;Name: $&#8203;{capitalize(user.firstName)}&lt;/div&gt;
+&lt;div&gt;Description: $&#8203;{truncate(product.description, 50)}&lt;/div&gt;
+&lt;p&gt;$&#8203;{items.size()} $&#8203;{pluralize(items.size(), 'item')}&lt;/p&gt;</code></pre>
+
+    <h5>Benefits of This Approach</h5>
+    <ul>
+        <li><b>Automatic Loading:</b> No manual script includes in templates - JavaScript loads automatically</li>
+        <li><b>Modular:</b> Package functions as JAR libraries and share across projects</li>
+        <li><b>Theme Integration:</b> Themes can include their own custom functions that load automatically</li>
+        <li><b>Clean Separation:</b> Function code is separate from application code</li>
+        <li><b>Version Control:</b> Functions are versioned with your library/theme</li>
+        <li><b>No Template Changes:</b> Adding/removing function libraries doesn't require template modifications</li>
+        <li><b>General Purpose:</b> The mechanism can also be used for any custom JavaScript code, not just EL functions</li>
+    </ul>
+
+    <h5>Creating a Reusable Function Library</h5>
+    <p>You can organize custom functions into multiple files for better maintainability:</p>
+
+    <p><strong>Project structure:</strong></p>
+    <pre><code>my-xis-extensions/
+├── src/main/resources/
+│   ├── META-INF/xis/js/
+│   │   └── extensions                    # Registry file
+│   └── js/
+│       ├── date-functions.js             # Date formatting functions
+│       ├── currency-functions.js         # Currency functions
+│       └── string-functions.js           # String utilities</code></pre>
+
+    <p><strong>Registry file (META-INF/xis/js/extensions):</strong></p>
+    <pre><code class="language-plaintext"># List all JavaScript extension files
+js/date-functions.js
+js/currency-functions.js
+js/string-functions.js</code></pre>
+
+    <p><strong>Example: date-functions.js</strong></p>
+    <pre><code class="language-javascript">// Relative time formatting
+elFunctions.addFunction('relativeTime', (date) => {
+    const d = new Date(date);
+    const now = new Date();
+    const seconds = Math.floor((now - d) / 1000);
+    
+    if (seconds < 60) return 'just now';
+    if (seconds < 3600) return Math.floor(seconds / 60) + ' minutes ago';
+    if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
+    return Math.floor(seconds / 86400) + ' days ago';
+});
+
+// Week of year
+elFunctions.addFunction('weekOfYear', (date) => {
+    const d = new Date(date);
+    const start = new Date(d.getFullYear(), 0, 1);
+    const diff = d - start;
+    const oneWeek = 1000 * 60 * 60 * 24 * 7;
+    return Math.ceil(diff / oneWeek);
+});</code></pre>
+
+    <p><strong>Example: string-functions.js</strong></p>
+    <pre><code class="language-javascript">// Initials from name
+elFunctions.addFunction('initials', (name) => {
+    if (!name || typeof name !== 'string') return '';
+    return name.split(' ')
+        .map(word => word.charAt(0).toUpperCase())
+        .join('');
+});
+
+// Slug from string
+elFunctions.addFunction('slugify', (str) => {
+    if (!str || typeof str !== 'string') return '';
+    return str.toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+});</code></pre>
+
+    <p>Package this as a JAR and include it as a dependency in any XIS project. The functions become available automatically.</p>
+
+    <h5>Advanced Examples</h5>
+
+    <h6>Domain-Specific Functions</h6>
+    <p>Create functions tailored to your application's business logic:</p>
+
+    <pre><code class="language-javascript">// src/main/resources/js/business-functions.js
+
+// Product rating display
+elFunctions.addFunction('starRating', (rating) => {
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 >= 0.5 ? 1 : 0;
+    const emptyStars = 5 - fullStars - halfStar;
+    return '★'.repeat(fullStars) + (halfStar ? '☆' : '') + '☆'.repeat(emptyStars);
+});
+
+// Status badge color
+elFunctions.addFunction('statusColor', (status) => {
+    const colors = {
+        'active': 'green',
+        'pending': 'orange',
+        'inactive': 'red',
+        'suspended': 'gray'
+    };
+    return colors[status.toLowerCase()] || 'gray';
+});
+
+// Calculate shipping cost
+elFunctions.addFunction('shippingCost', (weight, country) => {
+    const baseRate = country === 'US' ? 5 : 15;
+    const perKg = country === 'US' ? 2 : 5;
+    return baseRate + (weight * perKg);
+});
+
+// Format address for display
+elFunctions.addFunction('formatAddress', (address) => {
+    if (!address) return '';
+    const parts = [
+        address.street,
+        address.city,
+        address.state,
+        address.zip
+    ].filter(p => p);
+    return parts.join(', ');
+});</code></pre>
+
+    <h6>Using Domain Functions in Templates</h6>
+    <pre><code class="language-html">&lt;div class="product-rating"&gt;$&#8203;{starRating(product.rating)}&lt;/div&gt;
+&lt;span class="badge" style="background: $&#8203;{statusColor(user.status)}"&gt;
+    $&#8203;{capitalize(user.status)}
+&lt;/span&gt;
+&lt;p class="timestamp"&gt;$&#8203;{relativeTime(comment.createdAt)}&lt;/p&gt;
+&lt;div&gt;Shipping: $&#8203;{formatCurrency(shippingCost(order.weight, order.country), 'USD')}&lt;/div&gt;
+&lt;address&gt;$&#8203;{formatAddress(user.address)}&lt;/address&gt;</code></pre>
+
+    <h5>Best Practices</h5>
+    <ul>
+        <li><b>Keep Functions Pure:</b> Custom functions should be stateless and return consistent results for the 
+            same inputs</li>
+        <li><b>Handle Edge Cases:</b> Always validate inputs and handle null/undefined values gracefully</li>
+        <li><b>Performance:</b> Avoid heavy computations in custom functions - they may be called frequently during 
+            template rendering</li>
+        <li><b>Naming:</b> Use clear, descriptive names that indicate what the function does</li>
+        <li><b>Documentation:</b> Document your custom functions, especially if used across multiple teams</li>
+        <li><b>Type Safety:</b> Check argument types and return appropriate defaults for invalid inputs</li>
+        <li><b>Reusability:</b> Design functions to be generic and reusable across different templates</li>
+        <li><b>Organization:</b> Group related functions in separate files for better maintainability</li>
+        <li><b>Error Handling:</b> Always include try-catch blocks to prevent template rendering failures</li>
+    </ul>
+
+    <h5>Complete Example</h5>
+    <p>A complete real-world example with multiple function files:</p>
+
+    <p><strong>Project structure:</strong></p>
+    <pre><code>my-shop-extensions/
+├── src/main/resources/
+│   ├── META-INF/xis/js/
+│   │   └── extensions
+│   └── js/
+│       ├── currency-functions.js
+│       ├── text-functions.js
+│       └── product-functions.js</code></pre>
+
+    <p><strong>META-INF/xis/js/extensions:</strong></p>
+    <pre><code class="language-plaintext"># Shop-specific EL functions
+js/currency-functions.js
+js/text-functions.js
+js/product-functions.js</code></pre>
+
+    <p><strong>js/currency-functions.js:</strong></p>
+    <pre><code class="language-javascript">// Currency formatting
+elFunctions.addFunction('currency', (value, code) => {
+    return new Intl.NumberFormat('en-US', { 
+        style: 'currency', 
+        currency: code || 'USD' 
+    }).format(value);
+});
+
+// Percentage formatting
+elFunctions.addFunction('percent', (value) => {
+    return (value * 100).toFixed(1) + '%';
+});</code></pre>
+
+    <p><strong>js/text-functions.js:</strong></p>
+    <pre><code class="language-javascript">// Text truncation with ellipsis
+elFunctions.addFunction('truncate', (str, len) => {
+    if (!str || str.length <= len) return str;
+    return str.substring(0, len) + '...';
+});</code></pre>
+
+    <p><strong>Template usage:</strong></p>
+    <pre><code class="language-html">&lt;div class="product-card" xis:foreach="product:$&#8203;{products}"&gt;
+    &lt;h3&gt;$&#8203;{truncate(product.name, 30)}&lt;/h3&gt;
+    &lt;div class="rating"&gt;$&#8203;{starRating(product.rating)}&lt;/div&gt;
+    &lt;div class="price"&gt;
+        &lt;span class="original"&gt;$&#8203;{currency(product.price, 'USD')}&lt;/span&gt;
+        &lt;span class="discount"&gt;$&#8203;{percent(product.discount)} off&lt;/span&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+    <h5>Technical Details</h5>
+    <ul>
+        <li><b>Extension Mechanism:</b> The <code>META-INF/xis/js/extensions</code> mechanism is a general-purpose 
+            system for loading custom JavaScript code into XIS applications</li>
+        <li><b>Automatic Discovery:</b> XIS discovers and loads all <code>META-INF/xis/js/extensions</code> files 
+            from the classpath at startup</li>
+        <li><b>Load Order:</b> JavaScript files are loaded in the order they appear in the registry file</li>
+        <li><b>Multiple JARs:</b> Multiple JARs can each provide their own extensions file - all are merged and loaded</li>
+        <li><b>Comments:</b> Lines starting with <code>#</code> in the extensions file are ignored</li>
+        <li><b>Browser Execution:</b> The JavaScript code executes in the browser, not on the server</li>
+        <li><b>Function Registration:</b> Use <code>elFunctions.addFunction(name, function)</code> to register 
+            custom EL functions</li>
+        <li><b>Function Signature:</b> Custom functions receive their arguments directly as JavaScript values</li>
+        <li><b>Return Values:</b> Functions can return any JavaScript value - strings, numbers, booleans, objects, 
+            or arrays</li>
+        <li><b>Security:</b> Custom functions execute in the browser context with standard JavaScript security 
+            constraints</li>
+        <li><b>Scope:</b> Functions have access to the browser environment but not to the template's variable scope</li>
+        <li><b>Error Handling:</b> If a custom function throws an error, template rendering may fail. Always 
+            include proper error handling in your functions</li>
+    </ul>
+
+    <h5>Key Points</h5>
+    <ul>
+        <li>Create <code>META-INF/xis/js/extensions</code> file listing JavaScript resources</li>
+        <li>Write JavaScript files that use <code>elFunctions.addFunction(name, function)</code> to register functions</li>
+        <li>JavaScript loads automatically in the browser - no manual script includes needed</li>
+        <li>This is a general-purpose mechanism for adding any JavaScript code, not just EL functions</li>
+        <li>Ideal for reusable libraries, themes, and shared functionality</li>
+        <li>Package as JAR and share across projects</li>
+        <li>Always validate inputs and handle edge cases gracefully in your functions</li>
+        <li>Keep functions pure and performant - they may be called frequently during template rendering</li>
+        <li>Custom functions work exactly like built-in functions in templates: <code>$&#8203;{myFunction(value)}</code></li>
+        <li>Multiple JARs can provide their own extensions - they all load automatically and are merged</li>
+    </ul>
+
+</xis:template>

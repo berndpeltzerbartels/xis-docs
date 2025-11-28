@@ -1,0 +1,49 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>Pages</h3>
+    <p>
+        Pages are the entry points of your XIS application. They are controllers annotated with <code>@Page</code> 
+        that map to specific URLs and render complete HTML pages in response to HTTP requests.
+    </p>
+    
+    <h5>Defining a Page</h5>
+    <p>
+        A page controller is a Java class annotated with <code>@Page("/path")</code>, where the path parameter 
+        specifies the URL at which the page will be accessible. Each page controller has a corresponding HTML 
+        template file located in the same package following XIS's convention-based approach.
+    </p>
+    
+    <pre><code>@Page("/hello")
+public class HelloPage {
+    
+    @ModelData
+    public String greeting() {
+        return "Hello World!";
+    }
+}</code></pre>
+
+    <p>
+        The corresponding <code>HelloPage.html</code> template would be placed in the same package and can 
+        access the model data provided by the controller:
+    </p>
+    
+    <pre><code>&lt;xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform"&gt;
+    &lt;h1&gt;${greeting}&lt;/h1&gt;
+&lt;/xis:template&gt;</code></pre>
+
+    <h5>Page Lifecycle</h5>
+    <p>
+        When a user navigates to a page's URL, XIS processes the request through the following steps:
+    </p>
+    <ul>
+        <li>The <code>ControllerService</code> routes the request to the appropriate page controller</li>
+        <li>Controller methods annotated with <code>@ModelData</code> are invoked to provide data</li>
+        <li>The HTML template is rendered with the provided model data</li>
+        <li>The resulting HTML is sent as the HTTP response</li>
+    </ul>
+
+    <h5>Page vs Widget</h5>
+    <p>
+        Unlike widgets, pages are directly accessible via URL and represent complete, standalone views. 
+        Pages can embed widgets to compose complex interfaces from reusable components.
+    </p>
+</xis:template>

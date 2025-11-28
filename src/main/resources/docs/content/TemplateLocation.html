@@ -1,0 +1,57 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>Template Location</h3>
+    
+    <p>
+        XIS provides flexible options for organizing your HTML templates. By default, templates are placed alongside 
+        their corresponding Java controllers, but you can also choose to keep them in the traditional resources folder 
+        if you prefer a more conventional project structure.
+    </p>
+
+    <h5>Default: Co-located Templates</h5>
+    <p>
+        The recommended approach in XIS is to place HTML templates directly next to their controller classes in the 
+        same package within <code>src/main/java</code>. The Gradle plugin automatically copies these templates to the 
+        resources folder during the build process. This creates a transparent one-to-one relationship between controllers 
+        and templates, making it immediately clear which template belongs to which controller.
+    </p>
+    
+    <pre><code>src/main/java/
+  com/example/
+    MyPage.java
+    MyPage.html      // Template next to controller</code></pre>
+
+    <h5>Alternative: Resources Folder</h5>
+    <p>
+        If you prefer to keep templates in the resources folder following traditional Java project conventions, you have 
+        two options. You can mirror the package structure as a folder hierarchy in <code>src/main/resources</code>, or 
+        you can use the <code>@HtmlFile</code> annotation to specify a custom template location.
+    </p>
+
+    <p>
+        When mirroring the package structure:
+    </p>
+    
+    <pre><code>src/main/resources/
+  com/example/
+    MyPage.html      // Mirrors package structure</code></pre>
+
+    <h5>The @HtmlFile Annotation</h5>
+    <p>
+        The <code>@HtmlFile</code> annotation gives you complete control over template locations. It supports both 
+        absolute and relative paths, and works for templates in both <code>src/main/java</code> and 
+        <code>src/main/resources</code>:
+    </p>
+    
+    <pre><code>@Page("/mypage")
+@HtmlFile("templates/custom/MyPage.html")
+public class MyPage {
+    // Controller code
+}</code></pre>
+
+    <p>
+        Relative paths are resolved from the package directory of the controller class. This flexibility allows you to 
+        organize templates in whatever way best suits your project's needs while maintaining the clear connection between 
+        controllers and their views.
+    </p>
+
+</xis:template>

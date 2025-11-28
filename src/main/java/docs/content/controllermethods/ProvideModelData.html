@@ -1,0 +1,65 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h4>How to Provide Data to XIS Templates</h4>
+    <p>XIS supports several ways to provide data to templates. The following table summarizes all options, their typical
+        usage, and how they appear in the template.</p>
+    <xis:raw>
+        <table border="1" style="border-collapse:collapse;">
+            <tr>
+                <th>Source</th>
+                <th>Description</th>
+                <th>Example Variable in Template</th>
+            </tr>
+            <tr>
+                <td>@ModelData</td>
+                <td>Return value of a controller method, available as variable in the template (page/widget scope).</td>
+                <td><code>${user}</code>, <code>${products}</code></td>
+            </tr>
+            <tr>
+                <td>@FormData</td>
+                <td>Form data bound from HTML forms, available as variable after form submission.</td>
+                <td><code>${user}</code>, <code>${profile}</code></td>
+            </tr>
+            <tr>
+                <td>@ActionParameter</td>
+                <td>Parameter passed from template actions (e.g. via &lt;xis:parameter&gt;).</td>
+                <td><code>${optionId}</code>, <code>${value}</code></td>
+            </tr>
+            <tr>
+                <td>@WidgetParameter</td>
+                <td>Parameter passed to widgets via widget links.</td>
+                <td><code>${categoryId}</code>, <code>${sortBy}</code></td>
+            </tr>
+            <tr>
+                <td>@QueryParameter / @PathVariable</td>
+                <td>URL query or path parameters, injected into controller methods.</td>
+                <td><code>${userId}</code>, <code>${productId}</code></td>
+            </tr>
+            <tr>
+                <td>@GlobalVariable</td>
+                <td>Reactive variable shared across all components during a request.</td>
+                <td><code>${global.currentUserName}</code></td>
+            </tr>
+            <tr>
+                <td>@ClientStorage</td>
+                <td>Reactive variable stored in browser sessionStorage (persists in tab).</td>
+                <td><code>${state.selectedTab}</code></td>
+            </tr>
+            <tr>
+                <td>@LocalStorage</td>
+                <td>Reactive variable stored in browser localStorage (persists long-term).</td>
+                <td><code>${localStorage.userTheme}</code></td>
+            </tr>
+            <tr>
+                <td>@RequestScope</td>
+                <td>Data shared between controller methods during a single request.</td>
+                <td><code>${user}</code> (if provided by a @ModelData method)</td>
+            </tr>
+        </table>
+
+        <h5>Notes</h5>
+        <ul>
+            <li>All these sources can be combined as needed in a single template.</li>
+            <li>See the detailed documentation for each annotation for advanced usage and examples.</li>
+        </ul>
+    </xis:raw>
+</xis:template>
