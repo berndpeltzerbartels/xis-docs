@@ -59,6 +59,22 @@ class ProductListWidget {
     &lt;/main&gt;
 &lt;/div&gt;</code></pre>
 
+    <h5>Scroll to Top on Widget Navigation</h5>
+    <p>Use the <code>scroll-to-top="true"</code> attribute to automatically scroll to the top of the page when 
+        navigating to a different widget. This improves user experience by ensuring new content is visible:</p>
+    <pre><code class="language-html">&lt;xis:widget-container container-id="main" 
+                     default-widget="ArticleWidget" 
+                     scroll-to-top="true"&gt;
+&lt;/xis:widget-container&gt;</code></pre>
+    <p><strong>Behavior:</strong></p>
+    <ul>
+        <li>Scrolls to top (0,0) when navigating to a <em>different</em> widget via user action</li>
+        <li>Does <em>not</em> scroll when the page initially loads with the default widget</li>
+        <li>Does <em>not</em> scroll when the same widget is reloaded</li>
+    </ul>
+    <p><strong>Note:</strong> The attribute can also be written as <code>xis:scroll-to-top="true"</code> when using 
+        attribute syntax: <code>&lt;div xis:widget-container="main" xis:scroll-to-top="true"&gt;&lt;/div&gt;</code></p>
+
     <h5>Target Container in Actions</h5>
     <p>Actions can update specific containers using <code>targetContainer</code>. This is covered in detail in the 
         <a href="#" xis:page="WidgetNavigation">Widget Navigation</a> chapter.</p>

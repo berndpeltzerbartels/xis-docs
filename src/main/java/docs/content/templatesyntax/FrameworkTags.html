@@ -21,6 +21,14 @@
         is
         always possible when it is clear that an expression is expected.</p>
 
+    <p><strong>Allowed attributes:</strong></p>
+    <ul>
+        <li><code>var</code> (element syntax) - The variable name for the current item</li>
+        <li><code>array</code> (element syntax) - The collection to iterate over</li>
+        <li><code>xis:foreach="var:array"</code> (attribute syntax) - Combined var and array</li>
+        <li><code>xis:repeat="var:array"</code> (alternative attribute syntax) - Same as xis:foreach</li>
+    </ul>
+
     <p><strong>Element syntax:</strong></p>
     <pre><code class="language-html">&lt;xis:foreach var="user" array="users"&gt;
     &lt;div class="user-card"&gt;
@@ -51,6 +59,13 @@
         <code>#&36;{</code><code>...}</code>, e.g.
         <code>condition="user.isActive"</code> or <code>xis:if="user.isActive"</code>.</p>
 
+    <p><strong>Allowed attributes:</strong></p>
+    <ul>
+        <li><code>condition</code> (element syntax) - The boolean expression to evaluate</li>
+        <li><code>xis:if="expression"</code> (attribute syntax) - Wraps only the element's content in if condition</li>
+        <li><code>xis:visible="expression"</code> (alternative attribute syntax) - Wraps the entire element in if condition</li>
+    </ul>
+
     <p><strong>Element syntax:</strong></p>
     <pre><code class="language-html">&lt;xis:if condition="user.isActive"&gt;
     &lt;div class="status-active"&gt;User is active&lt;/div&gt;
@@ -77,17 +92,28 @@
         <strong>target-container</strong> can be used on links, actions, buttons etc. to update a specific widget
         container. The value must match the <code>container-id</code> of an existing widget container.</p>
 
+    <p><strong>Allowed attributes:</strong></p>
+    <ul>
+        <li><code>container-id</code> (element) or <code>xis:widget-container</code> (attribute) - Required. The unique ID of the container</li>
+        <li><code>default-widget</code> or <code>xis:default-widget</code> - Optional. Widget to load initially</li>
+        <li><code>scroll-to-top</code> or <code>xis:scroll-to-top</code> - Optional. If set to "true", scrolls to top when navigating to a different widget</li>
+    </ul>
+
     <p><strong>Element syntax:</strong></p>
     <pre><code class="language-html">&lt;xis:widget-container container-id="mainContent"&gt;
     &lt;!-- initially empty --&gt;
 &lt;/xis:widget-container&gt;
 &lt;xis:widget-container container-id="mainContent" default-widget="DashboardWidget"&gt;
     &lt;!-- with default widget --&gt;
+&lt;/xis:widget-container&gt;
+&lt;xis:widget-container container-id="mainContent" default-widget="DashboardWidget" scroll-to-top="true"&gt;
+    &lt;!-- with scroll-to-top --&gt;
 &lt;/xis:widget-container&gt;</code></pre>
 
     <p><strong>Attribute syntax:</strong></p>
     <pre><code class="language-html">&lt;div xis:widget-container="mainContent"&gt;&lt;/div&gt;
-&lt;div xis:widget-container="mainContent" xis:default-widget="DashboardWidget"&gt;&lt;/div&gt;</code></pre>
+&lt;div xis:widget-container="mainContent" xis:default-widget="DashboardWidget"&gt;&lt;/div&gt;
+&lt;div xis:widget-container="mainContent" xis:default-widget="DashboardWidget" xis:scroll-to-top="true"&gt;&lt;/div&gt;</code></pre>
 
     <p><strong>Example for target-container:</strong></p>
     <pre><code class="language-html">&lt;xis:widget-container container-id="main"&gt;&lt;/xis:widget-container&gt;
@@ -210,6 +236,15 @@
         <strong>Note:</strong> The <code>widget</code> attribute loads a widget - either into the surrounding widget container
         or into a specific <code>target-container</code>.</p>
 
+    <p><strong>Allowed attributes:</strong></p>
+    <ul>
+        <li><code>page</code> or <code>xis:page</code> - Navigate to a page (URL path)</li>
+        <li><code>widget</code> or <code>xis:widget</code> - Load a widget (widget ID or class name)</li>
+        <li><code>target-container</code> or <code>xis:target-container</code> - Optional. Container ID for widget loading</li>
+        <li><code>parameters</code> or <code>xis:parameters</code> - Optional. Query string parameters</li>
+    </ul>
+    <p><strong>Note:</strong> Use either <code>page</code> OR <code>widget</code>, not both.</p>
+
     <p><strong>Page navigation:</strong></p>
     <pre><code class="language-html">&lt;xis:a page="/user-profile.html" parameters="userId=&#036;{user.id}"&gt;
     View Profile
@@ -232,6 +267,13 @@
 
     <h6>&lt;xis:action&gt;</h6>
     <p>XIS action link element for triggering controller actions.</p>
+
+    <p><strong>Allowed attributes:</strong></p>
+    <ul>
+        <li><code>action</code> or <code>xis:action</code> - Required. The action method name</li>
+        <li><code>target-container</code> or <code>xis:target-container</code> - Optional. Container ID to update with result</li>
+    </ul>
+    <p><strong>Note:</strong> Parameters are passed using child <code>&lt;xis:parameter&gt;</code> elements.</p>
 
     <pre><code class="language-html">&lt;xis:action action="deleteUser" target-container="userList"&gt;
     &lt;xis:parameter name="userId" value="&#036;{user.id}"/&gt;

@@ -2,6 +2,10 @@
     <h3>${chapterHeadline}</h3>
     <p>XIS provides a comprehensive set of parameter annotations to inject various types of data into controller method
         parameters. These annotations handle everything from URL parameters to reactive state injection.</p>
+    
+    <p><strong>Availability:</strong> All parameter annotations can be used in both <code>@Page</code> and 
+        <code>@Widget</code> controllers, with one exception: <code>@WidgetParameter</code> is widget-specific and 
+        only available in widget controllers.</p>
 
     <h6>@QueryParameter</h6>
     <p>Injects URL query parameters from requests like <code>page.html?userId=123&amp;tab=profile</code>.</p>
