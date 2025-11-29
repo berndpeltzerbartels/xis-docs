@@ -1,6 +1,7 @@
 package docs.content;
 
 import docs.Navigation;
+import docs.content.widgets.WidgetsDetails;
 import one.xis.GlobalVariable;
 import one.xis.Widget;
 

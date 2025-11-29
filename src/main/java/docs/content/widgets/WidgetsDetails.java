@@ -1,13 +1,13 @@
-package docs.content;
+package docs.content.widgets;
 
 import docs.Navigation;
-import docs.content.widgets.WidgetContainers;
+import docs.content.Lifecycle;
 import one.xis.GlobalVariable;
 import one.xis.Widget;
 
 @Widget
 @Navigation(title = "Widget Details", nextItem = Lifecycle.class, firstSubItem = WidgetContainers.class)
-class WidgetsDetails {
+public class WidgetsDetails {
 
     @GlobalVariable("title")
     String title() {

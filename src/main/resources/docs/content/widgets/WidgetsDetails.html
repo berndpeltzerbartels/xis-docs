@@ -1,0 +1,59 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <p>Widgets are reusable, self-contained components that can be embedded in pages or other widgets. They provide 
+        encapsulation and composability, making it easy to build complex UIs from smaller, testable pieces.</p>
+    
+    <p>This section covers advanced widget concepts in detail. Each topic has its own dedicated chapter:</p>
+
+    <h5>Chapter Overview</h5>
+    
+    <h6><a href="#" xis:page="WidgetContainers">Widget Containers</a></h6>
+    <p>Learn how to define widget containers on pages, set default widgets, and pass parameters using both query 
+        string and <code>&lt;xis:parameter&gt;</code> tag syntax. Understand container IDs and how multiple containers 
+        work together.</p>
+    
+    <h6><a href="#" xis:page="WidgetParameters">Widget Parameters</a></h6>
+    <p>Understand the difference between <code>@WidgetParameter</code> and <code>@ActionParameter</code>. Learn the 
+        two ways to pass widget parameters (query string vs tags) and how to combine widget and action parameters 
+        in the same controller.</p>
+    
+    <h6><a href="#" xis:page="WidgetNavigation">Widget Navigation</a></h6>
+    <p>Master widget navigation through template links, action return values, and <code>WidgetResponse</code>. 
+        Understand widget IDs, target containers, and the difference between <code>WidgetResponse</code> and 
+        <code>PageResponse</code>. Learn about string-based widget IDs for distributed applications.</p>
+    
+    <h6><a href="#" xis:page="WidgetUpdateEvents">Update Events</a></h6>
+    <p>Build reactive UIs where multiple widgets stay synchronized using update events. See complete working examples 
+        including a shopping cart system with cart summary, notifications, and product list widgets that all update 
+        automatically when items are added.</p>
+    
+    <h6><a href="#" xis:page="WidgetForms">Forms in Widgets</a></h6>
+    <p>Implement forms within widgets with full data binding and validation. Learn the common edit flow pattern 
+        (list → form → details), multi-step wizards, and modal-style form interactions.</p>
+
+    <h5>Widget Basics Recap</h5>
+    <p>Before diving into the detailed chapters, here's a quick recap of widget fundamentals:</p>
+
+    <h6>Creating a Widget</h6>
+    <pre><code class="language-java">@Widget
+class DashboardWidget {
+    @ModelData("message")
+    String getMessage() {
+        return "Welcome to your dashboard!";
+    }
+}</code></pre>
+
+    <h6>Widget Template</h6>
+    <pre><code class="language-html">&lt;xis:template xmlns:xis="https://xis.one/xsd"&gt;
+    &lt;div class="dashboard"&gt;
+        &lt;h2&gt;${message}&lt;/h2&gt;
+    &lt;/div&gt;
+&lt;/xis:template&gt;</code></pre>
+
+    <h6>Embedding in a Page</h6>
+    <pre><code class="language-html">&lt;xis:widget-container container-id="main" default-widget="DashboardWidget"&gt;
+&lt;/xis:widget-container&gt;</code></pre>
+
+    <p>For basic widget concepts like the <code>@Widget</code> annotation and simple usage, see 
+        <a href="#" xis:page="PagesAndWidgets">Pages and Widgets</a>.</p>
+
+</xis:template>

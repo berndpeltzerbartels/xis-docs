@@ -7,7 +7,7 @@ import one.xis.Widget;
 
 @Widget
 @Navigation(title = "Request Lifecycle", nextItem = ControllerMethods.class)
-class Lifecycle {
+public class Lifecycle {
 
     @GlobalVariable("title")
     String title() {
