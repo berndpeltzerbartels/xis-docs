@@ -6,7 +6,7 @@ import one.xis.Widget;
 
 @Widget
 @Navigation(title = "Forms in Widgets")
-class WidgetForms {
+public class WidgetForms {
 
     @GlobalVariable("title")
     String title() {

@@ -6,7 +6,7 @@ import one.xis.Widget;
 
 @Widget
 @Navigation(title = "Widget Navigation", nextItem = WidgetUpdateEvents.class)
-class WidgetNavigation {
+public class WidgetNavigation {
 
     @GlobalVariable("title")
     String title() {
