@@ -1,0 +1,233 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <p>Update events enable widgets to notify other widgets when data changes, creating reactive user interfaces where 
+        multiple components stay synchronized without explicit coupling.</p>
+
+    <h5>The Problem: Widget Synchronization</h5>
+    <p>Consider a shopping cart: when a user adds a product to the cart, multiple UI elements need to update:</p>
+    <ul>
+        <li>Cart summary widget (showing item count)</li>
+        <li>Cart total widget (showing price)</li>
+        <li>Product list widget (showing "Added" status)</li>
+        <li>Notification widget (showing success message)</li>
+    </ul>
+    <p>Without update events, you would need to manually refresh each widget or reload the entire page.</p>
+
+    <h5>The Solution: Update Events</h5>
+    <p>Update events provide a publish-subscribe pattern:</p>
+    <ol>
+        <li>An action <strong>emits</strong> an event using <code>@Action(updateEventKeys = {...})</code></li>
+        <li>Widgets <strong>listen</strong> for events using <code>@RefreshOnUpdateEvents</code></li>
+        <li>When the event fires, all listening widgets automatically reload</li>
+    </ol>
+
+    <h5>Emitting Update Events</h5>
+    <p>Use the <code>updateEventKeys</code> parameter in <code>@Action</code> to emit events:</p>
+    <pre><code class="language-java">@Widget
+class ProductActionWidget {
+    
+    @Action(value = "addToCart", updateEventKeys = {"cart-updated"})
+    void addToCart(@ActionParameter("productId") String productId) {
+        cartService.addProduct(productId);
+        // After execution, "cart-updated" event is broadcast
+    }
+}</code></pre>
+
+    <h5>Listening for Update Events</h5>
+    <p>Use <code>@RefreshOnUpdateEvents</code> at the class level to automatically reload when events fire:</p>
+    <pre><code class="language-java">@Widget
+@RefreshOnUpdateEvents("cart-updated")
+class CartSummaryWidget {
+    
+    @ModelData("itemCount")
+    int getItemCount() {
+        return cartService.getItemCount();
+        // This method is called again when "cart-updated" fires
+    }
+}</code></pre>
+
+    <h5>Complete Shopping Cart Example</h5>
+    <p>Here's a full implementation showing how multiple widgets stay synchronized:</p>
+
+    <h6>1. Product List Widget (Emitter)</h6>
+    <pre><code class="language-java">@Widget
+class ProductListWidget {
+    
+    @ModelData("products")
+    List&lt;Product&gt; getProducts(@WidgetParameter("categoryId") String categoryId) {
+        return productService.findByCategory(categoryId);
+    }
+    
+    @Action(value = "addToCart", updateEventKeys = {"cart-updated", "notification"})
+    void addToCart(@ActionParameter("productId") String productId,
+                  @ActionParameter("productName") String productName) {
+        cartService.addProduct(productId);
+        notificationService.addMessage("Added " + productName + " to cart");
+    }
+}</code></pre>
+
+    <pre><code class="language-html">&lt;!-- ProductListWidget.html --&gt;
+&lt;xis:template xmlns:xis="https://xis.one/xsd"&gt;
+    &lt;h3&gt;Products&lt;/h3&gt;
+    &lt;div xis:foreach="product:${products}"&gt;
+        &lt;div class="product"&gt;
+            &lt;h4&gt;${product.name}&lt;/h4&gt;
+            &lt;p&gt;${product.price}&lt;/p&gt;
+            &lt;button xis:action="addToCart"&gt;
+                &lt;xis:parameter name="productId" value="${product.id}"/&gt;
+                &lt;xis:parameter name="productName" value="${product.name}"/&gt;
+                Add to Cart
+            &lt;/button&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/xis:template&gt;</code></pre>
+
+    <h6>2. Cart Summary Widget (Listener)</h6>
+    <pre><code class="language-java">@Widget
+@RefreshOnUpdateEvents("cart-updated")
+class CartSummaryWidget {
+    
+    @ModelData("itemCount")
+    int getItemCount() {
+        return cartService.getItemCount();
+    }
+    
+    @ModelData("totalPrice")
+    BigDecimal getTotalPrice() {
+        return cartService.getTotalPrice();
+    }
+}</code></pre>
+
+    <pre><code class="language-html">&lt;!-- CartSummaryWidget.html --&gt;
+&lt;xis:template xmlns:xis="https://xis.one/xsd"&gt;
+    &lt;div class="cart-summary"&gt;
+        &lt;span class="cart-icon"&gt;🛒&lt;/span&gt;
+        &lt;span class="item-count"&gt;${itemCount} items&lt;/span&gt;
+        &lt;span class="total-price"&gt;$${totalPrice}&lt;/span&gt;
+    &lt;/div&gt;
+&lt;/xis:template&gt;</code></pre>
+
+    <h6>3. Notification Widget (Listener)</h6>
+    <pre><code class="language-java">@Widget
+@RefreshOnUpdateEvents("notification")
+class NotificationWidget {
+    
+    @ModelData("messages")
+    List&lt;String&gt; getMessages() {
+        return notificationService.getRecentMessages();
+    }
+    
+    @Action(value = "dismiss", updateEventKeys = {"notification"})
+    void dismissNotification(@ActionParameter("index") int index) {
+        notificationService.removeMessage(index);
+    }
+}</code></pre>
+
+    <pre><code class="language-html">&lt;!-- NotificationWidget.html --&gt;
+&lt;xis:template xmlns:xis="https://xis.one/xsd"&gt;
+    &lt;div class="notifications"&gt;
+        &lt;div xis:foreach="message:${messages}" class="notification"&gt;
+            &lt;span&gt;${message}&lt;/span&gt;
+            &lt;button xis:action="dismiss"&gt;
+                &lt;xis:parameter name="index" value="${messageIndex}"/&gt;
+                ×
+            &lt;/button&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/xis:template&gt;</code></pre>
+
+    <h6>4. Page Layout (Integrating Widgets)</h6>
+    <pre><code class="language-html">&lt;!-- ShoppingPage.html --&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html xmlns:xis="https://xis.one/xsd"&gt;
+&lt;head&gt;
+    &lt;title&gt;Shop&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;header&gt;
+        &lt;xis:widget-container container-id="cart-summary" 
+                             default-widget="CartSummaryWidget"&gt;
+        &lt;/xis:widget-container&gt;
+    &lt;/header&gt;
+    
+    &lt;aside&gt;
+        &lt;xis:widget-container container-id="notifications" 
+                             default-widget="NotificationWidget"&gt;
+        &lt;/xis:widget-container&gt;
+    &lt;/aside&gt;
+    
+    &lt;main&gt;
+        &lt;xis:widget-container container-id="main" 
+                             default-widget="ProductListWidget"&gt;
+            &lt;xis:parameter name="categoryId" value="electronics"/&gt;
+        &lt;/xis:widget-container&gt;
+    &lt;/main&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <h5>Multiple Event Keys</h5>
+    <p>Actions can emit multiple events, and widgets can listen to multiple events:</p>
+    <pre><code class="language-java">// Emit multiple events
+@Action(value = "checkout", updateEventKeys = {"cart-updated", "order-created", "inventory-changed"})
+void checkout() {
+    orderService.createOrder();
+}
+
+// Listen to multiple events
+@Widget
+@RefreshOnUpdateEvents({"cart-updated", "order-created"})
+class OrderSummaryWidget {
+    // Reloads when either event fires
+}</code></pre>
+
+    <h5>Event Propagation</h5>
+    <p>Update events are broadcast to all widgets on the page. The framework handles:</p>
+    <ul>
+        <li>Identifying all widgets listening to the event</li>
+        <li>Reloading their <code>@ModelData</code> methods</li>
+        <li>Updating their templates with fresh data</li>
+        <li>Avoiding unnecessary reloads (widgets that don't listen are unchanged)</li>
+    </ul>
+
+    <h5>Best Practices</h5>
+    <ul>
+        <li><strong>Use descriptive event names:</strong> <code>"cart-updated"</code> not <code>"update"</code></li>
+        <li><strong>Keep events focused:</strong> One event per logical state change</li>
+        <li><strong>Avoid circular updates:</strong> Don't emit the same event you're listening to</li>
+        <li><strong>Document event contracts:</strong> Specify what changed and what widgets should listen</li>
+    </ul>
+
+    <h5>Unread Messages Example</h5>
+    <p>Another common use case - updating an unread message count badge:</p>
+    <pre><code class="language-java">@Widget
+class MessageActionsWidget {
+    
+    @Action(value = "markAsRead", updateEventKeys = {"messages-updated"})
+    void markAsRead(@ActionParameter("messageId") String messageId) {
+        messageService.markAsRead(messageId);
+    }
+}
+
+@Widget
+@RefreshOnUpdateEvents("messages-updated")
+class UnreadCountWidget {
+    
+    @ModelData("unreadCount")
+    int getUnreadCount() {
+        return messageService.getUnreadCount();
+    }
+}</code></pre>
+
+    <pre><code class="language-html">&lt;!-- UnreadCountWidget.html --&gt;
+&lt;xis:template xmlns:xis="https://xis.one/xsd"&gt;
+    &lt;div class="unread-badge" xis:if="${unreadCount > 0}"&gt;
+        ${unreadCount}
+    &lt;/div&gt;
+&lt;/xis:template&gt;</code></pre>
+
+    <h5>See Also</h5>
+    <ul>
+        <li><a href="#" xis:page="ClassAnnotations">@RefreshOnUpdateEvents</a> - Class annotation reference</li>
+        <li><a href="#" xis:page="MethodAnnotations">@Action</a> - Action annotation with updateEventKeys</li>
+    </ul>
+
+</xis:template>

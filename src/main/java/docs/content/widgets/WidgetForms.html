@@ -1,0 +1,266 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <p>Widgets can contain forms with full data binding and validation support. Forms in widgets enable inline editing, 
+        modal dialogs, and complex multi-step workflows.</p>
+
+    <h5>Basic Form in Widget</h5>
+    <p>Use <code>@FormData</code> to bind form input to controller methods:</p>
+    <pre><code class="language-java">@Widget
+class ProductFormWidget {
+    
+    @ModelData("product")
+    Product getProduct(@WidgetParameter("productId") String productId) {
+        return productId != null ? productService.findById(productId) : new Product();
+    }
+    
+    @Action("save")
+    void saveProduct(@FormData("product") Product product) {
+        productService.save(product);
+    }
+}</code></pre>
+
+    <pre><code class="language-html">&lt;!-- ProductFormWidget.html --&gt;
+&lt;xis:template xmlns:xis="https://xis.one/xsd"&gt;
+    &lt;form xis:binding="product"&gt;
+        &lt;input xis:binding="name" type="text" placeholder="Product Name"/&gt;
+        &lt;input xis:binding="price" type="number" placeholder="Price"/&gt;
+        &lt;textarea xis:binding="description" placeholder="Description"&gt;&lt;/textarea&gt;
+        &lt;button xis:action="save" type="submit"&gt;Save Product&lt;/button&gt;
+    &lt;/form&gt;
+&lt;/xis:template&gt;</code></pre>
+
+    <h5>Form Validation</h5>
+    <p>Add validation annotations to form data models:</p>
+    <pre><code class="language-java">public class Product {
+    @Mandatory
+    @MinLength(3)
+    private String name;
+    
+    @Mandatory
+    private BigDecimal price;
+    
+    private String description;
+    
+    // getters and setters
+}</code></pre>
+    <p>Validation errors are automatically displayed in the template. See the 
+        <a href="#" xis:page="Forms">Forms</a> chapter for complete validation documentation.</p>
+
+    <h5>Edit Flow: List → Form → Details</h5>
+    <p>A common pattern is navigating from a list to an edit form, then to a details view:</p>
+
+    <h6>1. Product List Widget</h6>
+    <pre><code class="language-java">@Widget
+class ProductListWidget {
+    
+    @ModelData("products")
+    List&lt;Product&gt; getProducts() {
+        return productService.findAll();
+    }
+}</code></pre>
+
+    <pre><code class="language-html">&lt;!-- ProductListWidget.html --&gt;
+&lt;xis:template xmlns:xis="https://xis.one/xsd"&gt;
+    &lt;h3&gt;All Products&lt;/h3&gt;
+    &lt;table&gt;
+        &lt;thead&gt;
+            &lt;tr&gt;
+                &lt;th&gt;Name&lt;/th&gt;
+                &lt;th&gt;Price&lt;/th&gt;
+                &lt;th&gt;Actions&lt;/th&gt;
+            &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+            &lt;tr xis:foreach="product:${products}"&gt;
+                &lt;td&gt;${product.name}&lt;/td&gt;
+                &lt;td&gt;${product.price}&lt;/td&gt;
+                &lt;td&gt;
+                    &lt;a xis:widget="ProductFormWidget"&gt;
+                        &lt;xis:parameter name="productId" value="${product.id}"/&gt;
+                        Edit
+                    &lt;/a&gt;
+                &lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/tbody&gt;
+    &lt;/table&gt;
+&lt;/xis:template&gt;</code></pre>
+
+    <h6>2. Product Form Widget</h6>
+    <pre><code class="language-java">@Widget
+class ProductFormWidget {
+    
+    @ModelData("product")
+    Product getProduct(@WidgetParameter("productId") String productId) {
+        return productService.findById(productId);
+    }
+    
+    @Action("save")
+    WidgetResponse saveProduct(@FormData("product") Product product) {
+        productService.save(product);
+        // Navigate to details widget after save
+        return new WidgetResponse(ProductDetailsWidget.class)
+            .addParameter("productId", product.getId());
+    }
+    
+    @Action("cancel")
+    WidgetResponse cancel(@WidgetParameter("productId") String productId) {
+        // Return to details without saving
+        return new WidgetResponse(ProductDetailsWidget.class)
+            .addParameter("productId", productId);
+    }
+}</code></pre>
+
+    <pre><code class="language-html">&lt;!-- ProductFormWidget.html --&gt;
+&lt;xis:template xmlns:xis="https://xis.one/xsd"&gt;
+    &lt;h3&gt;Edit Product&lt;/h3&gt;
+    &lt;form xis:binding="product"&gt;
+        &lt;div class="form-group"&gt;
+            &lt;label&gt;Name&lt;/label&gt;
+            &lt;input xis:binding="name" type="text"/&gt;
+        &lt;/div&gt;
+        &lt;div class="form-group"&gt;
+            &lt;label&gt;Price&lt;/label&gt;
+            &lt;input xis:binding="price" type="number" step="0.01"/&gt;
+        &lt;/div&gt;
+        &lt;div class="form-group"&gt;
+            &lt;label&gt;Description&lt;/label&gt;
+            &lt;textarea xis:binding="description"&gt;&lt;/textarea&gt;
+        &lt;/div&gt;
+        &lt;div class="form-actions"&gt;
+            &lt;button xis:action="save" type="submit"&gt;Save&lt;/button&gt;
+            &lt;button xis:action="cancel" type="button"&gt;Cancel&lt;/button&gt;
+        &lt;/div&gt;
+    &lt;/form&gt;
+&lt;/xis:template&gt;</code></pre>
+
+    <h6>3. Product Details Widget</h6>
+    <pre><code class="language-java">@Widget
+class ProductDetailsWidget {
+    
+    @ModelData("product")
+    Product getProduct(@WidgetParameter("productId") String productId) {
+        return productService.findById(productId);
+    }
+    
+    @Action("edit")
+    WidgetResponse editProduct(@WidgetParameter("productId") String productId) {
+        return new WidgetResponse(ProductFormWidget.class)
+            .addParameter("productId", productId);
+    }
+    
+    @Action("backToList")
+    WidgetResponse backToList() {
+        return new WidgetResponse(ProductListWidget.class);
+    }
+}</code></pre>
+
+    <pre><code class="language-html">&lt;!-- ProductDetailsWidget.html --&gt;
+&lt;xis:template xmlns:xis="https://xis.one/xsd"&gt;
+    &lt;h3&gt;${product.name}&lt;/h3&gt;
+    &lt;dl&gt;
+        &lt;dt&gt;Price&lt;/dt&gt;
+        &lt;dd&gt;$${product.price}&lt;/dd&gt;
+        
+        &lt;dt&gt;Description&lt;/dt&gt;
+        &lt;dd&gt;${product.description}&lt;/dd&gt;
+    &lt;/dl&gt;
+    &lt;div class="actions"&gt;
+        &lt;button xis:action="edit"&gt;Edit Product&lt;/button&gt;
+        &lt;button xis:action="backToList"&gt;Back to List&lt;/button&gt;
+    &lt;/div&gt;
+&lt;/xis:template&gt;</code></pre>
+
+    <h5>Form with Update Events</h5>
+    <p>Combine forms with update events to refresh other widgets after save:</p>
+    <pre><code class="language-java">@Widget
+class ProductFormWidget {
+    
+    @Action(value = "save", updateEventKeys = {"product-updated"})
+    void saveProduct(@FormData("product") Product product) {
+        productService.save(product);
+        // Other widgets listening to "product-updated" will refresh
+    }
+}
+
+@Widget
+@RefreshOnUpdateEvents("product-updated")
+class ProductStatsWidget {
+    @ModelData("totalProducts")
+    int getTotalProducts() {
+        return productService.count();
+    }
+}</code></pre>
+
+    <h5>Multi-Step Form Wizard</h5>
+    <p>Use widget navigation to create multi-step forms:</p>
+    <pre><code class="language-java">@Widget
+class ProductFormStep1Widget {
+    @Action("next")
+    WidgetResponse goToStep2(@FormData("basicInfo") ProductBasicInfo info) {
+        sessionStorage.save("basicInfo", info);
+        return new WidgetResponse(ProductFormStep2Widget.class);
+    }
+}
+
+@Widget
+class ProductFormStep2Widget {
+    @ModelData("basicInfo")
+    ProductBasicInfo getBasicInfo() {
+        return sessionStorage.load("basicInfo", ProductBasicInfo.class);
+    }
+    
+    @Action("finish")
+    WidgetResponse completeForm(@FormData("details") ProductDetails details) {
+        ProductBasicInfo basicInfo = sessionStorage.load("basicInfo");
+        Product product = productService.create(basicInfo, details);
+        return new WidgetResponse(ProductDetailsWidget.class)
+            .addParameter("productId", product.getId());
+    }
+    
+    @Action("back")
+    WidgetResponse goBack() {
+        return new WidgetResponse(ProductFormStep1Widget.class);
+    }
+}</code></pre>
+
+    <h5>Form in Modal Pattern</h5>
+    <p>Load form widgets in separate containers to create modal-like experiences:</p>
+    <pre><code class="language-html">&lt;!-- Page with modal container --&gt;
+&lt;div class="content"&gt;
+    &lt;xis:widget-container container-id="main" default-widget="ProductListWidget"&gt;
+    &lt;/xis:widget-container&gt;
+&lt;/div&gt;
+
+&lt;div class="modal-overlay" id="modal"&gt;
+    &lt;xis:widget-container container-id="modal" default-widget="EmptyWidget"&gt;
+    &lt;/xis:widget-container&gt;
+&lt;/div&gt;</code></pre>
+
+    <pre><code class="language-java">@Widget
+class ProductListWidget {
+    @Action("openEditModal")
+    WidgetResponse openModal(@ActionParameter("productId") String productId) {
+        return new WidgetResponse(ProductFormWidget.class)
+            .targetContainer("modal")
+            .addParameter("productId", productId);
+    }
+}
+
+@Widget
+class ProductFormWidget {
+    @Action("save")
+    WidgetResponse saveAndClose(@FormData("product") Product product) {
+        productService.save(product);
+        // Close modal by loading empty widget
+        return new WidgetResponse(EmptyWidget.class)
+            .targetContainer("modal");
+    }
+}</code></pre>
+
+    <h5>See Also</h5>
+    <ul>
+        <li><a href="#" xis:page="Forms">Forms</a> - Complete form binding and validation reference</li>
+        <li><a href="#" xis:page="ParameterAnnotations">@FormData</a> - Form data annotation reference</li>
+        <li><a href="#" xis:page="WidgetNavigation">Widget Navigation</a> - Navigation between widgets</li>
+    </ul>
+
+</xis:template>

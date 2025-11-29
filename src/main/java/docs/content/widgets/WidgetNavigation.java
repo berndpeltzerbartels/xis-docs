@@ -1,22 +1,21 @@
-package docs.content;
+package docs.content.widgets;
 
 import docs.Navigation;
-import docs.content.widgets.WidgetContainers;
 import one.xis.GlobalVariable;
 import one.xis.Widget;
 
 @Widget
-@Navigation(title = "Widget Details", nextItem = Lifecycle.class, firstSubItem = WidgetContainers.class)
-class WidgetsDetails {
+@Navigation(title = "Widget Navigation", nextItem = WidgetUpdateEvents.class)
+class WidgetNavigation {
 
     @GlobalVariable("title")
     String title() {
-        return "Widget Details";
+        return "Widget Navigation";
     }
 
     @GlobalVariable("headline1")
     String headline1() {
-        return "Widget Details";
+        return "Widget Navigation";
     }
 
     @GlobalVariable("headline2")

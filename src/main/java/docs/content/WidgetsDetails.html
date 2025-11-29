@@ -1,208 +1,59 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <p>Widgets are reusable, self-contained components that can be embedded in pages or other widgets. They provide 
         encapsulation and composability, making it easy to build complex UIs from smaller, testable pieces.</p>
+    
+    <p>This section covers advanced widget concepts in detail. Each topic has its own dedicated chapter:</p>
 
-    <h5>Widget Containers</h5>
-    <p>Widget containers define regions on a page where widgets can be dynamically loaded. Use the 
-        <code>&lt;xis:widget-container&gt;</code> tag with a <code>container-id</code> and optional 
-        <code>default-widget</code> (in older API: <code>xis:default-widget</code>).</p>
+    <h5>Chapter Overview</h5>
+    
+    <h6><a href="#" xis:page="WidgetContainers">Widget Containers</a></h6>
+    <p>Learn how to define widget containers on pages, set default widgets, and pass parameters using both query 
+        string and <code>&lt;xis:parameter&gt;</code> tag syntax. Understand container IDs and how multiple containers 
+        work together.</p>
+    
+    <h6><a href="#" xis:page="WidgetParameters">Widget Parameters</a></h6>
+    <p>Understand the difference between <code>@WidgetParameter</code> and <code>@ActionParameter</code>. Learn the 
+        two ways to pass widget parameters (query string vs tags) and how to combine widget and action parameters 
+        in the same controller.</p>
+    
+    <h6><a href="#" xis:page="WidgetNavigation">Widget Navigation</a></h6>
+    <p>Master widget navigation through template links, action return values, and <code>WidgetResponse</code>. 
+        Understand widget IDs, target containers, and the difference between <code>WidgetResponse</code> and 
+        <code>PageResponse</code>. Learn about string-based widget IDs for distributed applications.</p>
+    
+    <h6><a href="#" xis:page="WidgetUpdateEvents">Update Events</a></h6>
+    <p>Build reactive UIs where multiple widgets stay synchronized using update events. See complete working examples 
+        including a shopping cart system with cart summary, notifications, and product list widgets that all update 
+        automatically when items are added.</p>
+    
+    <h6><a href="#" xis:page="WidgetForms">Forms in Widgets</a></h6>
+    <p>Implement forms within widgets with full data binding and validation. Learn the common edit flow pattern 
+        (list → form → details), multi-step wizards, and modal-style form interactions.</p>
+
+    <h5>Widget Basics Recap</h5>
+    <p>Before diving into the detailed chapters, here's a quick recap of widget fundamentals:</p>
+
+    <h6>Creating a Widget</h6>
+    <pre><code class="language-java">@Widget
+class DashboardWidget {
+    @ModelData("message")
+    String getMessage() {
+        return "Welcome to your dashboard!";
+    }
+}</code></pre>
+
+    <h6>Widget Template</h6>
+    <pre><code class="language-html">&lt;xis:template xmlns:xis="https://xis.one/xsd"&gt;
+    &lt;div class="dashboard"&gt;
+        &lt;h2&gt;${message}&lt;/h2&gt;
+    &lt;/div&gt;
+&lt;/xis:template&gt;</code></pre>
+
+    <h6>Embedding in a Page</h6>
     <pre><code class="language-html">&lt;xis:widget-container container-id="main" default-widget="DashboardWidget"&gt;
-&lt;/xis:widget-container&gt;
-
-&lt;!-- Alternative with xis: prefix (older API) --&gt;
-&lt;xis:widget-container container-id="sidebar" xis:default-widget="NavigationWidget"&gt;
-&lt;/xis:widget-container&gt;</code></pre>
-    <p>The <code>container-id</code> uniquely identifies the container within the page. When actions return a 
-        <code>WidgetResponse</code> with a target container, the widget will be loaded into that container.</p>
-
-    <h5>Widget ID</h5>
-    <p>Each widget instance has a unique ID that identifies it within the page. By default, the ID is the simple class 
-        name (e.g., <code>DashboardWidget</code>). You can customize the ID using the <code>@Widget</code> annotation:</p>
-    <pre><code class="language-java">@Widget  // ID defaults to "ProductListWidget"
-class ProductListWidget {
-}
-
-@Widget(id = "customProductList")  // Custom ID
-class ProductListWidget {
-}</code></pre>
-    <p>The widget ID is used for targeting updates, passing parameters, and identifying widgets in navigation.</p>
-
-    <h5>Widget Links</h5>
-    <p>Use <code>xis:widget="WidgetClassName"</code> on links or buttons to load a widget into its container.</p>
-    <pre><code class="language-html">&lt;a xis:widget="ProductDetailsWidget"&gt;View Details&lt;/a&gt;
-
-&lt;button xis:widget="EditFormWidget"&gt;Edit Product&lt;/button&gt;</code></pre>
-    <p>When clicked, the specified widget replaces the current widget in the same container.</p>
-
-    <h5>Widget Parameters</h5>
-    <p>Pass parameters to widgets using two methods:</p>
-    
-    <h6>Method 1: Query String Style</h6>
-    <p>Append parameters directly to the widget name using URL query syntax:</p>
-    <pre><code class="language-html">&lt;a xis:widget="ProductListWidget?categoryId=${category.id}&amp;sortBy=name"&gt;
-    View Products
-&lt;/a&gt;
-
-&lt;xis:widget-container container-id="main" 
-                     default-widget="ProductListWidget?categoryId=electronics"&gt;
 &lt;/xis:widget-container&gt;</code></pre>
 
-    <h6>Method 2: Using &lt;xis:parameter&gt; Tags</h6>
-    <p>Pass parameters as child elements with <code>name</code> and <code>value</code> attributes:</p>
-    <pre><code class="language-html">&lt;a xis:widget="ProductListWidget"&gt;
-    &lt;xis:parameter name="categoryId" value="${category.id}"/&gt;
-    &lt;xis:parameter name="sortBy" value="name"/&gt;
-    View Products
-&lt;/a&gt;
-
-&lt;xis:widget-container container-id="main" default-widget="ProductListWidget"&gt;
-    &lt;xis:parameter name="categoryId" value="${category.id}"/&gt;
-    &lt;xis:parameter name="sortBy" value="name"/&gt;
-&lt;/xis:widget-container&gt;</code></pre>
-    <p>In the widget controller, access parameters using <code>@WidgetParameter</code>:</p>
-    <pre><code class="language-java">@Widget
-class ProductListWidget {
-    @ModelData("products")
-    List&lt;Product&gt; getProducts(@WidgetParameter("categoryId") String categoryId,
-                              @WidgetParameter("sortBy") String sortBy) {
-        return productService.findByCategory(categoryId, sortBy);
-    }
-}</code></pre>
-
-    <h5>Widget Data in Templates</h5>
-    <p>Widget templates access data from their controller methods. Use <code>${widgetData.key}</code> to access values 
-        provided by <code>@ModelData</code> methods (or just <code>${key}</code> if the key is unambiguous):</p>
-    <pre><code class="language-html">&lt;!-- ProductListWidget.html --&gt;
-&lt;xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform"&gt;
-    &lt;h3&gt;Products&lt;/h3&gt;
-    &lt;ul&gt;
-        &lt;li xis:foreach="product:${products}"&gt;
-            ${product.name} - ${product.price}
-        &lt;/li&gt;
-    &lt;/ul&gt;
-&lt;/xis:template&gt;</code></pre>
-    <p>Widget data is scoped to the widget instance. Multiple instances of the same widget can have different data.</p>
-
-    <h5>Navigation with Actions</h5>
-    <p>Actions can navigate to different widgets or pages. Return <code>WidgetResponse</code> to load a new widget, or 
-        <code>PageResponse</code> / <code>Class&lt;?&gt;</code> to navigate to a page:</p>
-    <pre><code class="language-java">@Widget
-class ProductListWidget {
-    
-    @Action("viewDetails")
-    WidgetResponse viewDetails(@ActionParameter("productId") String productId) {
-        return new WidgetResponse(ProductDetailsWidget.class)
-            .addParameter("productId", productId);
-    }
-    
-    @Action("backToList")
-    Class&lt;?&gt; backToList() {
-        return ProductListPage.class; // Navigate to page
-    }
-}</code></pre>
-
-    <h5>Targeting Different Containers</h5>
-    <p>Actions can update widgets in different containers using <code>targetContainer</code>:</p>
-    <pre><code class="language-java">@Action("showDetails")
-WidgetResponse showInSidebar(@ActionParameter("productId") String productId) {
-    return new WidgetResponse(ProductDetailsWidget.class)
-        .targetContainer("sidebar")  // Load into sidebar container
-        .addParameter("productId", productId);
-}</code></pre>
-    <p>This allows complex interactions where one widget triggers updates in other parts of the page.</p>
-
-    <h5>Page Navigation with Target Container</h5>
-    <p>Actions can also navigate to pages and specify which container should be updated:</p>
-    <pre><code class="language-java">@Action("showRelatedProducts")
-PageResponse showRelated(@ActionParameter("categoryId") String categoryId) {
-    return new PageResponse(ProductListPage.class)
-        .targetContainer("main")
-        .addParameter("categoryId", categoryId);
-}</code></pre>
-
-    <h5>Update Events</h5>
-    <p>Actions can emit update events to notify other widgets. Use <code>@Action(updateEventKeys = {...})</code> to 
-        broadcast events, and <code>@RefreshOnUpdateEvents</code> on widgets to listen for them:</p>
-    <pre><code class="language-java">// Widget that emits event
-@Widget
-class ShoppingCartWidget {
-    @Action(value = "addToCart", updateEventKeys = {"cart-updated"})
-    void addToCart(@ActionParameter("productId") String productId) {
-        cartService.addProduct(productId);
-    }
-}
-
-// Widget that listens for event
-@Widget
-@RefreshOnUpdateEvents("cart-updated")
-class CartSummaryWidget {
-    @ModelData("itemCount")
-    int getItemCount() {
-        return cartService.getItemCount(); // Reloaded when cart-updated fires
-    }
-}</code></pre>
-
-    <h5>Standalone Widget Servers</h5>
-    <p>XIS widgets can be served as standalone components, accessible via HTTP endpoints. This enables distributed 
-        architectures where widgets are developed and deployed independently. A widget server can respond to requests 
-        and deliver widgets that integrate seamlessly into any XIS page.</p>
-    <p>For details on building distributed applications with widget servers, see the 
-        <a href="#" xis:page="DistributedApplications">Distributed Applications</a> chapter.</p>
-
-    <h5>Forms in Widgets</h5>
-    <p>Widgets can contain forms with full validation support. Use <code>@FormData</code> to bind form data, and 
-        return a <code>WidgetResponse</code> to update the widget or navigate elsewhere:</p>
-    <pre><code class="language-java">// ProductFormWidget.java
-@Widget
-class ProductFormWidget {
-    @ModelData("product")
-    Product getProduct(@WidgetParameter("productId") String productId) {
-        return productId != null ? productService.findById(productId) : new Product();
-    }
-    
-    @Action("save")
-    WidgetResponse saveProduct(@FormData("product") Product product) {
-        productService.save(product);
-        // Navigate to detail widget with saved product
-        return new WidgetResponse(ProductDetailsWidget.class)
-            .addParameter("productId", product.getId());
-    }
-}</code></pre>
-    <pre><code class="language-html">&lt;!-- ProductFormWidget.html --&gt;
-&lt;xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform"&gt;
-    &lt;form xis:binding="product"&gt;
-        &lt;input xis:binding="name" type="text" placeholder="Product Name"/&gt;
-        &lt;input xis:binding="price" type="number" placeholder="Price"/&gt;
-        &lt;button xis:action="save" type="submit"&gt;Save Product&lt;/button&gt;
-    &lt;/form&gt;
-&lt;/xis:template&gt;</code></pre>
-
-    <h6>Example: Edit Flow with Form Widget</h6>
-    <p>A common pattern is to navigate from a list widget to a form widget for editing, then to a detail widget after 
-        saving:</p>
-    <pre><code class="language-java">// ProductListWidget.java
-@Widget
-class ProductListWidget {
-    @ModelData("products")
-    List&lt;Product&gt; getProducts() {
-        return productService.findAll();
-    }
-}</code></pre>
-    <pre><code class="language-html">&lt;!-- ProductListWidget.html --&gt;
-&lt;xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform"&gt;
-    &lt;h3&gt;All Products&lt;/h3&gt;
-    &lt;ul&gt;
-        &lt;li xis:foreach="product:${products}"&gt;
-            ${product.name}
-            &lt;a xis:widget="ProductFormWidget"&gt;
-                &lt;xis:parameter name="productId" value="${product.id}"/&gt;
-                Edit
-            &lt;/a&gt;
-        &lt;/li&gt;
-    &lt;/ul&gt;
-&lt;/xis:template&gt;</code></pre>
-    <p>Clicking "Edit" loads the <code>ProductFormWidget</code> with the product data. After saving, the 
-        <code>@Action("save")</code> method returns a <code>WidgetResponse(ProductDetailsWidget.class)</code> to show 
-        the updated product details.</p>
+    <p>For basic widget concepts like the <code>@Widget</code> annotation and simple usage, see 
+        <a href="#" xis:page="PagesAndWidgets">Pages and Widgets</a>.</p>
 
 </xis:template>
