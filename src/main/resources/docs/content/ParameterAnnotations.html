@@ -1,5 +1,6 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
-    <p>XIS provides a comprehensive set of parameter annotations to inject various types of data into controller method parameters. These annotations handle everything from URL parameters to reactive state injection.</p>
+    <p>XIS provides a comprehensive set of parameter annotations to inject various types of data into controller method
+        parameters. These annotations handle everything from URL parameters to reactive state injection.</p>
 
     <h6>@QueryParameter</h6>
     <p>Injects URL query parameters from requests like <code>page.html?userId=123&amp;tab=profile</code>.</p>
@@ -32,75 +33,81 @@ class ProductDetailsPage {
 }</code></pre>
 
     <h6>@ActionParameter</h6>
-    <p>Injects parameters passed from template actions. Use <code>&lt;xis:parameter&gt;</code> tags as child elements of action buttons or links. The <code>&lt;xis:parameter&gt;</code> tag takes a <code>name</code> attribute (the parameter key) and a <code>value</code> attribute (the parameter value, which can contain EL expressions).</p>
+    <p>Injects parameters passed from template actions. Use <code>&lt;xis:parameter&gt;</code> tags as child elements of
+        action buttons or links. The <code>&lt;xis:parameter&gt;</code> tag takes a <code>name</code> attribute (the
+        parameter key) and a <code>value</code> attribute (the parameter value, which can contain EL expressions).</p>
     <xis:raw text="true">
-@Action("selectOption")
-void selectOption(@ActionParameter("optionId") String optionId,
-                 @ActionParameter("value") String value) {
-    selectionService.updateSelection(optionId, value);
-}
+        @Action("selectOption")
+        void selectOption(@ActionParameter("optionId") String optionId,
+        @ActionParameter("value") String value) {
+        selectionService.updateSelection(optionId, value);
+        }
     </xis:raw>
     <p>Pass parameters to actions in templates:</p>
     <xis:raw text="true">
-&lt;button xis:action="selectOption"&gt;
-    &lt;xis:parameter name="optionId" value="${option.id}"/&gt;
-    &lt;xis:parameter name="value" value="${option.selectedValue}"/&gt;
-    Select Option
-&lt;/button&gt;
+        &lt;button xis:action="selectOption"&gt;
+        &lt;xis:parameter name="optionId" value="${option.id}"/&gt;
+        &lt;xis:parameter name="value" value="${option.selectedValue}"/&gt;
+        Select Option
+        &lt;/button&gt;
 
-&lt;a xis:action="deleteUser"&gt;
-    &lt;xis:parameter name="userId" value="${user.id}"/&gt;
-    &lt;xis:parameter name="confirmRequired" value="true"/&gt;
-    Delete User
-&lt;/a&gt;
+        &lt;a xis:action="deleteUser"&gt;
+        &lt;xis:parameter name="userId" value="${user.id}"/&gt;
+        &lt;xis:parameter name="confirmRequired" value="true"/&gt;
+        Delete User
+        &lt;/a&gt;
     </xis:raw>
 
     <h6>@WidgetParameter</h6>
     <p>Injects parameters passed to widgets. There are multiple ways to pass parameters to widgets:</p>
     <xis:raw text="true">
-@Widget
-class ProductListWidget {
-    @ModelData("products")
-    List&lt;Product> getProducts(@WidgetParameter("categoryId") String categoryId,
-                             @WidgetParameter("sortBy") String sortBy) {
+        @Widget
+        class ProductListWidget {
+        @ModelData("products")
+        List&lt;Product> getProducts(@WidgetParameter("categoryId") String categoryId,
+        @WidgetParameter("sortBy") String sortBy) {
         return productService.findByCategory(categoryId, sortBy);
-    }
-}
+        }
+        }
     </xis:raw>
-    
+
     <p><strong>Method 1: URL-style query parameters</strong></p>
     <p>Pass parameters directly in the widget name using query string syntax:</p>
     <xis:raw text="true">
-&lt;a xis:widget="ProductListWidget?categoryId=${category.id}&amp;sortBy=name"&gt;
-    View Products
-&lt;/a&gt;
+        &lt;a xis:widget="ProductListWidget?categoryId=${category.id}&amp;sortBy=name"&gt;
+        View Products
+        &lt;/a&gt;
 
-&lt;xis:widget-container container-id="main" 
-                     xis:default-widget="ProductListWidget?categoryId=electronics&amp;sortBy=name"&gt;
-&lt;/xis:widget-container&gt;
+        &lt;xis:widget-container container-id="main"
+        xis:default-widget="ProductListWidget?categoryId=electronics&amp;sortBy=name"&gt;
+        &lt;/xis:widget-container&gt;
     </xis:raw>
 
     <p><strong>Method 2: Using &lt;xis:parameter&gt; tags</strong></p>
-    <p>Pass parameters as child elements of widget links or widget containers. The <code>&lt;xis:parameter&gt;</code> tag takes a <code>name</code> attribute (the parameter key) and a <code>value</code> attribute (the parameter value, which can contain EL expressions):</p>
+    <p>Pass parameters as child elements of widget links or widget containers. The <code>&lt;xis:parameter&gt;</code>
+        tag takes a <code>name</code> attribute (the parameter key) and a <code>value</code> attribute (the parameter
+        value, which can contain EL expressions):</p>
     <xis:raw text="true">
-&lt;!-- Inside a widget link --&gt;
-&lt;a xis:widget="ProductListWidget"&gt;
-    &lt;xis:parameter name="categoryId" value="${category.id}"/&gt;
-    &lt;xis:parameter name="sortBy" value="name"/&gt;
-    View Products
-&lt;/a&gt;
+        &lt;!-- Inside a widget link --&gt;
+        &lt;a xis:widget="ProductListWidget"&gt;
+        &lt;xis:parameter name="categoryId" value="${category.id}"/&gt;
+        &lt;xis:parameter name="sortBy" value="name"/&gt;
+        View Products
+        &lt;/a&gt;
 
-&lt;!-- Inside a widget container --&gt;
-&lt;xis:widget-container container-id="main" xis:default-widget="ProductListWidget"&gt;
-    &lt;xis:parameter name="categoryId" value="${category.id}"/&gt;
-    &lt;xis:parameter name="sortBy" value="name"/&gt;
-&lt;/xis:widget-container&gt;
+        &lt;!-- Inside a widget container --&gt;
+        &lt;xis:widget-container container-id="main" xis:default-widget="ProductListWidget"&gt;
+        &lt;xis:parameter name="categoryId" value="${category.id}"/&gt;
+        &lt;xis:parameter name="sortBy" value="name"/&gt;
+        &lt;/xis:widget-container&gt;
     </xis:raw>
 
-    <p><strong>Note:</strong> Both methods work identically - choose based on readability and whether you need dynamic expressions in parameter values.</p>
+    <p><strong>Note:</strong> Both methods work identically - choose based on readability and whether you need dynamic
+        expressions in parameter values.</p>
 
     <h6>@FormData</h6>
-    <p>Injects form data bound from HTML forms. Use XIS validation annotations (see Validation Annotations section below) for data validation.</p>
+    <p>Injects form data bound from HTML forms. Use XIS validation annotations (see Validation Annotations section
+        below) for data validation.</p>
     <pre><code class="language-java">@Action("saveUser")
 void saveUser(@FormData("user") User user) {
     userService.save(user);
@@ -113,8 +120,11 @@ void saveUser(@FormData("user") User user) {
 &lt;/form&gt;</code></pre>
 
     <h6>@LocalStorage</h6>
-    <p>Injects data from the browser's localStorage for persistent client-side storage. Data persists across browser sessions.</p>
-    <p><strong>Behavior:</strong> When used as a parameter, the value is <strong>read from</strong> localStorage. When used on methods (see Method Annotations), the return value is <strong>always written to</strong> localStorage.</p>
+    <p>Injects data from the browser's localStorage for persistent client-side storage. Data persists across browser
+        sessions.</p>
+    <p><strong>Behavior:</strong> When used as a parameter, the value is <strong>read from</strong> localStorage. When
+        used on methods (see Method Annotations), the return value is <strong>always written to</strong> localStorage.
+    </p>
     <pre><code class="language-java">@Action("applyTheme") 
 void applyTheme(@LocalStorage("selectedTheme") String theme,
                 @ActionParameter("newTheme") String newTheme) {
@@ -124,34 +134,56 @@ void applyTheme(@LocalStorage("selectedTheme") String theme,
 }</code></pre>
 
     <h6>@SessionStorage</h6>
-    <p>Injects data from the browser's sessionStorage for tab-specific client-side storage. Data is cleared when the tab is closed.</p>
-    <p><strong>Behavior:</strong> When used as a parameter, the value is <strong>read from</strong> sessionStorage. When used on methods (see Method Annotations), the return value is <strong>always written to</strong> sessionStorage.</p>
+    <p>Injects data from the browser's sessionStorage for tab-specific client-side storage. Data is cleared when the tab
+        is closed.</p>
+    <p><strong>Behavior:</strong> When used as a parameter, the value is <strong>read from</strong> sessionStorage. When
+        used on methods (see Method Annotations), the return value is <strong>always written to</strong> sessionStorage.
+    </p>
     <pre><code class="language-java">@ModelData
 String getActiveSection(@SessionStorage("currentSection") String section) {
     return section != null ? section : "dashboard";
 }</code></pre>
 
-    <h6>@LocalDatabase</h6>
-    <p>Injects data from the browser's IndexedDB for client-side database storage.</p>
-    <pre><code class="language-java">@Action("syncOfflineData")
-void syncOfflineData(@LocalDatabase("offlineItems") List&lt;Item&gt; offlineItems) {
-    for (Item item : offlineItems) {
-        if (item.needsSync()) {
-            itemService.syncToServer(item);
-        }
+    <h6>@SharedValue</h6>
+    <p>Injects cached values from methods annotated with <code>@SharedValue</code>. This enables efficient data sharing 
+        between controller methods within the same request, avoiding redundant database queries or expensive computations.</p>
+    <p><strong>Pattern:</strong> A method with <code>@SharedValue("key")</code> caches its return value. Other methods 
+        can inject this cached value using <code>@SharedValue("key")</code> as a parameter annotation.</p>
+    <pre><code class="language-java">// ProductPage.java
+@Page("/product/{productId}.html")
+class ProductPage {
+    
+    // This method caches the loaded product
+    @SharedValue("product")
+    Product loadProduct(@QueryParameter("productId") String productId) {
+        return database.loadProduct(productId); // Only queried once
+    }
+    
+    // This method reuses the cached product
+    @ModelData("product")
+    Product getProduct(@SharedValue("product") Product product) {
+        return product; // No database query
+    }
+    
+    // This method also reuses the cached product
+    @PageTitle
+    String getTitle(@SharedValue("product") Product product) {
+        return product.getName(); // No database query
+    }
+    
+    // Actions can access shared values too
+    @Action("addToCart")
+    void addToCart(@SharedValue("product") Product product,
+                  @UserId String userId) {
+        cartService.addProduct(userId, product.getId());
     }
 }</code></pre>
-
-    <h6>@RequestScope</h6>
-    <p>Injects request-scoped data that is available throughout the current request lifecycle.</p>
-    <pre><code class="language-java">@Action("updatePermissions")
-void updatePermissions(@RequestScope("currentUser") User user,
-                      @FormData("permissions") List&lt;Permission&gt; permissions) {
-    permissionService.updateUserPermissions(user.getId(), permissions);
-}</code></pre>
+    <p>See <a href="#" xis:page="MethodAnnotations">Method Annotations</a> for details on the <code>@SharedValue</code> 
+        method annotation.</p>
 
     <h6>@ClientId</h6>
-    <p>Injects the anonymous client identifier used to associate actions with a specific browser session. Perfect for shopping baskets of non-logged-in users.</p>
+    <p>Injects the anonymous client identifier used to associate actions with a specific browser session. Perfect for
+        shopping baskets of non-logged-in users.</p>
     <pre><code class="language-java">@Action("addToCart")
 void addToCart(@ClientId String clientId,
                @ActionParameter("productId") String productId,
@@ -161,8 +193,11 @@ void addToCart(@ClientId String clientId,
 }</code></pre>
 
     <h6>@ClientStorage</h6>
-    <p>Injects data from server-side client storage. Unlike LocalStorage/SessionStorage which are browser-based, ClientStorage is maintained on the server per client/session.</p>
-    <p><strong>Behavior:</strong> When used as a parameter, the value is <strong>read from</strong> server-side client storage. When used on methods (see Method Annotations), the return value is <strong>always written to</strong> client storage on the server.</p>
+    <p>Injects data from server-side client storage. Unlike LocalStorage/SessionStorage which are browser-based,
+        ClientStorage is maintained on the server per client/session.</p>
+    <p><strong>Behavior:</strong> When used as a parameter, the value is <strong>read from</strong> server-side client
+        storage. When used on methods (see Method Annotations), the return value is <strong>always written to</strong>
+        client storage on the server.</p>
     <pre><code class="language-java">@Action("updatePreferences")
 void updatePreferences(@ClientStorage("userPreferences") UserPreferences current,
                       @ActionParameter("newPreference") String newPref) {
@@ -172,7 +207,8 @@ void updatePreferences(@ClientStorage("userPreferences") UserPreferences current
 }</code></pre>
 
     <h6>@UserId</h6>
-    <p>Injects the user identifier of a currently logged-in user from the active session. Only available when the <code>xis-authentication</code> dependency is added. See Security section for more details.</p>
+    <p>Injects the user identifier of a currently logged-in user from the active session. Only available when the <code>xis-authentication</code>
+        dependency is added. See Security section for more details.</p>
     <pre><code class="language-java">@Action("deleteAccount")
 void deleteAccount(@UserId String userId,
                    @ActionParameter("confirmationCode") String code) {
@@ -180,7 +216,6 @@ void deleteAccount(@UserId String userId,
         userService.deleteUser(userId);
     }
 }</code></pre>
-
 
 
     <h5>Validation Annotations</h5>
@@ -245,32 +280,5 @@ class UserEditPage {
         }
     }
 }</code></pre>
-
-    <h6>@RequestScope</h6>
-    <p>Injects request-scoped data that is available throughout the current request lifecycle. This is particularly useful when you need to pass data between different methods during the same request processing. The output of one method becomes available as input to subsequent methods within the same request cycle.</p>
-        <p><strong>Note:</strong> Using <code>@RequestScope</code> only makes sense if a value with the given key is actually provided, typically by a <code>@ModelData</code> method. Otherwise, the injected value will be <code>null</code>. See example below.</p>
-    <pre><code class="language-java">@Page("/user-details.html")
-        class UserDetailsPage {
-            // This method provides the value for @RequestScope("user")
-            @ModelData("user")
-            User loadUser() {
-                return userService.getCurrentUser();
-            }
-
-            // This method can now inject the user from request scope
-            @ModelData("permissions")
-            List&lt;Permission&gt; loadPermissions(@RequestScope("user") User user) {
-                return permissionService.getPermissionsForUser(user.getId());
-            }
-
-            // If no @ModelData("user") method exists, @RequestScope("user") would be null:
-            @Action("doSomething")
-            void doSomething(@RequestScope("user") User user) {
-                if (user == null) {
-                    // No value was provided for this key in the request scope
-                }
-            }
-        }</code></pre>
-    <p>XIS automatically makes the return values of @ModelData methods available in the request scope using the same key. You can then inject this data into other methods using @RequestScope. This creates a clean data flow where expensive operations (like database queries) only happen once per request, and the results are shared across all methods that need them.</p>
 
 </xis:template>

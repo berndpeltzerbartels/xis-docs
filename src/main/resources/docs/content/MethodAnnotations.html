@@ -30,6 +30,58 @@ User getLoggedInUser() $&#8203;{
     &lt;li&gt;$&#8203;{user.name} ($&#8203;{user.email})&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 
+    <h5>@SharedValue</h5>
+    <p>
+        Shares values between controller methods within a single request. When a method annotated with 
+        <code>@SharedValue</code> executes, its return value is cached and made available to other methods 
+        that request it via the <code>@SharedValue</code> parameter annotation.
+    </p>
+    <p>
+        <strong>Use Case:</strong> Avoid redundant database queries or expensive computations when multiple 
+        methods need the same data. For example, if both a <code>@ModelData</code> method and a 
+        <code>@PageTitle</code> method need to load the same product from the database, using 
+        <code>@SharedValue</code> ensures the database is queried only once.
+    </p>
+    <p>
+        <strong>Behavior:</strong>
+    </p>
+    <ul>
+        <li><strong>On methods:</strong> The return value is <strong>cached</strong> in the request context under the specified key</li>
+        <li><strong>As parameter:</strong> The cached value is <strong>injected</strong> from the request context</li>
+        <li><strong>Scope:</strong> Values are only available within the current request - they do not persist across requests</li>
+    </ul>
+    <pre><code class="language-java">// Without @SharedValue: Database queried twice (inefficient)
+@ModelData("product")
+Product getProduct(@QueryParameter("productId") String productId) $&#8203;{
+    return database.loadProduct(productId); // 1st DB query
+}
+
+@PageTitle
+String getTitle(@QueryParameter("productId") String productId) $&#8203;{
+    Product p = database.loadProduct(productId); // 2nd DB query - REDUNDANT!
+    return p.getName();
+}
+
+// With @SharedValue: Database queried once (efficient)
+@SharedValue("product")
+Product loadProduct(@QueryParameter("productId") String productId) $&#8203;{
+    return database.loadProduct(productId); // Only 1 DB query
+}
+
+@ModelData("product")
+Product getProduct(@SharedValue("product") Product product) $&#8203;{
+    return product; // Reuses cached value
+}
+
+@PageTitle
+String getTitle(@SharedValue("product") Product product) $&#8203;{
+    return product.getName(); // Reuses cached value
+}</code></pre>
+    <p>
+        See <a href="#" xis:page="ParameterAnnotations">Parameter Annotations</a> for details on using 
+        <code>@SharedValue</code> as a parameter.
+    </p>
+
     <h5>@Action</h5>
     <p>
         Handles user interactions such as button clicks, link navigation, or form submissions. Actions can return 
@@ -488,45 +540,5 @@ class LayoutWidget &#123;
     &lt;/main&gt;
 &lt;/body&gt;
 &lt;/html&gt;</xis:raw></code></pre>
-
-    <h6>@RequestScope</h6>
-    <p>Injects request-scoped data that is available throughout the current request lifecycle. This is particularly
-        useful when you need to pass data between different methods during the same request processing. The output of
-        one method becomes available as input to subsequent methods within the same request cycle.</p>
-    <pre><code class="language-java"><xis:raw>@Page("/user-details.html")
-class UserDetailsPage &#123;
-
-    @ModelData("user")
-    User loadUser() &#123;
-        User user = userService.getCurrentUser();
-        // This method sets requestScope data automatically
-        return user;
-    }
-
-    @ModelData("permissions")
-    List&lt;Permission&gt; loadPermissions(@RequestScope("user") User user) &#123;
-        // The user from the previous method is automatically injected here
-        return permissionService.getPermissionsForUser(user.getId());
-    }
-
-    @ModelData("auditLog")
-    List&lt;AuditEntry&gt; loadAuditLog(@RequestScope("user") User user) &#123;
-        // Same user data is available here too
-        return auditService.getLogForUser(user.getId());
-    }
-
-    @Action("updateProfile")
-    void updateProfile(@FormData("profile") UserProfile profile,
-                      @RequestScope("user") User currentUser) &#123;
-        // Access the same user data in action methods
-        if (currentUser.getId().equals(profile.getUserId())) &#123;
-            userService.updateProfile(profile);
-        }
-    }
-}</xis:raw></code></pre>
-    <p>XIS automatically makes the return values of @ModelData methods available in the request scope using the same
-        key. You can then inject this data into other methods using @RequestScope. This creates a clean data flow where
-        expensive operations (like database queries) only happen once per request, and the results are shared across all
-        methods that need them.</p>
 
 </xis:template>

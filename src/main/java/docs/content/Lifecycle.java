@@ -1,21 +1,22 @@
 package docs.content;
 
 import docs.Navigation;
+import docs.content.controllermethods.ControllerMethods;
 import one.xis.GlobalVariable;
 import one.xis.Widget;
 
 @Widget
-@Navigation(title = "Widget Details", nextItem = Lifecycle.class)
-class WidgetsDetails {
+@Navigation(title = "Request Lifecycle", nextItem = ControllerMethods.class)
+class Lifecycle {
 
     @GlobalVariable("title")
     String title() {
-        return "Widget Details";
+        return "Request Lifecycle";
     }
 
     @GlobalVariable("headline1")
     String headline1() {
-        return "Widget Details";
+        return "Request Lifecycle";
     }
 
     @GlobalVariable("headline2")

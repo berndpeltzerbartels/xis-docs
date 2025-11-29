@@ -144,13 +144,42 @@ String getActiveSection(@SessionStorage("currentSection") String section) {
     return section != null ? section : "dashboard";
 }</code></pre>
 
-    <h6>@RequestScope</h6>
-    <p>Injects request-scoped data that is available throughout the current request lifecycle.</p>
-    <pre><code class="language-java">@Action("updatePermissions")
-void updatePermissions(@RequestScope("currentUser") User user,
-                      @FormData("permissions") List&lt;Permission&gt; permissions) {
-    permissionService.updateUserPermissions(user.getId(), permissions);
+    <h6>@SharedValue</h6>
+    <p>Injects cached values from methods annotated with <code>@SharedValue</code>. This enables efficient data sharing 
+        between controller methods within the same request, avoiding redundant database queries or expensive computations.</p>
+    <p><strong>Pattern:</strong> A method with <code>@SharedValue("key")</code> caches its return value. Other methods 
+        can inject this cached value using <code>@SharedValue("key")</code> as a parameter annotation.</p>
+    <pre><code class="language-java">// ProductPage.java
+@Page("/product/{productId}.html")
+class ProductPage {
+    
+    // This method caches the loaded product
+    @SharedValue("product")
+    Product loadProduct(@QueryParameter("productId") String productId) {
+        return database.loadProduct(productId); // Only queried once
+    }
+    
+    // This method reuses the cached product
+    @ModelData("product")
+    Product getProduct(@SharedValue("product") Product product) {
+        return product; // No database query
+    }
+    
+    // This method also reuses the cached product
+    @PageTitle
+    String getTitle(@SharedValue("product") Product product) {
+        return product.getName(); // No database query
+    }
+    
+    // Actions can access shared values too
+    @Action("addToCart")
+    void addToCart(@SharedValue("product") Product product,
+                  @UserId String userId) {
+        cartService.addProduct(userId, product.getId());
+    }
 }</code></pre>
+    <p>See <a href="#" xis:page="MethodAnnotations">Method Annotations</a> for details on the <code>@SharedValue</code> 
+        method annotation.</p>
 
     <h6>@ClientId</h6>
     <p>Injects the anonymous client identifier used to associate actions with a specific browser session. Perfect for
@@ -251,39 +280,5 @@ class UserEditPage {
         }
     }
 }</code></pre>
-
-    <h6>@RequestScope</h6>
-    <p>Injects request-scoped data that is available throughout the current request lifecycle. This is particularly
-        useful when you need to pass data between different methods during the same request processing. The output of
-        one method becomes available as input to subsequent methods within the same request cycle.</p>
-    <p><strong>Note:</strong> Using <code>@RequestScope</code> only makes sense if a value with the given key is
-        actually provided, typically by a <code>@ModelData</code> method. Otherwise, the injected value will be <code>null</code>.
-        See example below.</p>
-    <pre><code class="language-java">@Page("/user-details.html")
-        class UserDetailsPage {
-            // This method provides the value for @RequestScope("user")
-            @ModelData("user")
-            User loadUser() {
-                return userService.getCurrentUser();
-            }
-
-            // This method can now inject the user from request scope
-            @ModelData("permissions")
-            List&lt;Permission&gt; loadPermissions(@RequestScope("user") User user) {
-                return permissionService.getPermissionsForUser(user.getId());
-            }
-
-            // If no @ModelData("user") method exists, @RequestScope("user") would be null:
-            @Action("doSomething")
-            void doSomething(@RequestScope("user") User user) {
-                if (user == null) {
-                    // No value was provided for this key in the request scope
-                }
-            }
-        }</code></pre>
-    <p>XIS automatically makes the return values of @ModelData methods available in the request scope using the same
-        key. You can then inject this data into other methods using @RequestScope. This creates a clean data flow where
-        expensive operations (like database queries) only happen once per request, and the results are shared across all
-        methods that need them.</p>
 
 </xis:template>

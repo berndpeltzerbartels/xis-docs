@@ -5,17 +5,17 @@ import one.xis.GlobalVariable;
 import one.xis.Widget;
 
 @Widget
-@Navigation(title = "Widget Details", nextItem = Lifecycle.class)
-class WidgetsDetails {
+@Navigation(title = "Distributed Applications", nextItem = MicroFrontendArchitecture.class)
+public class DistributedApplications {
 
     @GlobalVariable("title")
     String title() {
-        return "Widget Details";
+        return "Distributed Applications";
     }
 
     @GlobalVariable("headline1")
     String headline1() {
-        return "Widget Details";
+        return "Distributed Applications";
     }
 
     @GlobalVariable("headline2")

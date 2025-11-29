@@ -1,13 +1,13 @@
 package docs.content.security;
 
 import docs.Navigation;
-import docs.content.MicroFrontendArchitecture;
+import docs.content.DistributedApplications;
 import docs.content.security.RolesAnnotation;
 import one.xis.GlobalVariable;
 import one.xis.context.XISComponent;
 
 @XISComponent
-@Navigation(title = "Security", firstSubItem = RolesAnnotation.class, nextItem = MicroFrontendArchitecture.class)
+@Navigation(title = "Security", firstSubItem = RolesAnnotation.class, nextItem = DistributedApplications.class)
 public class Security {
 
     @GlobalVariable("title")
