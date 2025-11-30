@@ -186,6 +186,29 @@ class ProductPage {
     <p>See <a href="#" xis:page="MethodAnnotations">Method Annotations</a> for details on the <code>@SharedValue</code> 
         method annotation.</p>
 
+    <h6>@MethodParameter</h6>
+    <p>Injects request-scoped data that is available throughout the current request lifecycle. XIS automatically 
+        makes return values of <code>@ModelData</code> methods available in the request scope, allowing other 
+        methods to access this data without recomputing it.</p>
+    <pre><code class="language-java">@ModelData("user")
+User loadUser() {
+    return userService.getCurrentUser(); // Computed once
+}
+
+@ModelData("permissions")
+List&lt;Permission&gt; loadPermissions(@MethodParameter("user") User user) {
+    // User data injected from request scope
+    return permissionService.getPermissionsForUser(user.getId());
+}
+
+@Action("updateProfile")
+void updateProfile(@FormData("profile") UserProfile profile,
+                  @MethodParameter("user") User currentUser) {
+    if (currentUser.getId().equals(profile.getUserId())) {
+        userService.updateProfile(profile);
+    }
+}</code></pre>
+
     <h6>@ClientId</h6>
     <p>Injects the anonymous client identifier used to associate actions with a specific browser session. Perfect for
         shopping baskets of non-logged-in users.</p>
@@ -324,9 +347,9 @@ class ProductEditPage {
     
     @Action("assignCategories")
     void assignCategories(@PathVariable("productId") String productId,
-                    @ActionParameter("categories") @AllElementsMandatory List&lt;String&gt; categories,
+                    @ActionParameter("categories") @AllElementsMandatory List<String> categories,
                     @UserId String currentUserId,
-                    @RequestScope("currentUser") User currentUser) {
+                    @MethodParameter("currentUser") User currentUser) {
         
         if (currentUser.hasRole("ADMIN")) {
             productService.assignCategories(productId, categories);
