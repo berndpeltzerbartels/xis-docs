@@ -1,4 +1,80 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
+    <p>Action methods can control navigation by returning different types. The return value determines what happens 
+        after the action completes.</p>
 
+    <h5>Stay on Current Page (void)</h5>
+    <p>When an action returns <code>void</code>, the current page or widget is refreshed with updated data:</p>
+    <xis:raw>
+        <pre><code>@Action
+void toggleFavorite() {
+    item.favorite = !item.favorite;
+    itemService.update(item);
+    // Page stays the same, UI refreshes with new data
+}</code></pre>
+    </xis:raw>
+
+    <h5>Navigate to Another Page</h5>
+    <p>Return a <code>Class&lt;?&gt;</code> to navigate to another page after the action completes:</p>
+    <xis:raw>
+        <pre><code>@Action
+Class&lt;?&gt; saveAndContinue() {
+    userService.save(user);
+    return DashboardPage.class;
+}</code></pre>
+    </xis:raw>
+
+    <h5>Navigate to Another Widget</h5>
+    <p>Return a <code>WidgetResponse</code> to load a different widget in the same container:</p>
+    <xis:raw>
+        <pre><code>@Action
+WidgetResponse showDetails(@ActionParameter("productId") String productId) {
+    this.selectedProductId = productId;
+    return new WidgetResponse(ProductDetailWidget.class);
+}</code></pre>
+    </xis:raw>
+
+    <h5>Conditional Navigation</h5>
+    <p>Use conditional logic to determine the navigation target:</p>
+    <xis:raw>
+        <pre><code>@Action
+Class&lt;?&gt; submitForm() {
+    ValidationResult result = validator.validate(formData);
+    if (result.isValid()) {
+        formService.save(formData);
+        return SuccessPage.class;
+    } else {
+        this.errors = result.getErrors();
+        return null; // Stay on current page to show errors
+    }
+}</code></pre>
+    </xis:raw>
+
+    <h5>Page Response with URL Parameters</h5>
+    <p>Navigate to a page with specific URL parameters using <code>PageResponse</code>:</p>
+    <xis:raw>
+        <pre><code>@Action
+PageResponse viewUserProfile(@ActionParameter("userId") String userId) {
+    return new PageResponse(UserProfilePage.class)
+        .withPathVariable("id", userId)
+        .withQueryParameter("tab", "activity");
+}</code></pre>
+        <p>This navigates to: <code>/user/123.html?tab=activity</code></p>
+    </xis:raw>
+
+    <h5>Widget Response with Parameters</h5>
+    <p>Load a widget with parameters using <code>WidgetResponse</code>:</p>
+    <xis:raw>
+        <pre><code>@Action
+WidgetResponse filterProducts(@ActionParameter("category") String category) {
+    return new WidgetResponse(ProductListWidget.class)
+        .withParameter("categoryId", category)
+        .withParameter("sortBy", "price");
+}</code></pre>
+    </xis:raw>
+
+    <p><strong>Summary:</strong> The return type of your <code>@Action</code> method determines the navigation 
+        behavior. Return <code>void</code> or <code>null</code> to stay on the current page, return a 
+        <code>Class&lt;?&gt;</code> to navigate to another page, or return a <code>WidgetResponse</code> to load 
+        a different widget.</p>
 </xis:template>

@@ -2,7 +2,6 @@ package docs.content.security;
 
 import docs.Navigation;
 import docs.content.DistributedApplications;
-import docs.content.security.RolesAnnotation;
 import one.xis.ModelData;
 import one.xis.context.XISComponent;
 

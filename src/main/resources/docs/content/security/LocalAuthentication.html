@@ -1,4 +1,142 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
 
+    <p>
+        The <code>xis-authentication</code> module enables local authentication with self-managed tokens.
+        Ideal for applications with their own user management without external identity providers.
+    </p>
+
+    <h4>Gradle Dependency</h4>
+    <pre><code>dependencies {
+    implementation 'one.xis:xis-authentication'
+}</code></pre>
+
+    <h4>How It Works</h4>
+    <p>
+        With <code>xis-authentication</code>, JWT tokens are created and managed locally in your application:
+    </p>
+
+    <ul>
+        <li>Tokens are generated within the application (not by an external IDP)</li>
+        <li>Custom login form can replace the default login page</li>
+        <li>Token validation happens locally</li>
+        <li>Users and roles are managed in your database</li>
+    </ul>
+
+    <h4>Creating Tokens (Login)</h4>
+    <p>
+        After successfully verifying username/password, create a token:
+    </p>
+
+    <pre><code>@Page("/login.html")
+public class LoginPage {
+    
+    private final AuthenticationService authenticationService;
+    private final UserService userService;
+    
+    @Action
+    @FormData("loginForm")
+    PageResponse login(LoginFormDto dto) {
+        // Load user from your database
+        User user = userService.findByUsername(dto.getUsername());
+        
+        if (user == null || !passwordMatches(dto.getPassword(), user)) {
+            return new PageResponse(LoginPage.class); // Show error
+        }
+        
+        // Create token with roles
+        authenticationService.createToken(
+            user.getId(),
+            user.getRoles() // ["ADMIN", "USER"]
+        );
+        
+        return new PageResponse(HomePage.class);
+    }
+}</code></pre>
+
+    <h4>Custom Login Form</h4>
+    <p>
+        XIS provides a default login page that you can replace with your own.
+        Simply implement a controller with <code>@Page("/login.html")</code>:
+    </p>
+
+    <pre><code>@Page("/login.html")
+public class CustomLoginPage {
+    
+    @ModelData
+    LoginFormDto loginForm() {
+        return new LoginFormDto();
+    }
+    
+    @Action
+    @FormData("loginForm")
+    PageResponse login(LoginFormDto dto) {
+        // Your login logic
+    }
+}</code></pre>
+
+    <p>HTML template:</p>
+
+    <pre><code>&lt;form xis:action="login"&gt;
+    &lt;input type="text" name="loginForm.username" placeholder="Username"/&gt;
+    &lt;input type="password" name="loginForm.password" placeholder="Password"/&gt;
+    &lt;button type="submit"&gt;Sign In&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+
+    <h4>Retrieving Current User</h4>
+    <p>
+        In protected controllers, you can access the authenticated user:
+    </p>
+
+    <pre><code>@Page("/profile.html")
+@Roles("USER")
+public class ProfilePage {
+    
+    @ModelData
+    String currentUserId(@UserId String userId) {
+        return userId;
+    }
+    
+    @ModelData
+    UserInfo userInfo(@UserInfo UserInfo info) {
+        // info.getRoles() - list of roles
+        // info.getUserId() - user ID
+        return info;
+    }
+}</code></pre>
+
+    <h4>Logout</h4>
+    <pre><code>@Action
+PageResponse logout() {
+    authenticationService.logout();
+    return new PageResponse(LoginPage.class);
+}</code></pre>
+
+    <h4>Usage with @Roles</h4>
+    <p>
+        Once <code>xis-authentication</code> is activated, <code>@Roles</code> works automatically:
+    </p>
+
+    <ul>
+        <li>Missing token: Redirect to <code>/login.html</code></li>
+        <li>Missing role: Redirect to <code>/login.html</code></li>
+        <li>Token validation happens automatically on every request</li>
+    </ul>
+
+    <h4>Use Case</h4>
+    <p>
+        Use <code>xis-authentication</code> when you:
+    </p>
+
+    <ul>
+        <li>Have your own user management</li>
+        <li>Don't want external IDP infrastructure (Keycloak, etc.)</li>
+        <li>Need full control over login flow and token creation</li>
+        <li>Develop simple applications with moderate security requirements</li>
+    </ul>
+
+    <div class="info-box">
+        <strong>Note:</strong> For scenarios with multiple applications or SSO, see chapter <em>XIS as IDP</em>.
+    </div>
+
 </xis:template>

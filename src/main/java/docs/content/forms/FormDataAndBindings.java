@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Widget;
 
 @Widget
-@Navigation(title = "Form Data and Bindings", nextItem = Selectboxes.class)
+@Navigation(title = "Form Data and Bindings", nextItem = FormActions.class)
 class FormDataAndBindings {
 
     @ModelData

@@ -87,15 +87,15 @@ class ProductListWidget {
 class ShoppingCartWidget {
     
     @Action("updateQuantity")
-    void updateQuantity(@WidgetParameter("userId") String userId,  // From widget load
-                       @ActionParameter("itemId") String itemId,    // From button click
-                       @ActionParameter("quantity") int quantity) { // From button click
-        cartService.updateQuantity(userId, itemId, quantity);
+    void updateQuantity(@WidgetParameter("cartId") String cartId,    // From widget load
+                       @ActionParameter("itemId") String itemId,     // From button click
+                       @ActionParameter("quantity") int quantity) {  // From button click
+        cartService.updateQuantity(cartId, itemId, quantity);
     }
 }</code></pre>
-    <pre><code class="language-html">&lt;!-- Widget loaded with userId parameter --&gt;
+    <pre><code class="language-html">&lt;!-- Widget loaded with cartId parameter --&gt;
 &lt;a xis:widget="ShoppingCartWidget"&gt;
-    &lt;xis:parameter name="userId" value="${currentUser.id}"/&gt;
+    &lt;xis:parameter name="cartId" value="${cart.id}"/&gt;
     View Cart
 &lt;/a&gt;
 

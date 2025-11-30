@@ -1,4 +1,163 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
+    <p>XIS automatically binds form data to Java objects using the <code>@FormData</code> annotation. This eliminates 
+        manual request parameter parsing and type conversion.</p>
 
+    <h5>Basic Form Binding</h5>
+    <p>Declare a form object with <code>@FormData</code> and XIS will automatically populate it from form submissions:</p>
+    <xis:raw>
+        <pre><code>@Widget
+class UserFormWidget {
+    
+    @FormData("user")
+    UserForm userForm;
+    
+    @Action
+    void saveUser() {
+        userService.save(userForm);
+        // userForm is automatically populated from form fields
+    }
+}</code></pre>
+        <p><strong>Template:</strong></p>
+        <pre><code>&lt;form xis:action="saveUser"&gt;
+    &lt;input type="text" name="user.firstName" value="${user.firstName}"/&gt;
+    &lt;input type="text" name="user.lastName" value="${user.lastName}"/&gt;
+    &lt;input type="email" name="user.email" value="${user.email}"/&gt;
+    &lt;button type="submit"&gt;Save&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+    </xis:raw>
+
+    <h5>Form Object Structure</h5>
+    <p>The form object is a simple POJO with getters and setters:</p>
+    <xis:raw>
+        <pre><code>public class UserForm {
+    private String firstName;
+    private String lastName;
+    private String email;
+    
+    // Getters and setters
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+    // ...
+}</code></pre>
+    </xis:raw>
+
+    <h5>Nested Objects</h5>
+    <p>Form binding supports nested object structures using dot notation:</p>
+    <xis:raw>
+        <pre><code>public class OrderForm {
+    private CustomerInfo customer;
+    private AddressInfo shippingAddress;
+    // ...
+}
+
+public class CustomerInfo {
+    private String name;
+    private String email;
+    // ...
+}</code></pre>
+        <p><strong>Template:</strong></p>
+        <pre><code>&lt;input type="text" name="order.customer.name" value="${order.customer.name}"/&gt;
+&lt;input type="email" name="order.customer.email" value="${order.customer.email}"/&gt;
+&lt;input type="text" name="order.shippingAddress.street" value="${order.shippingAddress.street}"/&gt;</code></pre>
+    </xis:raw>
+
+    <h5>Lists and Arrays</h5>
+    <p>Bind multiple values using indexed notation:</p>
+    <xis:raw>
+        <pre><code>public class CartForm {
+    private List&lt;CartItem&gt; items;
+    // ...
+}
+
+public class CartItem {
+    private String productId;
+    private int quantity;
+    // ...
+}</code></pre>
+        <p><strong>Template:</strong></p>
+        <pre><code>&lt;div xis:foreach="item:${cart.items}" xis:foreach-index="i"&gt;
+    &lt;input type="hidden" name="cart.items[${i}].productId" value="${item.productId}"/&gt;
+    &lt;input type="number" name="cart.items[${i}].quantity" value="${item.quantity}"/&gt;
+&lt;/div&gt;</code></pre>
+    </xis:raw>
+
+    <h5>Checkboxes</h5>
+    <p>Checkboxes bind to boolean fields:</p>
+    <xis:raw>
+        <pre><code>&lt;input type="checkbox" name="user.acceptTerms" xis:checked="${user.acceptTerms}"/&gt;
+&lt;input type="checkbox" name="user.newsletter" xis:checked="${user.newsletter}"/&gt;</code></pre>
+    </xis:raw>
+
+    <h5>Radio Buttons</h5>
+    <p>Radio buttons bind to string or enum fields:</p>
+    <xis:raw>
+        <pre><code>&lt;input type="radio" name="user.gender" value="MALE" xis:checked="${user.gender == 'MALE'}"/&gt; Male
+&lt;input type="radio" name="user.gender" value="FEMALE" xis:checked="${user.gender == 'FEMALE'}"/&gt; Female</code></pre>
+    </xis:raw>
+
+    <h5>Select Boxes</h5>
+    <p>Select boxes bind to string, enum, or object fields. Use <code>@ModelData</code> to provide the options:</p>
+    <xis:raw>
+        <pre><code>@Widget
+class ProductFormWidget {
+    
+    @FormData("product")
+    ProductForm productForm;
+    
+    @ModelData("categories")
+    List&lt;Category&gt; getCategories() {
+        return categoryService.findAll();
+    }
+    
+    @Action
+    void saveProduct() {
+        productService.save(productForm);
+    }
+}</code></pre>
+        <p><strong>Template:</strong></p>
+        <pre><code>&lt;select name="product.categoryId"&gt;
+    &lt;option value=""&gt;Select category...&lt;/option&gt;
+    &lt;option xis:foreach="cat:${categories}" 
+            value="${cat.id}" 
+            xis:selected="${cat.id == product.categoryId}"&gt;
+        ${cat.name}
+    &lt;/option&gt;
+&lt;/select&gt;</code></pre>
+    </xis:raw>
+
+    <h5>Type Conversion</h5>
+    <p>XIS automatically converts form values to the target field type:</p>
+    <xis:raw>
+        <ul>
+            <li><strong>Primitives:</strong> int, long, double, boolean, etc.</li>
+            <li><strong>Strings:</strong> Direct binding</li>
+            <li><strong>Enums:</strong> By name (case-insensitive)</li>
+            <li><strong>Dates:</strong> LocalDate, LocalDateTime, Date (with formatters)</li>
+            <li><strong>Numbers:</strong> Integer, Long, Double, BigDecimal</li>
+        </ul>
+        <p>For custom conversions, use the <code>@UseFormatter</code> annotation (see Formatters chapter).</p>
+    </xis:raw>
+
+    <h5>Initial Form Values</h5>
+    <p>Provide initial values by populating the form object in <code>@ModelData</code>:</p>
+    <xis:raw>
+        <pre><code>@FormData("user")
+UserForm userForm;
+
+@ModelData
+void loadUser(@WidgetParameter("userId") String userId) {
+    if (userId != null) {
+        User user = userService.findById(userId);
+        userForm.setFirstName(user.getFirstName());
+        userForm.setLastName(user.getLastName());
+        userForm.setEmail(user.getEmail());
+    }
+}</code></pre>
+    </xis:raw>
+
+    <div class="warning">
+        <strong>Security Note:</strong> Always validate form data before processing. Form binding does not perform 
+        validation - use <code>@Validated</code> or manual validation in your action methods. See the Validation chapter.
+    </div>
 </xis:template>

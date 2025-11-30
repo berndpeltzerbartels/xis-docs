@@ -1,12 +1,12 @@
-package docs.content.forms;
+package docs.content;
 
 import docs.Navigation;
 import one.xis.ModelData;
 import one.xis.Widget;
 
 @Widget
-@Navigation(title = "Formatters")
-class Formatters {
+@Navigation(title = "Formatters", nextItem = XisTheme.class)
+public class Formatters {
 
     @ModelData
     String chapterHeadline() {

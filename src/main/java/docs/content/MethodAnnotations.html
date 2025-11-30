@@ -89,14 +89,14 @@ String getTitle(@SharedValue("product") Product product) $&#8203;{
         <code>Class&lt;?&gt;</code> for navigation, or <code>void</code> to stay on the current page.
     </p>
     <pre><code>@Action("delete")
-void deleteUser(String userId) $&#8203;{
-    userService.delete(userId);
+void deleteProduct(@ActionParameter("productId") String productId) $&#8203;{
+    productService.delete(productId);
     // Returns void - stays on current page
 }
 
 @Action("viewDetails")
-Class&lt;?&gt; viewUserDetails(String userId) $&#8203;{
-    return UserDetailsPage.class; // Navigate to different page
+Class&lt;?&gt; viewProductDetails(@ActionParameter("productId") String productId) $&#8203;{
+    return ProductDetailsPage.class; // Navigate to different page
 }
 
 @Action("updateWidget")
@@ -249,20 +249,20 @@ class TabContentWidget $&#8203;{
 class AdminPanelPage $&#8203;{
     
     @ModelData
-    List&lt;User&gt; getAllUsers() $&#8203;{
-        return userService.findAll(); // Inherits class roles
+    List&lt;Product&gt; getAllProducts() $&#8203;{
+        return productService.findAll(); // Inherits class roles
     }
     
-    @Action("deleteUser")
+    @Action("deleteProduct")
     @Roles("ADMIN") // Only ADMIN can delete
-    void deleteUser(String userId) $&#8203;{
-        userService.delete(userId);
+    void deleteProduct(@ActionParameter("productId") String productId) $&#8203;{
+        productService.delete(productId);
     }
     
-    @Action("banUser")
-    @Roles($&#8203;{"ADMIN", "MODERATOR"}) // Multiple roles
-    void banUser(String userId) $&#8203;{
-        userService.ban(userId);
+    @Action("archiveProduct")
+    @Roles($&#8203;{"ADMIN", "EDITOR"}) // Multiple roles
+    void archiveProduct(@ActionParameter("productId") String productId) $&#8203;{
+        productService.archive(productId);
     }
 }</code></pre>
 
@@ -277,19 +277,19 @@ class AdminPanelPage &#123;
     
     @ModelData
     List&lt;User&gt; getAllUsers() &#123;
-        return userService.findAll(); // Inherits class-level roles
+        return productService.findAll(); // Inherits class-level roles
     }
     
-    @Action("deleteUser")
-    @Roles("ADMIN") // Method-level: only ADMIN can delete users
-    void deleteUser(String userId) &#123;
-        userService.delete(userId);
+    @Action("deleteProduct")
+    @Roles("ADMIN") // Method-level: only ADMIN can delete products
+    void deleteProduct(@ActionParameter("productId") String productId) &#123;
+        productService.delete(productId);
     }
     
-    @Action("banUser") 
-    @Roles(&#123;"ADMIN", "MODERATOR"}) // Multiple roles allowed
-    void banUser(String userId) &#123;
-        userService.ban(userId);
+    @Action("archiveProduct") 
+    @Roles(&#123;"ADMIN", "EDITOR"}) // Multiple roles allowed
+    void archiveProduct(@ActionParameter("productId") String productId) &#123;
+        productService.archive(productId);
     }
 }</xis:raw></code></pre>
 
@@ -307,14 +307,14 @@ class UserListWidget &#123;
 class UserFormWidget &#123;
     @Action("saveUser")
     @Refresh(controllerCLass = UserListWidget.class) // Refresh user list after save
-    void saveUser(@FormData("user") User user) &#123;
-        userService.save(user);
+    void saveProduct(@FormData("product") Product product) &#123;
+        productService.save(product);
     }
     
-    @Action("deleteUser")
-    @Refresh(controllerName = "userListWidget") // Alternative: refresh by name
-    void deleteUser(String userId) &#123;
-        userService.delete(userId);
+    @Action("deleteProduct")
+    @Refresh(controllerName = "productListWidget") // Alternative: refresh by name
+    void deleteProduct(@ActionParameter("productId") String productId) &#123;
+        productService.delete(productId);
     }
 }</xis:raw></code></pre>
 
@@ -386,8 +386,8 @@ void saveUser(@FormData("user") User user) &#123;
     <h6>@Action</h6>
     <p>Handles user interactions like button clicks or form submissions.</p>
     <pre><code class="language-java"><xis:raw>@Action("delete")
-void deleteUser(String userId) &#123;
-    userService.delete(userId);
+void deleteProduct(@ActionParameter("productId") String productId) &#123;
+    productService.delete(productId);
 }</xis:raw></code></pre>
 
     <h6>@GlobalVariable</h6>

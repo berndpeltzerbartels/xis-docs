@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Widget;
 
 @Widget
-@Navigation(title = "Validation", nextItem = Formatters.class)
+@Navigation(title = "Validation")
 class Validation {
 
     @ModelData

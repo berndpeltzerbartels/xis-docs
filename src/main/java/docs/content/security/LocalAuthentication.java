@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Widget;
 
 @Widget
-@Navigation(title = "Local Authentication", nextItem = ExternalIdp.class)
+@Navigation(title = "XIS Authentication", nextItem = Sso.class)
 class LocalAuthentication {
 
     @ModelData

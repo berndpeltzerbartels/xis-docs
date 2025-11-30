@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Widget;
 
 @Widget
-@Navigation(title = "Single Sign-On (SSO)")
+@Navigation(title = "XIS als IDP", nextItem = ExternalIdp.class)
 class Sso {
 
     @ModelData

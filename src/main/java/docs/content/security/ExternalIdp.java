@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Widget;
 
 @Widget
-@Navigation(title = "External Identity Provider For Authentication", nextItem = XisExternalIdp.class)
+@Navigation(title = "External IDP & SSO")
 class ExternalIdp {
 
     @ModelData

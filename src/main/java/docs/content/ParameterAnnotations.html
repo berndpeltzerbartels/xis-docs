@@ -8,20 +8,20 @@
         only available in widget controllers.</p>
 
     <h6>@QueryParameter</h6>
-    <p>Injects URL query parameters from requests like <code>page.html?userId=123&amp;tab=profile</code>.</p>
-    <pre><code class="language-java">@Page("/profile.html")
-class UserProfilePage {
+    <p>Injects URL query parameters from requests like <code>page.html?productId=123&amp;category=electronics</code>.</p>
+    <pre><code class="language-java">@Page("/product-details.html")
+class ProductDetailsPage {
     
-    @ModelData("user")
-    User getUser(@QueryParameter("userId") String userId) {
-        return userService.findById(userId);
+    @ModelData("product")
+    Product getProduct(@QueryParameter("productId") String productId) {
+        return productService.findById(productId);
     }
     
-    @Action("updateProfile")
-    void updateProfile(@QueryParameter("userId") String userId,
-                      @FormData("profile") UserProfile profile) {
-        profile.setUserId(userId);
-        userService.updateProfile(profile);
+    @Action("updateProduct")
+    void updateProduct(@QueryParameter("productId") String productId,
+                      @FormData("product") Product product) {
+        product.setId(productId);
+        productService.update(product);
     }
 }</code></pre>
 
@@ -56,10 +56,10 @@ class ProductDetailsPage {
         Select Option
         &lt;/button&gt;
 
-        &lt;a xis:action="deleteUser"&gt;
-        &lt;xis:parameter name="userId" value="${user.id}"/&gt;
+        &lt;a xis:action="deleteProduct"&gt;
+        &lt;xis:parameter name="productId" value="${product.id}"/&gt;
         &lt;xis:parameter name="confirmRequired" value="true"/&gt;
-        Delete User
+        Delete Product
         &lt;/a&gt;
     </xis:raw>
 
@@ -211,6 +211,50 @@ void updatePreferences(@ClientStorage("userPreferences") UserPreferences current
     }
 }</code></pre>
 
+    <h6>@ClientId</h6>
+    <p>Injects a unique client identifier that is stored in localStorage and persists permanently. 
+        Useful for tracking anonymous visitors without requiring user registration or authentication.</p>
+    <xis:raw>
+        <ul>
+            <li><strong>Permanent storage:</strong> Stored in localStorage, survives browser restarts</li>
+            <li><strong>Anonymous tracking:</strong> Track user preferences without forcing account creation</li>
+            <li><strong>No authentication required:</strong> Works for all visitors, logged in or not</li>
+            <li><strong>Cross-session persistent:</strong> Same client ID across multiple visits and sessions</li>
+        </ul>
+    </xis:raw>
+    <pre><code class="language-java">@Widget
+class ShoppingCartWidget {
+    
+    @Action("addToCart")
+    void addToCart(@ClientId String clientId,
+                   @ActionParameter("productId") String productId,
+                   @ActionParameter("quantity") int quantity) {
+        // Add to cart for anonymous visitor
+        cartService.addToAnonymousCart(clientId, productId, quantity);
+    }
+    
+    @ModelData("cartItems")
+    List&lt;CartItem&gt; getCartItems(@ClientId String clientId) {
+        // Retrieve cart items for this client, even if not logged in
+        return cartService.findByClientId(clientId);
+    }
+}
+
+// Use case: Track user preferences without login
+@Action("savePreference")
+void savePreference(@ClientId String clientId,
+                   @ActionParameter("theme") String theme) {
+    preferenceService.saveForClient(clientId, "theme", theme);
+}
+
+// Convert anonymous cart to user cart on login
+@Action("login")
+void login(@ClientId String clientId,
+          @FormData("credentials") LoginForm credentials) {
+    User user = authService.login(credentials);
+    cartService.transferAnonymousCart(clientId, user.getId());
+}</code></pre>
+
     <h6>@UserId</h6>
     <p>Injects the user identifier of a currently logged-in user from the active session. Only available when the <code>xis-authentication</code>
         dependency is added. See Security section for more details.</p>
@@ -222,6 +266,10 @@ void deleteAccount(@UserId String userId,
     }
 }</code></pre>
 
+    <p><strong>@ClientId vs @UserId:</strong> Use <code>@ClientId</code> for anonymous visitor tracking (shopping carts, preferences) 
+        and <code>@UserId</code> for authenticated user operations (account management, personal data). 
+        <code>@ClientId</code> is stored permanently in localStorage and survives browser restarts, while <code>@UserId</code> 
+        is session-based and requires active user authentication.</p>
 
     <h5>Validation Annotations</h5>
     <p>XIS provides validation annotations that can be applied to method parameters:</p>
@@ -259,29 +307,29 @@ void scheduleEvent(@ActionParameter("eventDate") @UseFormatter(DateTimeFormatter
 
     <h5>Parameter Combination Examples</h5>
     <p>Multiple annotations can be combined on the same parameter:</p>
-    <pre><code class="language-java">@Page("/admin/users/{userId}/edit.html")
-class UserEditPage {
+    <pre><code class="language-java">@Page("/products/{productId}/edit.html")
+class ProductEditPage {
     
-    @Action("updateUser")
-    void updateUser(@QueryParameter("userId") String userId,
-                   @FormData("user") User user,
+    @Action("updateProduct")
+    void updateProduct(@PathVariable("productId") String productId,
+                   @FormData("product") Product product,
                    @ClientStorage("editMode") String editMode,
                    @UserId String currentUserId) {
         
-        // Validate permissions
-        if (securityService.canEdit(currentUserId, userId)) {
-            userService.update(user);
+        // Validate permissions and update
+        if (securityService.canEditProduct(currentUserId, productId)) {
+            productService.update(product);
         }
     }
     
-    @Action("assignRoles")
-    void assignRoles(@QueryParameter("userId") String targetUserId,
-                    @ActionParameter("roles") @AllElementsMandatory List&lt;String&gt; roles,
-                    @UserId String adminUserId,
+    @Action("assignCategories")
+    void assignCategories(@PathVariable("productId") String productId,
+                    @ActionParameter("categories") @AllElementsMandatory List&lt;String&gt; categories,
+                    @UserId String currentUserId,
                     @RequestScope("currentUser") User currentUser) {
         
         if (currentUser.hasRole("ADMIN")) {
-            roleService.assignRoles(targetUserId, roles);
+            productService.assignCategories(productId, categories);
         }
     }
 }</code></pre>
