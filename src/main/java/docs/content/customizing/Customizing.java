@@ -1,14 +1,14 @@
-package docs.content.security;
+package docs.content.customizing;
 
 import docs.Navigation;
-import docs.content.customizing.Customizing;
+import docs.content.DistributedApplications;
 import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.context.XISComponent;
 
 @XISComponent
-@Navigation(title = "Security", firstSubItem = RolesAnnotation.class, nextItem = Customizing.class)
-public class Security {
+@Navigation(title = "Customizing", firstSubItem = SelectableHighlighting.class, nextItem = DistributedApplications.class)
+public class Customizing {
 
     @Title
     @ModelData
