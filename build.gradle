@@ -27,7 +27,6 @@ dependencyManagement {
 dependencies {
     implementation('one.xis:xis-boot')
     implementation('one.xis:xis-authentication')
-    implementation('one.xis:xis-theme')
     implementation('one.xis:xis-util')
     implementation('one.xis:xis-apt:0.1.20-SNAPSHOT')
     implementation('one.xis:xis-plugin:0.1.20-SNAPSHOT')

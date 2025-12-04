@@ -6,7 +6,7 @@ import one.xis.Title;
 import one.xis.Widget;
 
 @Widget
-@Navigation(title = "XIS als IDP", nextItem = ExternalIdp.class)
+@Navigation(title = "XIS as IDP", nextItem = ExternalIdp.class)
 class Sso {
 
     @Title
