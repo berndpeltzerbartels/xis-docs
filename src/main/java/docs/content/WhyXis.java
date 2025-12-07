@@ -5,8 +5,8 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
-@Navigation(title = "Why Xis?", nextItem = HelloWorld.class)
+@Widget(url = "/whyxis.html", containerId = "main")
+@Navigation(title = "Why XIS?", nextItem = HelloWorld.class)
 class WhyXis {
 
     @Title

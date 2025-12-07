@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
+@Widget(url = "/widgetforms.html", containerId = "main")
 @Navigation(title = "Forms in Widgets")
 public class WidgetForms {
 

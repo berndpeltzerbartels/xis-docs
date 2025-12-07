@@ -6,7 +6,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
+@Widget(url = "/parameterannotations.html", containerId = "main")
 @Navigation(title = "Parameter Annotations", nextItem = WidgetsDetails.class)
 public class ParameterAnnotations {
 

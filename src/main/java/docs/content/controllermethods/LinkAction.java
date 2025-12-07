@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
+@Widget(url = "/linkaction.html", containerId = "main")
 @Navigation(title = "Link Action", nextItem = ActionsForNavigation.class)
 class LinkAction {
 

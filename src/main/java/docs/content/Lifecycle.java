@@ -6,7 +6,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
+@Widget(url = "/lifecycle.html", containerId = "main")
 @Navigation(title = "Request Lifecycle", nextItem = ControllerMethods.class)
 public class Lifecycle {
 

@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
+@Widget(url = "/formactions.html", containerId = "main")
 @Navigation(title = "Form Actions", nextItem = Validation.class)
 class FormActions {
 

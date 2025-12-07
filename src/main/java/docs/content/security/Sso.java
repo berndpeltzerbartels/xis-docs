@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
+@Widget(url = "/sso.html", containerId = "main")
 @Navigation(title = "XIS as IDP", nextItem = ExternalIdp.class)
 class Sso {
 

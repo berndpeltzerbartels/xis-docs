@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
+@Widget(url = "/widgets.html", containerId = "main")
 @Navigation(title = "Widgets")
 class Widgets {
 

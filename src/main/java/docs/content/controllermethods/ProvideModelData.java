@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
+@Widget(url = "/providemodeldata.html", containerId = "main")
 @Navigation(title = "Provide Model Data", nextItem = LinkAction.class)
 class ProvideModelData {
 

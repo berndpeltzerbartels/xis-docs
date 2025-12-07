@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
+@Widget(url = "/widgetupdateevents.html", containerId = "main")
 @Navigation(title = "Update Events", nextItem = WidgetForms.class)
 public class WidgetUpdateEvents {
 

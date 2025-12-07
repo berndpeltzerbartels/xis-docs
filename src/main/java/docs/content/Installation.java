@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
+@Widget(url = "/installation.html", containerId = "main")
 @Navigation(title = "Installation", nextItem = GradlePlugin.class)
 class Installation {
 

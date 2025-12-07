@@ -27,12 +27,14 @@
     <div class="sidebar">
         <div class="contenttable">
             <h5>Table of Content</h5>
-            <ul>
+            <ul xis:selection-group>
                 <li xis:repeat="item:naviItems">
-                    <strong><a xis:target-container="main" xis:widget="${item.widgetId}">${item.label}</a></strong>
+                    <strong><a xis:selection-class="highlight" xis:target-container="main"
+                               xis:widget="${item.widgetId}">${item.label}</a></strong>
                     <ul>
                         <li xis:repeat="subItem:item.subItems">
-                            <a xis:target-container="main" xis:widget="${subItem.widgetId}">${subItem.label}</a>
+                            <a xis:selection-class="highlight" xis:target-container="main"
+                               xis:widget="${subItem.widgetId}">${subItem.label}</a>
                         </li>
                     </ul>
                 </li>

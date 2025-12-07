@@ -1,13 +1,13 @@
-package docs.content;
+package docs.content.xisboot;
 
 import docs.Navigation;
 import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget(url = "/microfrontendarchitecture.html", containerId = "main")
-@Navigation(title = "Micro-Frontend Architecture", nextItem = Reference.class)
-public class MicroFrontendArchitecture {
+@Widget(url = "/mainclass.html", containerId = "main")
+@Navigation(title = "Main Class", nextItem = ContextAnnotations.class)
+public class MainClass {
 
     @Title
     @ModelData

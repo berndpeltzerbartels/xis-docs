@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
+@Widget(url = "/localauthentication.html", containerId = "main")
 @Navigation(title = "XIS Authentication", nextItem = Sso.class)
 class LocalAuthentication {
 

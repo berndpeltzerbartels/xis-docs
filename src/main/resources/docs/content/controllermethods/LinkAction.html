@@ -1,6 +1,6 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
-    <p>Actions can be triggered by links using the <code>xis:action</code> attribute. This allows you to execute 
+    <p>Actions can be triggered by links using the <code>xis:action</code> attribute. This allows you to execute
         controller methods when users click on links, without requiring buttons or forms.</p>
 
     <h5>Basic Link Action</h5>
@@ -49,7 +49,7 @@ void selectCategory(@ActionParameter("categoryId") String categoryId) {
         <pre><code>&lt;a xis:action="archive" class="btn btn-secondary"&gt;Archive&lt;/a&gt;</code></pre>
     </xis:raw>
 
-    <p><strong>Note:</strong> Use <code>xis:action</code> on links for non-critical actions. For important state 
-        changes (like deletions or payments), prefer buttons within forms for better accessibility and to prevent 
+    <p><strong>Note:</strong> Use <code>xis:action</code> on links for non-critical actions. For important state
+        changes (like deletions or payments), prefer buttons within forms for better accessibility and to prevent
         accidental triggers.</p>
 </xis:template>

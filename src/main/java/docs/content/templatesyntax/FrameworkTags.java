@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
+@Widget(url = "/frameworktags.html", containerId = "main")
 @Navigation(title = "Framework Tags", nextItem = FrameworkAttributes.class)
 class FrameworkTags {
 

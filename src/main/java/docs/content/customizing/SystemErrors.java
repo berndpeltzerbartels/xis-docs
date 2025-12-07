@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
+@Widget(url = "/systemerrors.html", containerId = "main")
 @Navigation(title = "System Error Handling")
 public class SystemErrors {
 

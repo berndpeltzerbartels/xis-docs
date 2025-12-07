@@ -6,7 +6,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
+@Widget(url = "/xistheme.html", containerId = "main")
 @Navigation(title = "XIS-Theme", nextItem = Security.class)
 public class XisTheme {
 

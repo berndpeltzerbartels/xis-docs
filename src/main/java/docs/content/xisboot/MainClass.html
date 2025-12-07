@@ -1,0 +1,64 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>${chapterHeadline}</h3>
+    
+    <p>The main class is the entry point of your XIS Boot application. It bootstraps the XIS runtime and starts 
+        the embedded web server.</p>
+    
+    <h5>Basic Main Class</h5>
+    <p>Create a simple main class that starts XIS Boot:</p>
+    
+    <pre><code class="language-java">package com.example.myapp;
+
+import one.xis.boot.XisApplication;
+
+public class Application {
+    public static void main(String[] args) {
+        XisApplication.run(Application.class, args);
+    }
+}</code></pre>
+    
+    <p>The <code>XisApplication.run()</code> method:</p>
+    <ul>
+        <li>Scans for <code>@Page</code> and <code>@Widget</code> annotated classes in the same package</li>
+        <li>Registers all controllers and components</li>
+        <li>Starts the embedded web server (default port 8080)</li>
+        <li>Processes command-line arguments (e.g., <code>--port=9090</code>)</li>
+    </ul>
+    
+    <h5>Configuration</h5>
+    <p>You can customize the application startup:</p>
+    
+    <pre><code class="language-java">public class Application {
+    public static void main(String[] args) {
+        XisApplication.builder()
+            .port(9090)
+            .contextPath("/myapp")
+            .scanPackage("com.example")
+            .build()
+            .run(args);
+    }
+}</code></pre>
+    
+    <h5>Application Structure</h5>
+    <p>Organize your application with a clear package structure:</p>
+    
+    <pre><code>com.example.myapp/
+├── Application.java         # Main class
+├── pages/
+│   ├── HomePage.java
+│   └── HomePage.html
+└── widgets/
+    ├── HeaderWidget.java
+    └── HeaderWidget.html</code></pre>
+    
+    <h5>Command Line Arguments</h5>
+    <p>XIS Boot supports common command-line arguments:</p>
+    <ul>
+        <li><code>--port=8080</code> - Server port (default: 8080)</li>
+        <li><code>--context-path=/app</code> - Application context path</li>
+        <li><code>--dev-mode=true</code> - Enable development mode with hot reload</li>
+    </ul>
+    
+    <p>Example:</p>
+    <pre><code class="language-bash">java -jar myapp.jar --port=9090 --dev-mode=true</code></pre>
+</xis:template>

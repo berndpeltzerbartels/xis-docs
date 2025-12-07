@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
+@Widget(url = "/formatters.html", containerId = "main")
 @Navigation(title = "Formatters", nextItem = XisTheme.class)
 public class Formatters {
 

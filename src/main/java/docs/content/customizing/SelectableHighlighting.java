@@ -5,7 +5,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget
+@Widget(url = "/selectablehighlighting.html", containerId = "main")
 @Navigation(title = "Selectable & Highlighting", nextItem = SystemErrors.class)
 public class SelectableHighlighting {
 

@@ -46,4 +46,33 @@ public class HelloPage {
         Unlike widgets, pages are directly accessible via URL and represent complete, standalone views. 
         Pages can embed widgets to compose complex interfaces from reusable components.
     </p>
+    
+    <h5>Deep Linking Support</h5>
+    <p>
+        XIS pages are inherently deep-link capable - each page is accessible via its unique URL path specified 
+        in the <code>@Page</code> annotation. Additionally, widgets embedded in pages can also participate in 
+        deep linking by specifying their own <code>url</code>, <code>title</code>, and <code>containerId</code> 
+        in the <code>@Widget</code> annotation.
+    </p>
+    
+    <p>
+        This enables powerful navigation scenarios where users can bookmark specific widget states within a page, 
+        and the application will correctly restore both the page and the widget to the expected state when the 
+        URL is accessed.
+    </p>
+    
+    <pre><code>// Page provides the foundation
+@Page("/dashboard")
+class DashboardPage { }
+
+// Widget adds deep-linkable state
+@Widget(id = "Statistics", 
+       url = "/dashboard/stats/{period}",
+       title = "Statistics")
+class StatisticsWidget { }</code></pre>
+    
+    <p>
+        For detailed information on widget deep linking, including <code>containerId</code> for container control, 
+        see the <a href="#" xis:page="WidgetsDetails">Widget Details</a> section.
+    </p>
 </xis:template>
