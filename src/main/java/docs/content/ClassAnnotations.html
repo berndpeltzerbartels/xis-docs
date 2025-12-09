@@ -28,7 +28,7 @@ class CustomWidget $&#8203;{ /* ... */ }</code></pre>
     <p>
         Designates a page as the default welcome page (landing page) of your application. Exactly one page in 
         your application must be annotated with <code>@WelcomePage</code>. This page is displayed when users 
-        access the root URL or when no other URL mapping matches.
+        access the root URL (<code>/</code>) or when no other URL mapping matches.
     </p>
     <p>
         <strong>Important:</strong> The framework will throw an <code>IllegalStateException</code> if zero or 
@@ -49,6 +49,52 @@ class HomePage $&#8203;{
         <li>Landing page / home page of your application</li>
         <li>Dashboard that users see after login</li>
         <li>Default page when accessing the application root URL</li>
+    </ul>
+    
+    <h6>Special Case: Pages with Path Variables</h6>
+    <p>
+        In the rare scenario where your welcome page URL contains path variables (e.g., <code>@Page("/category/$&#8203;{name}.html")</code>), 
+        you cannot use the default <code>@WelcomePage</code> annotation alone. The framework needs to know which 
+        concrete values to use for those path variables when a user accesses <code>/</code>.
+    </p>
+    <p>
+        <strong>Example scenario:</strong> You want to display a category page at <code>/</code>, but your page 
+        is defined with a path variable to also handle URLs like <code>/category/electronics.html</code> and 
+        <code>/category/books.html</code>.
+    </p>
+    <p>
+        For this special case, use the <code>value</code> parameter of <code>@WelcomePage</code> to specify 
+        a concrete URL that matches your page pattern:
+    </p>
+    <pre><code>@WelcomePage("/category/electronics.html")  // Concrete URL with actual values
+@Page("/category/$&#8203;{name}.html")              // Pattern with path variable
+class CategoryPage $&#8203;{
+    @ModelData
+    String getCategoryName(@PathVariable("name") String name) $&#8203;{
+        return name; // Will be "electronics" when accessing /
+    }
+}</code></pre>
+    <p>
+        <strong>Validation:</strong> The framework validates at startup:
+    </p>
+    <ul>
+        <li>If the page has path variables, the concrete URL in <code>@WelcomePage(value)</code> must match the pattern in <code>@Page</code></li>
+        <li>If the page has <strong>no</strong> path variables, you must <strong>not</strong> provide a <code>value</code> in <code>@WelcomePage</code></li>
+        <li>In both cases, an <code>IllegalStateException</code> is thrown if the validation fails</li>
+    </ul>
+    <p>
+        This strict validation prevents configuration errors at deployment time and ensures the framework can 
+        correctly handle all URL mappings.
+    </p>
+    <p>
+        <strong>Important notes:</strong>
+    </p>
+    <ul>
+        <li>The <code>value</code> parameter is <strong>only needed</strong> when your page URL contains path variables</li>
+        <li>For regular pages without path variables, use <code>@WelcomePage</code> without the <code>value</code> parameter</li>
+        <li>The concrete URL must be a valid instance of your page's URL pattern</li>
+        <li>Users can still access other paths like <code>/category/books.html</code> directly - the welcome page 
+            value only affects what happens when accessing <code>/</code></li>
     </ul>
 
     <h5>@RefreshOnUpdateEvents</h5>

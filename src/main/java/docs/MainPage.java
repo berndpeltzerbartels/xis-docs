@@ -6,11 +6,13 @@ import docs.navi.NaviService;
 import lombok.RequiredArgsConstructor;
 import one.xis.ModelData;
 import one.xis.Page;
+import one.xis.WelcomePage;
 
 import java.util.List;
 
 
 @Page("/{key}.html")
+@WelcomePage("/index.html")
 @RequiredArgsConstructor
 class MainPage {
     private final NaviService naviService;
