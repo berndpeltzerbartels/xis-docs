@@ -1,6 +1,5 @@
 package docs.navi;
 
-import docs.Navigation;
 import lombok.Getter;
 import one.xis.context.XISComponent;
 import one.xis.context.XISInit;
@@ -90,41 +89,41 @@ class NaviServiceImpl implements NaviService {
         if (key == null || key.isEmpty()) {
             return null;
         }
-        
+
         String lowerKey = key.toLowerCase();
-        
+
         // Search through all content widgets (case-insensitive)
         for (Object widget : contentWidgets) {
             Class<?> clazz = widget.getClass();
             String className = clazz.getSimpleName();
             String packageName = clazz.getPackageName();
-            
+
             // Check if class matches the key pattern
             if (matchesKey(lowerKey, className, packageName)) {
                 return clazz;
             }
         }
-        
+
         return null;
     }
-    
+
     private boolean matchesKey(String lowerKey, String className, String packageName) {
         // Simple case: xyz -> docs.content.Xyz
         if (!lowerKey.contains("-")) {
-            return packageName.equals("docs.content") && 
-                   className.toLowerCase().equals(lowerKey);
+            return packageName.equals("docs.content") &&
+                    className.toLowerCase().equals(lowerKey);
         }
-        
+
         // Dash case: a-b -> docs.content.a.B
         String[] parts = lowerKey.split("-", 2);
         if (parts.length == 2) {
             String expectedPackage = "docs.content." + parts[0].toLowerCase();
             String expectedClassName = parts[1].toLowerCase();
-            
-            return packageName.equals(expectedPackage) && 
-                   className.toLowerCase().equals(expectedClassName);
+
+            return packageName.equals(expectedPackage) &&
+                    className.toLowerCase().equals(expectedClassName);
         }
-        
+
         return false;
     }
 

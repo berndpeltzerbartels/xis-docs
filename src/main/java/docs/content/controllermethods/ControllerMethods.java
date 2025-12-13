@@ -1,6 +1,6 @@
 package docs.content.controllermethods;
 
-import docs.Navigation;
+import docs.navi.Navigation;
 import docs.content.forms.Forms;
 import one.xis.context.XISComponent;
 

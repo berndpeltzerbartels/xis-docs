@@ -1,6 +1,6 @@
 package docs.content.security;
 
-import docs.Navigation;
+import docs.navi.Navigation;
 import docs.content.customizing.Customizing;
 import one.xis.ModelData;
 import one.xis.Title;

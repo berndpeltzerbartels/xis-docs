@@ -1,7 +1,5 @@
 package docs.navi;
 
-
-import docs.Navigation;
 import one.xis.context.XISComponent;
 
 import java.util.ArrayList;

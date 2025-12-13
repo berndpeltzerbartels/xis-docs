@@ -1,6 +1,6 @@
 package docs.content.templatesyntax;
 
-import docs.Navigation;
+import docs.navi.Navigation;
 import docs.content.ParameterAnnotations;
 import one.xis.ModelData;
 import one.xis.Title;

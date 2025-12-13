@@ -1,6 +1,6 @@
 package docs.content.customizing;
 
-import docs.Navigation;
+import docs.navi.Navigation;
 import docs.content.DistributedApplications;
 import one.xis.ModelData;
 import one.xis.Title;

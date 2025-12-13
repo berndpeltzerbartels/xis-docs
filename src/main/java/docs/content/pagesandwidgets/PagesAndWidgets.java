@@ -1,6 +1,6 @@
 package docs.content.pagesandwidgets;
 
-import docs.Navigation;
+import docs.navi.Navigation;
 import docs.content.TemplateLocation;
 import one.xis.context.XISComponent;
 

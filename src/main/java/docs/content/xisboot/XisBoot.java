@@ -1,6 +1,6 @@
 package docs.content.xisboot;
 
-import docs.Navigation;
+import docs.navi.Navigation;
 import docs.content.pagesandwidgets.PagesAndWidgets;
 import one.xis.context.XISComponent;
 

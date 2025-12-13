@@ -1,6 +1,6 @@
 package docs.content.forms;
 
-import docs.Navigation;
+import docs.navi.Navigation;
 import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;

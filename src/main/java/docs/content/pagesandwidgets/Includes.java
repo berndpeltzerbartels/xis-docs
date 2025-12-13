@@ -5,9 +5,9 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 
-@Widget(url = "/widgets.html", containerId = "main")
-@Navigation(title = "Widgets", nextItem = Includes.class)
-class Widgets {
+@Widget(url = "/includes.html", containerId = "main")
+@Navigation(title = "Includes")
+public class Includes {
 
     @Title
     @ModelData
