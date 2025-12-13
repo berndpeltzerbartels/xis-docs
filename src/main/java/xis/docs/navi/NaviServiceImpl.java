@@ -82,7 +82,7 @@ class NaviServiceImpl implements NaviService {
         }
         if (nav.firstSubItem() != Void.class) {
             item.setFirstSubItem(createNaviItem(nav.firstSubItem(), 1, item));
-            widgetUrl(nav.firstSubItem()).ifPresent(url -> item.getFirstSubItem().setUrl(url));
+            widgetUrl(nav.firstSubItem()).ifPresent(item::setUrl);
         }
         if (nav.nextItem() != Void.class) {
             item.setNextItem(createNaviItem(nav.nextItem(), number + 1, parent));

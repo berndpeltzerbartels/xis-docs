@@ -5,7 +5,7 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/requestscope.html", containerId = "main")
+@Widget(url = "/docs/requestscope.html", containerId = "main")
 @Navigation(title = "Request Scope", nextItem = LocalStorageAndFriends.class)
 class RequestScope {
 

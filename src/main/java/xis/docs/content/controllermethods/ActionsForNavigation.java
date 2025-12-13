@@ -5,7 +5,7 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/actionsfornavigation.html", containerId = "main")
+@Widget(url = "/docs/actionsfornavigation.html", containerId = "main")
 @Navigation(title = "Actions for Navigation", nextItem = RequestScope.class)
 class ActionsForNavigation {
 

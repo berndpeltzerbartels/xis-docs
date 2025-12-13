@@ -5,7 +5,7 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/microfrontendarchitecture.html", containerId = "main")
+@Widget(url = "/docs/microfrontendarchitecture.html", containerId = "main")
 @Navigation(title = "Micro-Frontend Architecture", nextItem = Reference.class)
 public class MicroFrontendArchitecture {
 

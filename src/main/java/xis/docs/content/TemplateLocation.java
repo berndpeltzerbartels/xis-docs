@@ -5,7 +5,7 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/templatelocation.html", containerId = "main")
+@Widget(url = "/docs/templatelocation.html", containerId = "main")
 @Navigation(title = "Template Location", nextItem = ClassAnnotations.class)
 public class TemplateLocation {
 

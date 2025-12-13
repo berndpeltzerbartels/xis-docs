@@ -5,7 +5,7 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/distributedapplications.html", containerId = "main")
+@Widget(url = "/docs/distributedapplications.html", containerId = "main")
 @Navigation(title = "Distributed Applications", nextItem = MicroFrontendArchitecture.class)
 public class DistributedApplications {
 

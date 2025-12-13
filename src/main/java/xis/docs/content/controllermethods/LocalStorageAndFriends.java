@@ -5,7 +5,7 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/localstorageandfriends.html", containerId = "main")
+@Widget(url = "/docs/localstorageandfriends.html", containerId = "main")
 @Navigation(title = "Local Storage, Session Storage and State Variables")
 class LocalStorageAndFriends {
 

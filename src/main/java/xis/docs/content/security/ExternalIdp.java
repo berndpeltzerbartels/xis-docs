@@ -5,7 +5,7 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/externalidp.html", containerId = "main")
+@Widget(url = "/docs/externalidp.html", containerId = "main")
 @Navigation(title = "External IDP & SSO")
 class ExternalIdp {
 

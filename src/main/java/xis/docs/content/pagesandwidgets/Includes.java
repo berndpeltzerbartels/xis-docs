@@ -5,7 +5,7 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/includes.html", containerId = "main")
+@Widget(url = "/docs/includes.html", containerId = "main")
 @Navigation(title = "Includes")
 public class Includes {
 

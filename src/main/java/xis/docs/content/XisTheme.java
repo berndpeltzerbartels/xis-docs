@@ -6,7 +6,7 @@ import one.xis.Widget;
 import xis.docs.content.security.Security;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/xistheme.html", containerId = "main")
+@Widget(url = "/docs/xistheme.html", containerId = "main")
 @Navigation(title = "XIS-Theme", nextItem = Security.class)
 public class XisTheme {
 

@@ -6,7 +6,7 @@ import one.xis.Widget;
 import xis.docs.content.Lifecycle;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/widgetsdetails.html", containerId = "main")
+@Widget(url = "/docs/widgetsdetails.html", containerId = "main")
 @Navigation(title = "Widget Details", nextItem = Lifecycle.class, firstSubItem = WidgetContainers.class)
 public class WidgetsDetails {
 

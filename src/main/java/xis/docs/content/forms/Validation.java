@@ -5,7 +5,7 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/validation.html", containerId = "main")
+@Widget(url = "/docs/validation.html", containerId = "main")
 @Navigation(title = "Validation")
 class Validation {
 

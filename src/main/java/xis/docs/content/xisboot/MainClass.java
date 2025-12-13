@@ -5,7 +5,7 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/mainclass.html", containerId = "main")
+@Widget(url = "/docs/mainclass.html", containerId = "main")
 @Navigation(title = "Main Class", nextItem = ContextAnnotations.class)
 public class MainClass {
 

@@ -6,7 +6,7 @@ import one.xis.Widget;
 import xis.docs.content.xisboot.XisBoot;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/gradleplugin.html", containerId = "main")
+@Widget(url = "/docs/gradleplugin.html", containerId = "main")
 @Navigation(title = "The Gradle Plugin", nextItem = XisBoot.class)
 class GradlePlugin {
 

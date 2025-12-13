@@ -7,7 +7,7 @@ import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
 // @ModelData nur kurz erlären und Verweis
-@Widget(url = "/helloworld.html", containerId = "main")
+@Widget(url = "/docs/helloworld.html", containerId = "main")
 @Navigation(title = "Hello World!", nextItem = Installation.class)
 class HelloWorld {
 

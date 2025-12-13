@@ -5,7 +5,7 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/whyxis.html", containerId = "main")
+@Widget(url = "/docs/whyxis.html", containerId = "main")
 @Navigation(title = "Why XIS?", nextItem = HelloWorld.class)
 class WhyXis {
 

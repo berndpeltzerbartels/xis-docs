@@ -5,7 +5,7 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/rolesannotation.html", containerId = "main")
+@Widget(url = "/docs/rolesannotation.html", containerId = "main")
 @Navigation(title = "Roles Annotation", nextItem = LocalAuthentication.class)
 class RolesAnnotation {
 

@@ -10,9 +10,9 @@ import xis.docs.navi.NaviService;
 import java.util.List;
 
 
-@Page("/{key}.html")
+@Page("/docs/{key}.html")
 @RequiredArgsConstructor
-class ContentPage {
+class DocumentationPage {
     private final NaviService naviService;
 
 

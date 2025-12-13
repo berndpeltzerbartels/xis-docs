@@ -5,7 +5,7 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/formdataandbindings.html", containerId = "main")
+@Widget(url = "/docs/formdataandbindings.html", containerId = "main")
 @Navigation(title = "Form Data and Bindings", nextItem = FormActions.class)
 class FormDataAndBindings {
 

@@ -5,7 +5,7 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/customelfunctions.html", containerId = "main")
+@Widget(url = "/docs/customelfunctions.html", containerId = "main")
 @Navigation(title = "Custom EL Functions")
 class CustomElFunctions {
 

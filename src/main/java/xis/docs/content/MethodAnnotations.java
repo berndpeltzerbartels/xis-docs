@@ -6,7 +6,7 @@ import one.xis.Widget;
 import xis.docs.content.templatesyntax.TemplateSyntax;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/methodannotations.html", containerId = "main")
+@Widget(url = "/docs/methodannotations.html", containerId = "main")
 @Navigation(title = "Method Annotations", nextItem = TemplateSyntax.class)
 class MethodAnnotations {
 

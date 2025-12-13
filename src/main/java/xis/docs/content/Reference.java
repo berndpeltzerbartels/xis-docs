@@ -5,7 +5,7 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/reference.html", containerId = "main")
+@Widget(url = "/docs/reference.html", containerId = "main")
 @Navigation(title = "Reference")
 public class Reference {
 

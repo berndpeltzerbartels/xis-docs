@@ -5,7 +5,7 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/variables.html", containerId = "main")
+@Widget(url = "/docs/variables.html", containerId = "main")
 @Navigation(title = "Variables", nextItem = ExpressionLanguage.class)
 class Variables {
 
