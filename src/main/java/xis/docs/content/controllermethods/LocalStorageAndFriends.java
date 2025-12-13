@@ -1,0 +1,17 @@
+package xis.docs.content.controllermethods;
+
+import one.xis.ModelData;
+import one.xis.Title;
+import one.xis.Widget;
+import xis.docs.navi.Navigation;
+
+@Widget(url = "/localstorageandfriends.html", containerId = "main")
+@Navigation(title = "Local Storage, Session Storage and State Variables")
+class LocalStorageAndFriends {
+
+    @Title
+    @ModelData
+    String chapterHeadline() {
+        return getClass().getAnnotation(Navigation.class).title();
+    }
+}

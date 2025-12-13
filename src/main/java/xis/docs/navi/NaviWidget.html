@@ -1,0 +1,19 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <div class="sidebar">
+        <div class="contenttable">
+            <h5>Table of Content</h5>
+            <ul xis:selection-group>
+                <li xis:repeat="item:naviItems">
+                    <strong><a xis:selection-class="highlight" xis:target-container="main"
+                               xis:widget="${item.widgetId}">${item.label}</a></strong>
+                    <ul>
+                        <li xis:repeat="subItem:item.subItems">
+                            <a xis:selection-class="highlight" xis:target-container="main"
+                               xis:widget="${subItem.widgetId}">${subItem.label}</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</xis:template>
