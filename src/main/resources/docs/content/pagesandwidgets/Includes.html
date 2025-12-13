@@ -1,0 +1,156 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>Includes</h3>
+    
+    <p>
+        Includes are reusable HTML fragments that can be embedded in pages and widgets. Unlike widgets, 
+        includes are not backed by Java controllers - they are pure HTML templates that get inserted 
+        statically at application startup. This makes them ideal for common UI elements like headers, 
+        footers, navigation bars, and other repetitive HTML structures.
+    </p>
+    
+    <h5>Key Differences: Includes vs. Widgets</h5>
+    <ul>
+        <li><strong>No Java Controller:</strong> Includes are pure HTML without backend logic</li>
+        <li><strong>Static Content:</strong> Loaded once at application startup, not dynamically</li>
+        <li><strong>Shared State:</strong> ModelData from parent page/widget is available in includes</li>
+        <li><strong>Simpler:</strong> No need for @Widget annotation or Java class</li>
+        <li><strong>Performance:</strong> Lower overhead since no controller instantiation required</li>
+    </ul>
+
+    <h5>Registering Includes</h5>
+    <p>
+        Includes must be registered with XIS so they can be loaded and made available to your templates. 
+        In Spring applications, implement the <code>IncludeRegistry</code> interface and mark it as a 
+        component:
+    </p>
+    
+    <pre><code>@Component
+public class MyIncludeRegistry implements IncludeRegistry {
+    
+    @Override
+    public Map&lt;String, String&gt; getIncludes() {
+        Map&lt;String, String&gt; includes = new HashMap&lt;&gt;();
+        includes.put("header", "/includes/header.html");
+        includes.put("footer", "/includes/footer.html");
+        includes.put("navigation", "/includes/navigation.html");
+        return includes;
+    }
+}</code></pre>
+
+    <p>
+        The map key (e.g., "header") is the identifier you'll use in templates, and the value is the 
+        resource path where XIS will find the HTML file.
+    </p>
+
+    <h5>Using Includes in Templates</h5>
+    <p>
+        Once registered, includes can be embedded in your page or widget templates using the 
+        <code>&lt;xis:include&gt;</code> tag:
+    </p>
+    
+    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html xmlns:xis="https://xis.one/xsd"&gt;
+&lt;head&gt;
+    &lt;title&gt;My Page&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;xis:include key="header"/&gt;
+    
+    &lt;main&gt;
+        &lt;h1&gt;Welcome to ${pageTitle}&lt;/h1&gt;
+        &lt;p&gt;Page content goes here...&lt;/p&gt;
+    &lt;/main&gt;
+    
+    &lt;xis:include key="footer"/&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <p>
+        Alternatively, you can use the attribute syntax on any HTML element:
+    </p>
+    
+    <pre><code>&lt;header xis:include="header"&gt;&lt;/header&gt;</code></pre>
+
+    <h5>Include Content Example</h5>
+    <p>
+        An include file is a plain HTML fragment. For example, <code>/includes/header.html</code> might contain:
+    </p>
+    
+    <pre><code>&lt;header&gt;
+    &lt;div class="logo"&gt;
+        &lt;img src="/images/logo.png" alt="Logo"/&gt;
+    &lt;/div&gt;
+    &lt;nav&gt;
+        &lt;a href="/home"&gt;Home&lt;/a&gt;
+        &lt;a href="/about"&gt;About&lt;/a&gt;
+        &lt;a href="/contact"&gt;Contact&lt;/a&gt;
+    &lt;/nav&gt;
+    &lt;div class="user-info"&gt;
+        Welcome, ${userName}!
+    &lt;/div&gt;
+&lt;/header&gt;</code></pre>
+
+    <h5>ModelData in Includes</h5>
+    <p>
+        Includes have access to the ModelData from their parent page or widget. In the example above, 
+        <code>${userName}</code> would be resolved from the page's or widget's <code>@ModelData</code> 
+        methods. This allows includes to display dynamic content while remaining stateless HTML fragments.
+    </p>
+    
+    <pre><code>@Page("/mypage.html")
+public class MyPage {
+    
+    @ModelData
+    public String userName() {
+        return "John Doe";
+    }
+    
+    @ModelData
+    public String pageTitle() {
+        return "Dashboard";
+    }
+}</code></pre>
+
+    <h5>Include Architecture</h5>
+    <p>
+        Internally, XIS uses an <code>Include</code> and <code>IncludeInstance</code> pattern similar 
+        to widgets, but with an important improvement: each <code>Include</code> manages its own instances. 
+        When you use the same include multiple times (e.g., a card component in a list), each usage gets 
+        its own <code>IncludeInstance</code> with separate handlers and state, preventing handler conflicts 
+        and ensuring proper ModelData evaluation.
+    </p>
+    <p>
+        This architecture is more elegant than the widget system and may be adopted for widgets in the future.
+    </p>
+
+    <h5>When to Use Includes vs. Widgets</h5>
+    <p>
+        Use <strong>includes</strong> when you need:
+    </p>
+    <ul>
+        <li>Pure HTML repetition without backend logic</li>
+        <li>Simple, static UI components (headers, footers, etc.)</li>
+        <li>Access to parent page/widget's ModelData</li>
+        <li>Minimal overhead and maximum performance</li>
+    </ul>
+    
+    <p>
+        Use <strong>widgets</strong> when you need:
+    </p>
+    <ul>
+        <li>Backend logic (Java controller methods)</li>
+        <li>Dynamic updates without page reload (WidgetResponse)</li>
+        <li>Independent data fetching and processing</li>
+        <li>Action handlers for user interactions</li>
+        <li>Distributed/micro-frontend architecture</li>
+    </ul>
+
+    <h5>Best Practices</h5>
+    <ul>
+        <li>Keep includes simple and focused on presentation</li>
+        <li>Use descriptive keys for easy identification ("header", not "h1")</li>
+        <li>Place include files in a dedicated directory (e.g., <code>/includes/</code>)</li>
+        <li>Document which ModelData fields your includes expect from parent controllers</li>
+        <li>Consider includes for consistent branding elements across your application</li>
+    </ul>
+</xis:template>
