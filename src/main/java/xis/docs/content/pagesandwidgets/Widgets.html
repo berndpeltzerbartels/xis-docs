@@ -1,12 +1,6 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
     
-    <div class="warning">
-        <strong>Note on Distributed Applications:</strong> This documentation mentions micro-frontend architectures 
-        and distributed widget loading. These features are planned but <strong>not yet implemented</strong> in the 
-        current version of XIS. All other widget features described here are fully functional.
-    </div>
-    
     <p>
         Widgets are reusable components in XIS that can be embedded within pages or other widgets. They are 
         controllers annotated with <code>@Widget</code> and promote a modular, component-based architecture 
@@ -90,6 +84,12 @@ public WidgetResponse updateUserInfo() {
     </p>
 
     <h5>Micro-Frontend Architecture with Widgets</h5>
+    
+    <div class="alert alert-warning" role="alert">
+        <strong>⚠️ Under Construction</strong><br/>
+        This feature is planned but not yet implemented in the current version of XIS.
+    </div>
+    
     <p>
         One of the most powerful capabilities enabled by XIS widgets is building micro-frontend architectures. 
         Widgets can be loaded from different servers, allowing independent teams to develop, deploy, and maintain 

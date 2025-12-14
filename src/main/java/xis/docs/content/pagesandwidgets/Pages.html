@@ -48,13 +48,17 @@ public class HelloPage {
     </p>
     
     <div class="warning">
-        <strong>Important: Script and CSS Inclusion</strong><br/>
-        Pages and Widgets in XIS cannot include scripts and CSS files using standard HTML <code>&lt;script&gt;</code> 
-        and <code>&lt;link&gt;</code> tags directly in the template. Instead, XIS uses a convention-based approach 
-        where you place a <code>.js</code> and/or <code>.css</code> file with the same name as your controller in 
-        the same package. These files are automatically discovered and included. You can also use 
-        <code>@JavaScriptFile</code> and <code>@CSSFile</code> annotations for explicit control. See the 
-        Custom Assets documentation for details on this mechanism.
+        <strong>Important: JavaScript Inclusion</strong><br/>
+        Pages and Widgets in XIS cannot include JavaScript files using standard HTML <code>&lt;script&gt;</code> 
+        tags directly in the template. This is because XIS is a Single Page Application (SPA) where content is 
+        dynamically inserted into the DOM at runtime. Browsers do not execute <code>&lt;script&gt;</code> tags 
+        that are added to the DOM after the initial page load - this is an important browser security feature, 
+        but it requires a different approach for SPAs.
+        <br/><br/>
+        Instead, XIS uses a convention-based approach where you place a <code>.js</code> file with the same name 
+        as your controller in the same package. These files are automatically discovered and included. You can 
+        also use the <code>@JavaScriptFile</code> annotation for explicit control. Other resources like CSS can 
+        be included directly in the template using standard HTML tags. See the Custom Assets documentation for details.
     </div>
     
     <h5>Deep Linking Support</h5>

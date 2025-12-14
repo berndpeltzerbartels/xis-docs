@@ -1,51 +1,42 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
-    
+
     <div class="alert alert-info" role="alert">
         <strong>ℹ️ Annotation Changes Coming</strong><br/>
-        Currently, XIS uses prefixed annotations like <code>@XISComponent</code>, <code>@XISService</code>, etc. 
-        In a future version, these will be simplified to <code>@Component</code>, <code>@Service</code>, etc. 
+        Currently, XIS uses prefixed annotations like <code>@XISComponent</code>, <code>@XISService</code>, etc.
+        In a future version, these will be simplified to <code>@Component</code>, <code>@Service</code>, etc.
         This documentation shows the future naming convention.
     </div>
-    
-    <p>XIS Boot provides a lightweight dependency injection and component scanning system. Components are 
-        registered and managed by the XIS context, similar to Spring or Micronaut but without the framework overhead.</p>
-    
+
+    <p>XIS Boot provides a lightweight dependency injection and component scanning system. Components are
+        registered and managed by the XIS context, similar to Spring or Micronaut but without the framework
+        overhead.</p>
+
     <h5>Component Annotations</h5>
-    
+
     <h6>@Component</h6>
-    <p>Mark a class as a managed component. XIS will create a single instance and make it available for injection:</p>
-    
+    <p>Mark a class as a managed component. XIS will create a single instance (singleton) and make it available for injection:</p>
+
     <pre><code class="language-java">@Component
 public class UserService {
     public User findById(String id) {
         // Business logic
     }
 }</code></pre>
-    
+
     <h6>@Service</h6>
     <p>Specialized <code>@Component</code> for service layer classes:</p>
-    
+
     <pre><code class="language-java">@Service
 public class EmailService {
     public void sendEmail(String to, String subject, String body) {
         // Email sending logic
     }
 }</code></pre>
-    
-    <h6>@Repository</h6>
-    <p>Specialized <code>@Component</code> for data access layer classes:</p>
-    
-    <pre><code class="language-java">@Repository
-public class UserRepository {
-    public List&lt;User&gt; findAll() {
-        // Database access
-    }
-}</code></pre>
-    
+
     <h5>Dependency Injection</h5>
     <p>Inject components into pages, widgets, or other components using constructor injection:</p>
-    
+
     <pre><code class="language-java">@Page("/users.html")
 public class UsersPage {
     private final UserService userService;
@@ -59,83 +50,77 @@ public class UsersPage {
         return userService.findAll();
     }
 }</code></pre>
-    
-    <h5>Scopes</h5>
-    
-    <h6>@Singleton (Default)</h6>
-    <p>One instance per application (default behavior for <code>@Component</code>):</p>
-    
-    <pre><code class="language-java">@Component
-@Singleton
-public class ConfigService {
-    // Single instance shared across the application
-}</code></pre>
-    
-    <h6>@RequestScoped</h6>
-    <p>New instance per HTTP request:</p>
-    
-    <pre><code class="language-java">@Component
-@RequestScoped
-public class RequestContext {
-    // New instance for each request
-}</code></pre>
-    
+
+    <h5>Component Scope</h5>
+    <p>All components in XIS Boot are singletons (one instance per application). This is the only supported scope.
+       There is no special annotation required - all components annotated with <code>@Component</code> or 
+       <code>@Service</code> are automatically application-scoped singletons.</p>
+
     <h5>Component Scanning</h5>
-    <p>XIS Boot automatically scans for components in the same package as your main class and all sub-packages. 
-        You can customize the scan path:</p>
-    
-    <pre><code class="language-java">public class Application {
-    public static void main(String[] args) {
-        XisApplication.builder()
-            .scanPackage("com.example")          // Main package
-            .scanPackage("com.shared.components") // Additional package
-            .build()
-            .run(args);
-    }
-}</code></pre>
-    
-    <h5>Manual Component Registration</h5>
-    <p>Register components programmatically:</p>
-    
-    <pre><code class="language-java">public class Application {
-    public static void main(String[] args) {
-        XisApplication.builder()
-            .register(MyService.class)
-            .registerInstance("config", new AppConfig())
-            .build()
-            .run(args);
-    }
-}</code></pre>
-    
+    <p>XIS Boot automatically scans for components in the same package as your main class and all sub-packages.</p>
+
     <h5>Current vs Future Annotations</h5>
     <p>Mapping of current to future annotation names:</p>
     <table class="table table-sm">
         <thead>
-            <tr>
-                <th>Current</th>
-                <th>Future</th>
-                <th>Purpose</th>
-            </tr>
+        <tr>
+            <th>Current</th>
+            <th>Future</th>
+            <th>Purpose</th>
+        </tr>
         </thead>
         <tbody>
-            <tr>
-                <td><code>@XISComponent</code></td>
-                <td><code>@Component</code></td>
-                <td>Generic managed component</td>
-            </tr>
-            <tr>
-                <td><code>@XISService</code></td>
-                <td><code>@Service</code></td>
-                <td>Service layer component</td>
-            </tr>
-            <tr>
-                <td><code>@XISRepository</code></td>
-                <td><code>@Repository</code></td>
-                <td>Data access component</td>
-            </tr>
+        <tr>
+            <td><code>@XISComponent</code></td>
+            <td><code>@Component</code></td>
+            <td>Generic managed component</td>
+        </tr>
+        <tr>
+            <td><code>@XISService</code></td>
+            <td><code>@Service</code></td>
+            <td>Service layer component</td>
+        </tr>
         </tbody>
     </table>
-    
-    <p><strong>Note:</strong> Use the current <code>@XIS*</code> prefixed annotations in your code today. 
+
+    <p><strong>Note:</strong> Use the current <code>@XIS*</code> prefixed annotations in your code today.
         The migration to unprefixed annotations will be handled automatically in a future release.</p>
+
+    <h5>Spring Framework Compatibility</h5>
+    <p>XIS Boot is designed to be significantly simpler and more lightweight than the Spring Framework application
+        context.
+        Consequently, many Spring features and annotations are not supported. However, to ease migration from
+        Spring-based
+        applications, XIS Boot recognizes some commonly used Spring annotations.</p>
+
+    <div class="alert alert-warning" role="alert">
+        <strong>⚠️ Limited Support</strong><br/>
+        XIS Boot does not aim to be a complete Spring replacement. Only a subset of Spring annotations is supported.
+        For the complete and current list of supported Spring annotations, please refer to the JavaDoc of the
+        <code>one.xis.boot.SpringCompatibility</code> class in the <code>xis-boot</code> module.
+    </div>
+
+    <p>Examples of supported Spring annotations include:</p>
+    <ul>
+        <li>Component stereotypes like <code>@Component</code>, <code>@Service</code></li>
+        <li>Lifecycle callbacks like <code>@PostConstruct</code> (javax and jakarta)</li>
+        <li>Dependency injection with <code>@Autowired</code> and <code>@Inject</code></li>
+    </ul>
+
+    <p>To see the exact list of supported annotations and stay up-to-date with any changes, always check the
+        <code>SpringCompatibility</code> class in the source code.</p>
+
+    <div class="alert alert-info" role="alert">
+        <strong>💡 Recommendation</strong><br/>
+        While Spring annotation support helps avoid costly refactoring when migrating existing code, <strong>this is not
+        the recommended approach</strong> for new XIS Boot applications. Using Spring annotations can lead to
+        misunderstandings about which features are actually supported by XIS Boot, as the framework is intentionally
+        much simpler than Spring. <strong>For new code, always use the native XIS context annotations</strong>
+        (<code>@XISComponent</code>, <code>@XISService</code>, etc.) to avoid confusion and ensure clear expectations.
+    </div>
+</xis:template>
+        misunderstandings about which features are actually supported by XIS Boot, as the framework is intentionally
+        much simpler than Spring. <strong>For new code, always use the native XIS context annotations</strong>
+        to avoid confusion and ensure clear expectations.
+    </div>
 </xis:template>
