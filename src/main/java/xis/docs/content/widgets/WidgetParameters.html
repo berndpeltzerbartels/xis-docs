@@ -3,16 +3,10 @@
     <p>Widgets can receive parameters through various mechanisms. Parameters enable widgets to be dynamic and reusable 
         with different data contexts.</p>
 
-    <h5>Widget Parameter Annotations</h5>
-    <p>XIS provides two parameter annotations for widgets and actions:</p>
-    <ul>
-        <li><code>@WidgetParameter</code> - Parameters passed when loading a widget (via links, containers, or navigation)</li>
-        <li><code>@ActionParameter</code> - Parameters passed to action methods (via button clicks or link actions)</li>
-    </ul>
+    <h5>Widget Parameter Annotation</h5>
+    <p>The <code>@WidgetParameter</code> annotation injects parameters that were passed when the widget was loaded 
+        (via links, containers, or navigation). These parameters persist across action calls within the same widget instance.</p>
 
-    <h5>@WidgetParameter</h5>
-    <p>Injects parameters that were passed when the widget was loaded. These parameters persist across action calls 
-        within the same widget instance.</p>
     <pre><code class="language-java">@Widget
 class ProductDetailsWidget {
     
@@ -27,19 +21,6 @@ class ProductDetailsWidget {
     }
 }</code></pre>
 
-    <h5>@ActionParameter</h5>
-    <p>Injects parameters passed specifically to an action. These are typically defined in the template using 
-        <code>&lt;xis:parameter&gt;</code> tags within action buttons or links.</p>
-    <pre><code class="language-java">@Widget
-class ProductListWidget {
-    
-    @Action("selectProduct")
-    void selectProduct(@ActionParameter("productId") String productId,
-                      @ActionParameter("source") String source) {
-        analyticsService.trackSelection(productId, source);
-    }
-}</code></pre>
-
     <h5>Passing Widget Parameters: Query String Style</h5>
     <p>Use URL query string syntax in widget links and widget containers:</p>
     <pre><code class="language-html">&lt;!-- Widget link --&gt;
@@ -49,8 +30,18 @@ class ProductListWidget {
 
 &lt;!-- Widget container --&gt;
 &lt;xis:widget-container container-id="main" 
-                     default-widget="ProductListWidget?categoryId=electronics"&gt;
+                     default-widget="ProductListWidget?categoryId=electronics&amp;sortBy=name"&gt;
 &lt;/xis:widget-container&gt;</code></pre>
+
+    <p><strong>Controller:</strong> Parameters are available via <code>@WidgetParameter</code>:</p>
+    <pre><code class="language-java">@Widget
+class ProductListWidget {
+    @ModelData("products")
+    List&lt;Product&gt; getProducts(@WidgetParameter("categoryId") String categoryId,
+                              @WidgetParameter("sortBy") String sortBy) {
+        return productService.findByCategory(categoryId, sortBy);
+    }
+}</code></pre>
 
     <h5>Passing Widget Parameters: &lt;xis:parameter&gt; Tags</h5>
     <p>Use <code>&lt;xis:parameter&gt;</code> child elements for cleaner syntax, especially with EL expressions:</p>
@@ -67,22 +58,20 @@ class ProductListWidget {
     &lt;xis:parameter name="sortBy" value="name"/&gt;
 &lt;/xis:widget-container&gt;</code></pre>
 
-    <h5>Passing Action Parameters</h5>
-    <p>Action parameters are passed using <code>&lt;xis:parameter&gt;</code> tags within buttons or links:</p>
-    <pre><code class="language-html">&lt;button xis:action="selectProduct"&gt;
-    &lt;xis:parameter name="productId" value="${product.id}"/&gt;
-    &lt;xis:parameter name="source" value="list-view"/&gt;
-    Select Product
-&lt;/button&gt;
-
-&lt;a xis:action="deleteItem"&gt;
-    &lt;xis:parameter name="itemId" value="${item.id}"/&gt;
-    &lt;xis:parameter name="confirmRequired" value="true"/&gt;
-    Delete
-&lt;/a&gt;</code></pre>
+    <p><strong>Controller:</strong> Parameters are available via <code>@WidgetParameter</code>:</p>
+    <pre><code class="language-java">@Widget
+class ProductListWidget {
+    @ModelData("products")
+    List&lt;Product&gt; getProducts(@WidgetParameter("categoryId") String categoryId,
+                              @WidgetParameter("sortBy") String sortBy) {
+        return productService.findByCategory(categoryId, sortBy);
+    }
+}</code></pre>
 
     <h5>Combining Widget and Action Parameters</h5>
-    <p>Actions can access both widget parameters (from widget load) and action parameters (from button click):</p>
+    <p>Actions can access both widget parameters (from widget load) and action parameters (from button click). 
+        For details on <code>@ActionParameter</code>, see the 
+        <a href="#" xis:page="ParameterAnnotations">Parameter Annotations</a> chapter.</p>
     <pre><code class="language-java">@Widget
 class ShoppingCartWidget {
     

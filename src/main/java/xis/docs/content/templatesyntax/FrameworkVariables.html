@@ -37,8 +37,8 @@
 &lt;span&gt;${clientStorage.preference}&lt;/span&gt;</code></pre>
     <p><strong>Scope:</strong> Stored on the server, synchronized with client. Persists across browser restarts and different devices for the same user session.</p>
 
-    <h5>URL Variables</h5>
-    <p>Access information about the current URL:</p>
+    <h5>Request Information</h5>
+    <p>Access information about the current URL and request:</p>
 
     <h6>url</h6>
     <p>The complete URL including protocol, host, path, and query parameters.</p>
@@ -73,7 +73,7 @@
 
     <h5>Validation Messages</h5>
     <p>
-        Access validation error and warning messages. <strong>Note:</strong> You typically don't need to use this 
+        Access validation error messages from the backend. <strong>Note:</strong> You typically don't need to use this 
         directly, as XIS provides built-in mechanisms for displaying validation messages (see Forms documentation). 
         Use this only for custom validation display scenarios.
     </p>
@@ -81,31 +81,21 @@
     <h6>Structure</h6>
     <p>The <code>validation</code> variable contains:</p>
     <ul>
-        <li><code>validation.globalMessages</code> - Array of global validation messages (not tied to specific fields)</li>
+        <li><code>validation.globalMessages</code> - Array of global validation errors (not tied to specific fields)</li>
         <li><code>validation.messages</code> - Object mapping field names to error messages</li>
     </ul>
 
-    <h6>Message Types</h6>
-    <p>There are two CSS classes for displaying validation messages:</p>
-    <ul>
-        <li><code>warn</code> - Red error messages (for validation errors)</li>
-        <li><code>info</code> - Yellow/blue info messages (for warnings or informational messages)</li>
-    </ul>
-
     <h6>Example (Advanced Use)</h6>
-    <pre><code>&lt;!-- Display global validation messages --&gt;
+    <pre><code>&lt;!-- Display global validation errors --&gt;
 &lt;div xis:foreach="msg:validation.globalMessages"&gt;
-    &lt;div class="warn"&gt;${msg}&lt;/div&gt;
+    &lt;div class="error"&gt;${msg}&lt;/div&gt;
 &lt;/div&gt;
 
 &lt;!-- Display field-specific error --&gt;
 &lt;input name="email" value="${user.email}"/&gt;
-&lt;span class="warn" xis:if="validation.messages.email"&gt;
+&lt;span class="error" xis:if="validation.messages.email"&gt;
     ${validation.messages.email}
-&lt;/span&gt;
-
-&lt;!-- Custom info message --&gt;
-&lt;div class="info"&gt;Please check your input carefully.&lt;/div&gt;</code></pre>
+&lt;/span&gt;</code></pre>
 
     <div class="warning">
         <p><strong>Important:</strong> The <code>validation</code> variable is primarily for advanced custom scenarios. 

@@ -35,18 +35,32 @@ WidgetResponse showDetails(@ActionParameter("productId") String productId) {
     </xis:raw>
 
     <h5>Conditional Navigation</h5>
-    <p>Use conditional logic to determine the navigation target:</p>
+    <p>Use conditional logic to determine the navigation target based on business rules:</p>
     <xis:raw>
         <pre><code>@Action
-Class&lt;?&gt; submitForm() {
-    ValidationResult result = validator.validate(formData);
-    if (result.isValid()) {
-        formService.save(formData);
-        return SuccessPage.class;
+Class&lt;?&gt; submitOrder() {
+    Order order = orderService.createOrder(cartItems);
+    
+    if (order.requiresPayment()) {
+        return PaymentPage.class;
+    } else if (order.requiresApproval()) {
+        return ApprovalPendingPage.class;
     } else {
-        this.errors = result.getErrors();
-        return null; // Stay on current page to show errors
+        return OrderConfirmationPage.class;
     }
+}
+
+@Action
+WidgetResponse openEditor(@ActionParameter("documentId") String documentId) {
+    Document doc = documentService.findById(documentId);
+    
+    if (doc.isLocked()) {
+        notificationService.showWarning("Document is locked by another user");
+        return null; // Stay on current widget
+    }
+    
+    return new WidgetResponse(DocumentEditorWidget.class)
+        .withParameter("documentId", documentId);
 }</code></pre>
     </xis:raw>
 

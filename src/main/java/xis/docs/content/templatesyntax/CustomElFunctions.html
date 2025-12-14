@@ -1,17 +1,18 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
     <p>
-        XIS provides a rich set of built-in Expression Language functions, but you can also add your own custom 
-        functions to extend template capabilities. Custom functions are added by providing JavaScript files through 
-        the classpath extension mechanism. This approach allows you to create modular, reusable libraries and 
+        XIS provides a rich set of built-in Expression Language functions, but you can also add your own custom
+        functions to extend template capabilities. Custom functions are added by providing JavaScript files through
+        the classpath extension mechanism. This approach allows you to create modular, reusable libraries and
         integrate seamlessly with themes.
     </p>
 
     <h5>Creating Custom EL Functions</h5>
     <p>
-        Custom EL functions are added by providing JavaScript files that register functions using 
-        <code>elFunctions.addFunction()</code>. These JavaScript files are loaded automatically through XIS's 
-        classpath extension mechanism, making your custom functions available in all templates.
+        Custom EL functions are added by providing JavaScript files that register functions using
+        <code>elFunctions.addFunction()</code>. See
+        <a href="/docs/customjavascript.html">Adding JavaScript</a> for
+        details on how to include JavaScript files in your XIS application.
     </p>
 
     <h6>Step 1: Create Your JavaScript File</h6>
@@ -42,24 +43,11 @@ elFunctions.addFunction('truncate', (str, maxLength) => {
     return str.substring(0, maxLength) + '...';
 });</code></pre>
 
-    <h6>Step 2: Register the JavaScript File</h6>
-    <p>Create a registry file that lists your JavaScript resources:</p>
-    <pre><code class="language-plaintext"># src/main/resources/META-INF/xis/js/extensions
-js/custom-el-functions.js</code></pre>
-
+    <h6>Step 2: Register via META-INF/xis/js/extensions</h6>
     <p>
-        <strong>How it works:</strong> XIS automatically discovers all <code>META-INF/xis/js/extensions</code> files 
-        on the classpath during startup. Each line in this file should contain a resource path to a JavaScript file. 
-        Lines starting with <code>#</code> are treated as comments. All referenced JavaScript files are loaded and 
-        executed in the browser automatically.
+        List your JavaScript file in <code>src/main/resources/META-INF/xis/js/extensions</code>:
     </p>
-
-    <p>
-        <strong>Note:</strong> The <code>META-INF/xis/js/extensions</code> mechanism is a general-purpose way to 
-        add any custom JavaScript code to your XIS application. While primarily designed for framework extensions, 
-        it works perfectly for adding custom EL functions by using <code>elFunctions.addFunction()</code> in your 
-        JavaScript files.
-    </p>
+    <pre><code class="language-plaintext">js/custom-el-functions.js</code></pre>
 
     <h6>Step 3: Use in Templates</h6>
     <p>Once registered, custom functions work exactly like built-in functions:</p>
@@ -77,7 +65,8 @@ js/custom-el-functions.js</code></pre>
         <li><b>Clean Separation:</b> Function code is separate from application code</li>
         <li><b>Version Control:</b> Functions are versioned with your library/theme</li>
         <li><b>No Template Changes:</b> Adding/removing function libraries doesn't require template modifications</li>
-        <li><b>General Purpose:</b> The mechanism can also be used for any custom JavaScript code, not just EL functions</li>
+        <li><b>General Purpose:</b> The mechanism can also be used for any custom JavaScript code, not just EL functions
+        </li>
     </ul>
 
     <h5>Creating a Reusable Function Library</h5>
@@ -140,7 +129,8 @@ elFunctions.addFunction('slugify', (str) => {
         .replace(/^-+|-+$/g, '');
 });</code></pre>
 
-    <p>Package this as a JAR and include it as a dependency in any XIS project. The functions become available automatically.</p>
+    <p>Package this as a JAR and include it as a dependency in any XIS project. The functions become available
+        automatically.</p>
 
     <h5>Advanced Examples</h5>
 
@@ -198,11 +188,13 @@ elFunctions.addFunction('formatAddress', (address) => {
 
     <h5>Best Practices</h5>
     <ul>
-        <li><b>Keep Functions Pure:</b> Custom functions should be stateless and return consistent results for the 
-            same inputs</li>
+        <li><b>Keep Functions Pure:</b> Custom functions should be stateless and return consistent results for the
+            same inputs
+        </li>
         <li><b>Handle Edge Cases:</b> Always validate inputs and handle null/undefined values gracefully</li>
-        <li><b>Performance:</b> Avoid heavy computations in custom functions - they may be called frequently during 
-            template rendering</li>
+        <li><b>Performance:</b> Avoid heavy computations in custom functions - they may be called frequently during
+            template rendering
+        </li>
         <li><b>Naming:</b> Use clear, descriptive names that indicate what the function does</li>
         <li><b>Documentation:</b> Document your custom functions, especially if used across multiple teams</li>
         <li><b>Type Safety:</b> Check argument types and return appropriate defaults for invalid inputs</li>
@@ -263,30 +255,38 @@ elFunctions.addFunction('truncate', (str, len) => {
 
     <h5>Technical Details</h5>
     <ul>
-        <li><b>Extension Mechanism:</b> The <code>META-INF/xis/js/extensions</code> mechanism is a general-purpose 
-            system for loading custom JavaScript code into XIS applications</li>
-        <li><b>Automatic Discovery:</b> XIS discovers and loads all <code>META-INF/xis/js/extensions</code> files 
-            from the classpath at startup</li>
+        <li><b>Extension Mechanism:</b> The <code>META-INF/xis/js/extensions</code> mechanism is a general-purpose
+            system for loading custom JavaScript code into XIS applications
+        </li>
+        <li><b>Automatic Discovery:</b> XIS discovers and loads all <code>META-INF/xis/js/extensions</code> files
+            from the classpath at startup
+        </li>
         <li><b>Load Order:</b> JavaScript files are loaded in the order they appear in the registry file</li>
-        <li><b>Multiple JARs:</b> Multiple JARs can each provide their own extensions file - all are merged and loaded</li>
+        <li><b>Multiple JARs:</b> Multiple JARs can each provide their own extensions file - all are merged and loaded
+        </li>
         <li><b>Comments:</b> Lines starting with <code>#</code> in the extensions file are ignored</li>
         <li><b>Browser Execution:</b> The JavaScript code executes in the browser, not on the server</li>
-        <li><b>Function Registration:</b> Use <code>elFunctions.addFunction(name, function)</code> to register 
-            custom EL functions</li>
+        <li><b>Function Registration:</b> Use <code>elFunctions.addFunction(name, function)</code> to register
+            custom EL functions
+        </li>
         <li><b>Function Signature:</b> Custom functions receive their arguments directly as JavaScript values</li>
-        <li><b>Return Values:</b> Functions can return any JavaScript value - strings, numbers, booleans, objects, 
-            or arrays</li>
-        <li><b>Security:</b> Custom functions execute in the browser context with standard JavaScript security 
-            constraints</li>
+        <li><b>Return Values:</b> Functions can return any JavaScript value - strings, numbers, booleans, objects,
+            or arrays
+        </li>
+        <li><b>Security:</b> Custom functions execute in the browser context with standard JavaScript security
+            constraints
+        </li>
         <li><b>Scope:</b> Functions have access to the browser environment but not to the template's variable scope</li>
-        <li><b>Error Handling:</b> If a custom function throws an error, template rendering may fail. Always 
-            include proper error handling in your functions</li>
+        <li><b>Error Handling:</b> If a custom function throws an error, template rendering may fail. Always
+            include proper error handling in your functions
+        </li>
     </ul>
 
     <h5>Key Points</h5>
     <ul>
         <li>Create <code>META-INF/xis/js/extensions</code> file listing JavaScript resources</li>
-        <li>Write JavaScript files that use <code>elFunctions.addFunction(name, function)</code> to register functions</li>
+        <li>Write JavaScript files that use <code>elFunctions.addFunction(name, function)</code> to register functions
+        </li>
         <li>JavaScript loads automatically in the browser - no manual script includes needed</li>
         <li>This is a general-purpose mechanism for adding any JavaScript code, not just EL functions</li>
         <li>Ideal for reusable libraries, themes, and shared functionality</li>

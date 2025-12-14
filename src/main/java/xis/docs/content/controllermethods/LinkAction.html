@@ -28,28 +28,4 @@ void deleteItem(@ActionParameter("itemId") String itemId) {
     Delete
 &lt;/a&gt;</code></pre>
     </xis:raw>
-
-    <h5>Combining Action and Widget Navigation</h5>
-    <p>A link can both execute an action and navigate to a widget. The action executes first, then navigation occurs:</p>
-    <xis:raw>
-        <pre><code>@Action
-void selectCategory(@ActionParameter("categoryId") String categoryId) {
-    this.selectedCategoryId = categoryId;
-}</code></pre>
-        <p><strong>Template:</strong></p>
-        <pre><code>&lt;a xis:action="selectCategory" xis:widget="ProductListWidget"&gt;
-    &lt;xis:parameter name="categoryId" value="${category.id}"/&gt;
-    View Products
-&lt;/a&gt;</code></pre>
-    </xis:raw>
-
-    <h5>Styling Action Links</h5>
-    <p>Action links are regular HTML links and can be styled with CSS classes as needed:</p>
-    <xis:raw>
-        <pre><code>&lt;a xis:action="archive" class="btn btn-secondary"&gt;Archive&lt;/a&gt;</code></pre>
-    </xis:raw>
-
-    <p><strong>Note:</strong> Use <code>xis:action</code> on links for non-critical actions. For important state
-        changes (like deletions or payments), prefer buttons within forms for better accessibility and to prevent
-        accidental triggers.</p>
 </xis:template>

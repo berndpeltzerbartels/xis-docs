@@ -106,7 +106,7 @@
     <p>Defines a container area for dynamic widget loading. The attribute creates a 
        <code>&lt;xis:widget-container&gt;</code> element as a child.</p>
     
-    <p><strong>Attribute Syntax:</strong></p>
+    <p><strong>Attribute Syntax (without default widget):</strong></p>
     <xis:raw text="true">
 &lt;div xis:widget-container="mainContent"&gt;&lt;/div&gt;
     </xis:raw>
@@ -118,11 +118,7 @@
 &lt;/div&gt;
     </xis:raw>
 
-    <h6>xis:default-widget</h6>
-    <p>Specifies a default widget to load in a widget container. Must be used together with 
-       <code>xis:widget-container</code>.</p>
-    
-    <p><strong>Attribute Syntax:</strong></p>
+    <p><strong>Attribute Syntax (with default widget):</strong></p>
     <xis:raw text="true">
 &lt;div xis:widget-container="mainContent" xis:default-widget="DashboardWidget"&gt;&lt;/div&gt;
     </xis:raw>
@@ -134,6 +130,11 @@
     &lt;/xis:widget-container&gt;
 &lt;/div&gt;
     </xis:raw>
+
+    <p>
+        <strong>Note:</strong> Use <code>xis:default-widget</code> together with 
+        <code>xis:widget-container</code> to specify which widget loads initially.
+    </p>
 
     <h5>Form & Validation Attributes</h5>
 
@@ -196,7 +197,12 @@
     </xis:raw>
 
     <h6>xis:widget</h6>
-    <p>Loads a specific widget into the nearest widget container when clicked.</p>
+    <p>
+        Loads a specific widget into the nearest widget container when clicked. This is a shorthand attribute - 
+        you cannot specify a target container with this syntax. Use 
+        <code>&lt;a xis:widget="WidgetClass" xis:target-container="containerId"&gt;</code> if you need to 
+        specify the target container.
+    </p>
     
     <p><strong>Example:</strong></p>
     <xis:raw text="true">

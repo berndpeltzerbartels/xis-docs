@@ -3,27 +3,25 @@
     <p>XIS provides its own validation framework with built-in annotations for declarative form validation.</p>
 
     <h5>Basic Validation</h5>
-    <p>Add XIS validation annotations to your form object fields:</p>
+    <p>Add XIS validation annotations to your form object (works with records and classes):</p>
     <xis:raw>
         <pre><code>import one.xis.annotation.Mandatory;
 import one.xis.annotation.MinLength;
 import one.xis.annotation.Email;
 
-public class UserForm {
-    
+public record UserForm(
     @Mandatory  // Validates not null AND not empty/blank
-    @MinLength(2)  // TODO: Will move to different module
-    private String firstName;
+    @MinLength(2)
+    String firstName,
     
     @Mandatory
     @Email
-    private String email;
+    String email,
     
     @Mandatory
-    private Integer age;  // Use Integer, not int, to allow null checking
-    
-    // Getters and setters
-}</code></pre>
+    Integer age  // Use Integer, not int, to allow null checking
+) {}
+</code></pre>
         <p><strong>Note:</strong> <code>@Mandatory</code> combines null and empty checks in a single annotation. 
             Validation messages are looked up from message properties files using keys.</p>
     </xis:raw>
@@ -51,10 +49,10 @@ class UserFormWidget {
     <h5>Displaying Validation Errors</h5>
     <p>XIS makes validation errors available via the <code>errors</code> variable:</p>
     <xis:raw>
-        <pre><code>&lt;form xis:action="saveUser"&gt;
+        <pre><code>&lt;form xis:binding="user"&gt;
     &lt;div&gt;
         &lt;label&gt;First Name&lt;/label&gt;
-        &lt;input type="text" name="user.firstName" value="${user.firstName}"/&gt;
+        &lt;input type="text" xis:binding="firstName" value="${user.firstName}"/&gt;
         &lt;span class="error" xis:if="${errors['user.firstName']}"&gt;
             ${errors['user.firstName']}
         &lt;/span&gt;
@@ -62,12 +60,13 @@ class UserFormWidget {
     
     &lt;div&gt;
         &lt;label&gt;Email&lt;/label&gt;
-        &lt;input type="email" name="user.email" value="${user.email}"/&gt;
+        &lt;input type="email" xis:binding="email" value="${user.email}"/&gt;
         &lt;span class="error" xis:if="${errors['user.email']}"&gt;
             ${errors['user.email']}
         &lt;/span&gt;
     &lt;/div&gt;
     
+    &lt;button type="submit" xis:action="saveUser"&gt;Save&lt;/button&gt;
     &lt;button type="submit"&gt;Save&lt;/button&gt;
 &lt;/form&gt;</code></pre>
     </xis:raw>
@@ -568,17 +567,16 @@ Map&lt;String, String&gt; getErrors() {
     <h5>Validation Scenarios</h5>
     <p>Use different validation for create vs. update scenarios:</p>
     <xis:raw>
-        <pre><code>public class UserForm {
-    
-    private String id;  // Only required for updates
+        <pre><code>public record UserForm(
+    String id,  // Only required for updates
     
     @Mandatory
-    private String name;
+    String name,
     
     @Mandatory
     @Email
-    private String email;
-}
+    String email
+) {}
 
 // In controller - different validation based on scenario
 @FormData("user")
@@ -593,7 +591,7 @@ void createUser() {
 
 @Action
 void updateUser() {
-    if (userForm.getId() == null) {
+    if (userForm.id() == null) {
         // Manual validation for update scenario
         errors.put("user.id", "ID is required for updates");
         return;

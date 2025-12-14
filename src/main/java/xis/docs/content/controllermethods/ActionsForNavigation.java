@@ -6,7 +6,7 @@ import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
 @Widget(url = "/docs/actionsfornavigation.html", containerId = "main")
-@Navigation(title = "Actions for Navigation", nextItem = RequestScope.class)
+@Navigation(title = "Actions for Navigation", nextItem = LocalStorageAndFriends.class)
 class ActionsForNavigation {
 
     @Title

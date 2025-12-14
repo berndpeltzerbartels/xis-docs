@@ -1,6 +1,6 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
-    <p>Understanding the XIS request lifecycle helps you write effective controllers. This chapter explains how 
+    <p>Understanding the XIS request lifecycle helps you write effective controllers. This chapter explains how
         requests flow through the framework, when controller methods are executed, and how responses are generated.</p>
 
     <h5>Request Flow Overview</h5>
@@ -9,10 +9,16 @@
         <ol>
             <li><strong>User Action:</strong> User clicks a link, submits a form, or triggers an action</li>
             <li><strong>Request Processing:</strong> XIS routes the request to the appropriate controller</li>
-            <li><strong>Parameter Binding:</strong> URL parameters, form data, and action parameters are bound to controller fields</li>
+            <li><strong>Parameter Binding:</strong> URL parameters, form data, and action parameters are bound to
+                controller fields
+            </li>
             <li><strong>Action Execution:</strong> <code>@Action</code> methods are called (if triggered)</li>
-            <li><strong>Navigation Decision:</strong> Framework determines the target page or widget based on action return value</li>
-            <li><strong>Data Loading:</strong> <code>@ModelData</code> methods are executed to load data for the template</li>
+            <li><strong>Navigation Decision:</strong> Framework determines the target page or widget based on action
+                return value
+            </li>
+            <li><strong>Data Loading:</strong> <code>@ModelData</code> methods are executed to load data for the
+                template
+            </li>
             <li><strong>Template Rendering:</strong> HTML template is rendered with the model data</li>
             <li><strong>Response:</strong> Rendered HTML is sent to the browser and displayed</li>
         </ol>
@@ -68,7 +74,8 @@ List&lt;Order&gt; orders() {
         <ul>
             <li><strong>void or null:</strong> Current page/widget is refreshed with updated data</li>
             <li><strong>Class&lt;?&gt;:</strong> Navigate to the specified page, full page reload</li>
-            <li><strong>WidgetResponse:</strong> Load a different widget in the same container, only widget area updates</li>
+            <li><strong>WidgetResponse:</strong> Load a different widget in the same container, only widget area updates
+            </li>
             <li><strong>PageResponse:</strong> Navigate to a page with specific URL parameters</li>
         </ul>
         <pre><code>@Action
@@ -104,21 +111,15 @@ class CartSummaryWidget {
         // This method is called again when "cart-updated" fires
     }
 }</code></pre>
-        <p>When an action emits an update event, all widgets annotated with <code>@RefreshOnUpdateEvents</code> 
-            listening for that event key will automatically refresh their <code>@ModelData</code> and re-render 
+        <p>When an action emits an update event, all widgets annotated with <code>@RefreshOnUpdateEvents</code>
+            listening for that event key will automatically refresh their <code>@ModelData</code> and re-render
             their templates.</p>
-        <p>See the <a href="#" xis:page="WidgetUpdateEvents">Update Events</a> chapter for detailed examples 
+        <p>See the <a href="#" xis:page="WidgetUpdateEvents">Update Events</a> chapter for detailed examples
             including shopping carts, notifications, and multi-widget synchronization patterns.</p>
     </xis:raw>
 
     <h5>Optimization: Lazy Loading</h5>
-    <p>Only components visible on screen execute their <code>@ModelData</code> methods. Widgets inside 
-        <code>&lt;xis:widget-container&gt;</code> that haven't been loaded yet don't execute until they're 
+    <p>Only components visible on screen execute their <code>@ModelData</code> methods. Widgets inside
+        <code>&lt;xis:widget-container&gt;</code> that haven't been loaded yet don't execute until they're
         actually displayed.</p>
-
-    <div class="warning">
-        <strong>Performance Tip:</strong> Keep <code>@ModelData</code> methods fast and efficient. They are 
-        called on every render of the component. Avoid expensive database queries or external API calls in 
-        <code>@ModelData</code> methods - use caching or preload data in <code>@Action</code> methods instead.
-    </div>
 </xis:template>

@@ -4,16 +4,19 @@
         behavior helps you create effective form workflows.</p>
 
     <h5>Basic Form Submission</h5>
-    <p>Use <code>xis:action</code> attribute on the form element to specify which action to call:</p>
+    <p>The form uses <code>xis:binding</code> to match the <code>@FormData</code> annotation, and the submit button triggers the action:</p>
     <xis:raw>
-        <pre><code>@Action
+        <pre><code>@FormData("user")
+UserForm userForm;
+
+@Action
 void saveUser() {
     userService.save(userForm);
 }</code></pre>
         <p><strong>Template:</strong></p>
-        <pre><code>&lt;form xis:action="saveUser"&gt;
-    &lt;input type="text" name="user.name" value="${user.name}"/&gt;
-    &lt;button type="submit"&gt;Save&lt;/button&gt;
+        <pre><code>&lt;form xis:binding="user"&gt;
+    &lt;input type="text" xis:binding="name" value="${user.name}"/&gt;
+    &lt;button type="submit" xis:action="saveUser"&gt;Save&lt;/button&gt;
 &lt;/form&gt;</code></pre>
     </xis:raw>
 
@@ -32,14 +35,13 @@ void publish() {
     documentService.save(document);
 }</code></pre>
         <p><strong>Template:</strong></p>
-        <pre><code>&lt;form&gt;
-    &lt;input type="text" name="document.title" value="${document.title}"/&gt;
-    &lt;textarea name="document.content"&gt;${document.content}&lt;/textarea&gt;
+        <pre><code>&lt;form xis:binding="document"&gt;
+    &lt;input type="text" xis:binding="title" value="${document.title}"/&gt;
+    &lt;textarea xis:binding="content"&gt;${document.content}&lt;/textarea&gt;
     
     &lt;button type="submit" xis:action="saveDraft"&gt;Save Draft&lt;/button&gt;
     &lt;button type="submit" xis:action="publish"&gt;Publish&lt;/button&gt;
 &lt;/form&gt;</code></pre>
-        <p><strong>Note:</strong> When <code>xis:action</code> is on the button, it overrides the form's action.</p>
     </xis:raw>
 
     <h5>Form Actions with Navigation</h5>
@@ -88,15 +90,18 @@ Class&lt;?&gt; submitOrder() {
     <h5>Form Actions with Parameters</h5>
     <p>Combine form data with action parameters for flexible workflows:</p>
     <xis:raw>
-        <pre><code>@Action
+        <pre><code>@FormData("wizard")
+WizardForm wizardForm;
+
+@Action
 void saveAndNext(@ActionParameter("nextStep") String nextStep) {
     wizardService.save(currentStep, wizardForm);
     this.currentStep = nextStep;
 }</code></pre>
         <p><strong>Template:</strong></p>
-        <pre><code>&lt;form xis:action="saveAndNext"&gt;
-    &lt;input type="text" name="wizard.companyName" value="${wizard.companyName}"/&gt;
-    &lt;button type="submit"&gt;
+        <pre><code>&lt;form xis:binding="wizard"&gt;
+    &lt;input type="text" xis:binding="companyName" value="${wizard.companyName}"/&gt;
+    &lt;button type="submit" xis:action="saveAndNext"&gt;
         &lt;xis:parameter name="nextStep" value="address"/&gt;
         Next: Address
     &lt;/button&gt;
@@ -106,9 +111,9 @@ void saveAndNext(@ActionParameter("nextStep") String nextStep) {
     <h5>Cancel Buttons</h5>
     <p>Use regular links or buttons without <code>type="submit"</code> for cancel actions:</p>
     <xis:raw>
-        <pre><code>&lt;form xis:action="saveUser"&gt;
+        <pre><code>&lt;form xis:binding="user"&gt;
     &lt;!-- form fields --&gt;
-    &lt;button type="submit"&gt;Save&lt;/button&gt;
+    &lt;button type="submit" xis:action="saveUser"&gt;Save&lt;/button&gt;
     &lt;a xis:page="UserListPage"&gt;Cancel&lt;/a&gt;
 &lt;/form&gt;</code></pre>
     </xis:raw>

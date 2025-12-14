@@ -19,26 +19,18 @@ class UserFormWidget {
     }
 }</code></pre>
         <p><strong>Template:</strong></p>
-        <pre><code>&lt;form xis:action="saveUser"&gt;
-    &lt;input type="text" name="user.firstName" value="${user.firstName}"/&gt;
-    &lt;input type="text" name="user.lastName" value="${user.lastName}"/&gt;
-    &lt;input type="email" name="user.email" value="${user.email}"/&gt;
-    &lt;button type="submit"&gt;Save&lt;/button&gt;
+        <pre><code>&lt;form xis:binding="user"&gt;
+    &lt;input type="text" xis:binding="firstName" value="${user.firstName}"/&gt;
+    &lt;input type="text" xis:binding="lastName" value="${user.lastName}"/&gt;
+    &lt;input type="email" xis:binding="email" value="${user.email}"/&gt;
+    &lt;button type="submit" xis:action="saveUser"&gt;Save&lt;/button&gt;
 &lt;/form&gt;</code></pre>
     </xis:raw>
 
     <h5>Form Object Structure</h5>
-    <p>The form object is a simple POJO with getters and setters:</p>
+    <p>Form objects can be simple POJOs or Java records:</p>
     <xis:raw>
-        <pre><code>public class UserForm {
-    private String firstName;
-    private String lastName;
-    private String email;
-    
-    // Getters and setters
-    public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
-    // ...
+        <pre><code>public record UserForm(String firstName, String lastName, String email) {
 }</code></pre>
     </xis:raw>
 

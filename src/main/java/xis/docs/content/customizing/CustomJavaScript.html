@@ -8,42 +8,15 @@
         that are added to the DOM after the initial page load - this is an important browser security feature.
     </p>
 
-    <h5>Convention-Based JavaScript Inclusion</h5>
     <p>
-        XIS uses a convention-based approach where you place a <code>.js</code> file with the same name 
-        as your controller in the same package. These JavaScript files are automatically discovered, 
-        bundled, and included in your application.
-    </p>
-
-    <pre><code>// File structure
-src/main/java/
-    com/example/
-        UserPage.java           // Page controller
-        UserPage.html           // HTML template
-        UserPage.js             // JavaScript (automatically included)</code></pre>
-
-    <p>
-        The JavaScript file will be automatically loaded when the page or widget is rendered. You can 
-        access DOM elements and add event listeners as usual:
-    </p>
-
-    <pre><code class="language-javascript">// UserPage.js
-document.addEventListener('DOMContentLoaded', () => {
-    const button = document.getElementById('myButton');
-    button.addEventListener('click', () => {
-        console.log('Button clicked!');
-    });
-});</code></pre>
-
-    <h5>Framework Extensions via META-INF</h5>
-    <p>
-        For global JavaScript that should be available across your entire application (not tied to a specific 
-        page or widget), you can use the META-INF extension mechanism. This is particularly useful for:
+        To include custom JavaScript in your XIS application, use the META-INF extension mechanism. 
+        This is useful for:
     </p>
     <ul>
         <li>Framework extensions and global utilities</li>
         <li>Third-party library integration</li>
         <li>Application-wide event handlers</li>
+        <li>Custom Expression Language functions</li>
     </ul>
 
     <p>
@@ -52,11 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
     </p>
 
     <pre><code>js/global-utilities.js
-js/analytics-tracker.js</code></pre>
+js/analytics-tracker.js
+js/custom-el-functions.js</code></pre>
 
     <p>
         Place the referenced JavaScript files in <code>src/main/resources/</code>. These files will be 
-        automatically bundled and loaded with the XIS framework.
+        automatically bundled and loaded with the XIS framework at application startup.
     </p>
 
     <h5>CSS and Other Resources</h5>
@@ -70,8 +44,8 @@ js/analytics-tracker.js</code></pre>
 
     <div class="tipp">
         <strong>💡 Best Practice</strong><br/>
-        Keep your JavaScript modular and co-located with the controller it belongs to. Use the 
-        convention-based approach (same name as controller) for page/widget-specific code, and the 
-        META-INF mechanism only for truly global functionality.
+        Keep your JavaScript files organized in <code>src/main/resources/js/</code> and reference them 
+        in the META-INF extensions file. This makes it easy to track what JavaScript is loaded in your 
+        application.
     </div>
 </xis:template>

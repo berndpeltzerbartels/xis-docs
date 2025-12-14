@@ -1,4 +1,310 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
+    <p>XIS provides three storage mechanisms for managing client-side state: <code>@LocalStorage</code>, 
+        <code>@SessionStorage</code>, and <code>@ClientStorage</code>. All three work similarly but differ in 
+        their persistence and storage location.</p>
+
+    <h5>Storage Types Comparison</h5>
+    <table>
+        <thead>
+            <tr>
+                <th>Annotation</th>
+                <th>Storage Location</th>
+                <th>Persistence</th>
+                <th>Use Cases</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>@LocalStorage</code></td>
+                <td>Browser (localStorage)</td>
+                <td>Permanent (until cleared)</td>
+                <td>User preferences, theme, language</td>
+            </tr>
+            <tr>
+                <td><code>@SessionStorage</code></td>
+                <td>Browser (sessionStorage)</td>
+                <td>Tab session only</td>
+                <td>Current tab state, filters, pagination</td>
+            </tr>
+            <tr>
+                <td><code>@ClientStorage</code></td>
+                <td>Server-side</td>
+                <td>Client session</td>
+                <td>Sensitive data, large datasets</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h5>Common Behavior</h5>
+    <p>All three storage types share the same usage pattern:</p>
+    <ul>
+        <li><strong>On methods:</strong> The return value is automatically written to storage</li>
+        <li><strong>As parameter:</strong> The value is read from storage</li>
+        <li><strong>In templates:</strong> Access with <code>localStorage.key</code>, <code>sessionStorage.key</code>, or <code>clientStorage.key</code></li>
+        <li><strong>Updates:</strong> Changes do NOT automatically trigger updates in other widgets (use Update Events)</li>
+    </ul>
+
+    <h5>@LocalStorage - Persistent Browser Storage</h5>
+    <p>Data survives page reloads and browser restarts. Perfect for user preferences that should persist across sessions.</p>
+    
+    <h6>Java Example</h6>
+    <pre><code class="language-java">@Widget
+class ThemeWidget {
+    
+    // Initialize: Return value is written to localStorage
+    @LocalStorage("userTheme")
+    String getDefaultTheme() {
+        return "light"; // Written to localStorage on first access
+    }
+    
+    // Update: Save new value and notify other widgets
+    @Action(value = "changeTheme", updateEventKeys = {"theme-changed"})
+    @LocalStorage("userTheme")
+    String changeTheme(@ActionParameter("newTheme") String newTheme) {
+        return newTheme; // Saved to localStorage, emits event
+    }
+}</code></pre>
+
+    <h6>Template Example</h6>
+    <pre><code class="language-html">&lt;!-- Access localStorage value --&gt;
+&lt;body class="theme-${localStorage.userTheme}"&gt;
+    &lt;div&gt;Current theme: ${localStorage.userTheme}&lt;/div&gt;
+    
+    &lt;!-- Update localStorage --&gt;
+    &lt;button xis:action="changeTheme"&gt;
+        &lt;xis:parameter name="newTheme" value="dark"/&gt;
+        Switch to Dark Mode
+    &lt;/button&gt;
+    
+    &lt;button xis:action="changeTheme"&gt;
+        &lt;xis:parameter name="newTheme" value="light"/&gt;
+        Switch to Light Mode
+    &lt;/button&gt;
+&lt;/body&gt;</code></pre>
+
+    <h5>@SessionStorage - Tab-Specific Storage</h5>
+    <p>Data persists only within the current browser tab/window. Cleared when tab is closed. Ideal for tab-specific UI state.</p>
+    
+    <h6>Java Example</h6>
+    <pre><code class="language-java">@Widget
+class ProductListWidget {
+    
+    // Initialize: Return value is written to sessionStorage
+    @SessionStorage("selectedCategory")
+    String getDefaultCategory() {
+        return "all"; // Written to sessionStorage
+    }
+    
+    // Transform storage data for display
+    @ModelData("products")
+    List<Product> getProducts(@SessionStorage("selectedCategory") String category,
+                              @SessionStorage("sortBy") String sortBy) {
+        return productService.findByCategory(category, sortBy);
+        // Uses storage values to fetch data - this is transformation
+    }
+    
+    @ModelData("filterSummary")
+    String getFilterSummary(@SessionStorage("selectedCategory") String category) {
+        return "Zeige Kategorie: " + category;
+        // Transforms storage value into display text
+    }
+    
+    // Update: Save new filter and notify widgets
+    @Action(value = "filterByCategory", updateEventKeys = {"filter-changed"})
+    @SessionStorage("selectedCategory")
+    String filterByCategory(@ActionParameter("category") String category) {
+        return category; // Saved to sessionStorage, emits event
+    }
+    
+    @Action(value = "changeSorting", updateEventKeys = {"filter-changed"})
+    @SessionStorage("sortBy")
+    String changeSorting(@ActionParameter("sortBy") String sortBy) {
+        return sortBy;
+    }
+}</code></pre>
+
+    <h6>Template Example</h6>
+    <pre><code class="language-html">&lt;!-- Filter controls --&gt;
+&lt;div class="filters"&gt;
+    &lt;button class="${sessionStorage.selectedCategory == 'electronics' ? 'active' : ''}" 
+            xis:action="filterByCategory"&gt;
+        &lt;xis:parameter name="category" value="electronics"/&gt;
+        Electronics
+    &lt;/button&gt;
+    &lt;button class="${sessionStorage.selectedCategory == 'books' ? 'active' : ''}" 
+            xis:action="filterByCategory"&gt;
+        &lt;xis:parameter name="category" value="books"/&gt;
+        Books
+    &lt;/button&gt;
+&lt;/div&gt;
+
+&lt;!-- Sort controls --&gt;
+&lt;select onchange="this.querySelector('button').click()"&gt;
+    &lt;option value="name" ${sessionStorage.sortBy == 'name' ? 'selected' : ''}&gt;Name&lt;/option&gt;
+    &lt;option value="price" ${sessionStorage.sortBy == 'price' ? 'selected' : ''}&gt;Price&lt;/option&gt;
+    &lt;button hidden xis:action="changeSorting"&gt;
+        &lt;xis:parameter name="sortBy" value="${this.value}"/&gt;
+    &lt;/button&gt;
+&lt;/select&gt;</code></pre>
+
+    <h5>@ClientStorage - Server-Side Storage</h5>
+    <p>Data is stored on the server, not in the browser. Use for sensitive data, large datasets, or data that 
+        should not be accessible via browser DevTools. Persists for the client session.</p>
+    
+    <h6>Java Example</h6>
+    <pre><code class="language-java">@Widget
+class ShoppingCartWidget {
+    
+    // Initialize: Return value is written to server-side storage
+    @ClientStorage("cartItems")
+    List&lt;CartItem&gt; initializeCart() {
+        return new ArrayList&lt;&gt;(); // Stored on server
+    }
+    
+    // Transform storage data for display (this is when @ModelData makes sense)
+    @ModelData("isCartEmpty")
+    boolean isCartEmpty(@ClientStorage("cartItems") List&lt;CartItem&gt; items) {
+        return items.isEmpty();
+    }
+    
+    @ModelData("cartMessage")
+    String getCartMessage(@ClientStorage("cartItems") List&lt;CartItem&gt; items) {
+        if (items.isEmpty()) {
+            return "Ihr Warenkorb ist leer";
+        }
+        return "Es befinden sich " + items.size() + " Artikel im Warenkorb";
+    }
+    
+    @ModelData("totalPrice")
+    BigDecimal getTotalPrice(@ClientStorage("cartItems") List&lt;CartItem&gt; items) {
+        return items.stream()
+            .map(item -&gt; item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+    
+    // Update: Save changes and notify widgets
+    @Action(value = "addToCart", updateEventKeys = {"cart-updated"})
+    @ClientStorage("cartItems")
+    List&lt;CartItem&gt; addToCart(@ClientStorage("cartItems") List&lt;CartItem&gt; currentItems,
+                             @ActionParameter("productId") String productId) {
+        List&lt;CartItem&gt; updated = new ArrayList&lt;&gt;(currentItems);
+        updated.add(new CartItem(productId, 1));
+        return updated; // Saved to server storage, emits event
+    }
+    
+    @Action(value = "clearCart", updateEventKeys = {"cart-updated"})
+    @ClientStorage("cartItems")
+    List&lt;CartItem&gt; clearCart() {
+        return new ArrayList&lt;&gt;(); // Clear cart
+    }
+}</code></pre>
+
+    <h6>Template Example - Direct Access</h6>
+    <p>Storage variables can be accessed directly in templates using the appropriate prefix:</p>
+    <pre><code class="language-html">&lt;!-- Direct access to storage variable --&gt;
+&lt;div class="cart-items"&gt;
+    &lt;div xis:foreach="item:${clientStorage.cartItems}"&gt;
+        &lt;span&gt;${item.productName} (${item.quantity}x)&lt;/span&gt;
+        &lt;span&gt;${item.price}&lt;/span&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+    <h6>Template Example - Using Transformed Data</h6>
+    <p>Use <code>@ModelData</code> methods when you need to transform or calculate values:</p>
+    <pre><code class="language-html">&lt;!-- Using transformed data from @ModelData methods --&gt;
+&lt;div class="cart-summary"&gt;
+    &lt;h3&gt;${cartMessage}&lt;/h3&gt;
+    &lt;div xis:if="${isCartEmpty == false}"&gt;
+        &lt;p&gt;Gesamtpreis: ${totalPrice} €&lt;/p&gt;
+        &lt;button xis:action="clearCart"&gt;Warenkorb leeren&lt;/button&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Product list --&gt;
+&lt;div xis:foreach="product:${products}"&gt;
+    &lt;h4&gt;${product.name}&lt;/h4&gt;
+    &lt;button xis:action="addToCart"&gt;
+        &lt;xis:parameter name="productId" value="${product.id}"/&gt;
+        In den Warenkorb
+    &lt;/button&gt;
+&lt;/div&gt;</code></pre>
+
+    <h5>Coordinating Multiple Widgets with Update Events</h5>
+    <p>Storage changes do NOT automatically refresh other widgets. Use <code>@Action(updateEventKeys = {...})</code> 
+        to emit events, and <code>@RefreshOnUpdateEvents</code> to listen for them.</p>
+    
+    <pre><code class="language-java">// Widget that changes storage and emits event
+@Widget
+class FilterWidget {
+    @Action(value = "updateFilter", updateEventKeys = {"filter-changed"})
+    @SessionStorage("filter")
+    String updateFilter(@ActionParameter("newFilter") String filter) {
+        return filter; // Emits "filter-changed" event
+    }
+}
+
+// Widget that reloads when storage changes
+@Widget
+@RefreshOnUpdateEvents("filter-changed")
+class ProductListWidget {
+    @ModelData("products")
+    List&lt;Product&gt; getProducts(@SessionStorage("filter") String filter) {
+        return productService.findByFilter(filter);
+        // This widget reloads automatically when "filter-changed" event fires
+    }
+}
+
+// Another widget that also reacts to the same event
+@Widget
+@RefreshOnUpdateEvents("filter-changed")
+class FilterSummaryWidget {
+    @ModelData("summary")
+    String getSummary(@SessionStorage("filter") String filter) {
+        return "Active filter: " + filter;
+        // Also reloads on "filter-changed"
+    }
+}</code></pre>
+
+    <p>See the <a href="#" xis:page="WidgetUpdateEvents">Widget Update Events</a> chapter for complete 
+        examples and patterns.</p>
+
+    <h5>Key Differences Summary</h5>
+    <div class="info">
+        <p><strong>@LocalStorage:</strong></p>
+        <ul>
+            <li>✓ Survives browser restart</li>
+            <li>✓ Shared across all tabs</li>
+            <li>✓ Accessible in browser DevTools</li>
+            <li>✗ Limited to ~5-10MB</li>
+            <li><strong>Best for:</strong> User preferences, theme, language settings</li>
+        </ul>
+        
+        <p><strong>@SessionStorage:</strong></p>
+        <ul>
+            <li>✓ Tab-specific (isolated)</li>
+            <li>✓ Accessible in browser DevTools</li>
+            <li>✗ Cleared when tab closes</li>
+            <li>✗ Limited to ~5-10MB</li>
+            <li><strong>Best for:</strong> Current tab state, filters, pagination, form drafts</li>
+        </ul>
+        
+        <p><strong>@ClientStorage:</strong></p>
+        <ul>
+            <li>✓ Server-side (secure)</li>
+            <li>✓ No size limits (practical limits apply)</li>
+            <li>✓ Not accessible via browser</li>
+            <li>✗ Requires server roundtrip</li>
+            <li>✗ Cleared when session expires</li>
+            <li><strong>Best for:</strong> Sensitive data, shopping carts, complex session state</li>
+        </ul>
+    </div>
+
+    <h5>See Also</h5>
+    <ul>
+        <li><a href="#" xis:page="MethodAnnotations">Method Annotations</a> - Complete reference for storage annotations</li>
+        <li><a href="#" xis:page="WidgetUpdateEvents">Widget Update Events</a> - Coordinating widgets with events</li>
+        <li><a href="#" xis:page="ParameterAnnotations">Parameter Annotations</a> - Using storage in method parameters</li>
+    </ul>
 
 </xis:template>
