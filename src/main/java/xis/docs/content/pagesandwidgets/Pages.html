@@ -47,6 +47,16 @@ public class HelloPage {
         Pages can embed widgets to compose complex interfaces from reusable components.
     </p>
     
+    <div class="warning">
+        <strong>Important: Script and CSS Inclusion</strong><br/>
+        Pages and Widgets in XIS cannot include scripts and CSS files using standard HTML <code>&lt;script&gt;</code> 
+        and <code>&lt;link&gt;</code> tags directly in the template. Instead, XIS uses a convention-based approach 
+        where you place a <code>.js</code> and/or <code>.css</code> file with the same name as your controller in 
+        the same package. These files are automatically discovered and included. You can also use 
+        <code>@JavaScriptFile</code> and <code>@CSSFile</code> annotations for explicit control. See the 
+        Custom Assets documentation for details on this mechanism.
+    </div>
+    
     <h5>Deep Linking Support</h5>
     <p>
         XIS pages are inherently deep-link capable - each page is accessible via its unique URL path specified 
