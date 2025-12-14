@@ -1,0 +1,77 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>${chapterHeadline}</h3>
+    
+    <p>
+        Pages and Widgets in XIS cannot include JavaScript files using standard HTML <code>&lt;script&gt;</code> 
+        tags directly in templates. This is because XIS is a Single Page Application (SPA) where content is 
+        dynamically inserted into the DOM at runtime. Browsers do not execute <code>&lt;script&gt;</code> tags 
+        that are added to the DOM after the initial page load - this is an important browser security feature.
+    </p>
+
+    <h5>Convention-Based JavaScript Inclusion</h5>
+    <p>
+        XIS uses a convention-based approach where you place a <code>.js</code> file with the same name 
+        as your controller in the same package. These JavaScript files are automatically discovered, 
+        bundled, and included in your application.
+    </p>
+
+    <pre><code>// File structure
+src/main/java/
+    com/example/
+        UserPage.java           // Page controller
+        UserPage.html           // HTML template
+        UserPage.js             // JavaScript (automatically included)</code></pre>
+
+    <p>
+        The JavaScript file will be automatically loaded when the page or widget is rendered. You can 
+        access DOM elements and add event listeners as usual:
+    </p>
+
+    <pre><code class="language-javascript">// UserPage.js
+document.addEventListener('DOMContentLoaded', () => {
+    const button = document.getElementById('myButton');
+    button.addEventListener('click', () => {
+        console.log('Button clicked!');
+    });
+});</code></pre>
+
+    <h5>Framework Extensions via META-INF</h5>
+    <p>
+        For global JavaScript that should be available across your entire application (not tied to a specific 
+        page or widget), you can use the META-INF extension mechanism. This is particularly useful for:
+    </p>
+    <ul>
+        <li>Framework extensions and global utilities</li>
+        <li>Third-party library integration</li>
+        <li>Application-wide event handlers</li>
+    </ul>
+
+    <p>
+        Create a file at <code>src/main/resources/META-INF/xis/js/extensions</code> that lists your 
+        JavaScript files (one per line):
+    </p>
+
+    <pre><code>js/global-utilities.js
+js/analytics-tracker.js</code></pre>
+
+    <p>
+        Place the referenced JavaScript files in <code>src/main/resources/</code>. These files will be 
+        automatically bundled and loaded with the XIS framework.
+    </p>
+
+    <h5>CSS and Other Resources</h5>
+    <p>
+        Unlike JavaScript, CSS files and other resources can be included directly in templates using 
+        standard HTML tags, as they do not have the same browser execution restrictions:
+    </p>
+
+    <pre><code>&lt;link rel="stylesheet" href="/css/custom-styles.css"&gt;
+&lt;img src="/images/logo.png" alt="Logo"&gt;</code></pre>
+
+    <div class="tipp">
+        <strong>💡 Best Practice</strong><br/>
+        Keep your JavaScript modular and co-located with the controller it belongs to. Use the 
+        convention-based approach (same name as controller) for page/widget-specific code, and the 
+        META-INF mechanism only for truly global functionality.
+    </div>
+</xis:template>
