@@ -5,9 +5,9 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/docs/expressionlanguage.html", containerId = "main")
-@Navigation(title = "Expression Language", nextItem = FrameworkVariables.class)
-class ExpressionLanguage {
+@Widget(url = "/docs/framework-variables.html", containerId = "main")
+@Navigation(title = "Framework Variables", nextItem = CustomElFunctions.class)
+class FrameworkVariables {
 
     @Title
     @ModelData

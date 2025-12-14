@@ -6,7 +6,7 @@ import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
 @Widget(url = "/docs/frameworkattributes.html", containerId = "main")
-@Navigation(title = "Framework Attributes", nextItem = CustomElFunctions.class)
+@Navigation(title = "Framework Attributes")
 class FrameworkAttributes {
 
     @Title

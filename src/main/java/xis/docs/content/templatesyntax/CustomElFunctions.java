@@ -6,7 +6,7 @@ import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
 @Widget(url = "/docs/customelfunctions.html", containerId = "main")
-@Navigation(title = "Custom EL Functions")
+@Navigation(title = "Custom EL Functions", nextItem = FrameworkTags.class)
 class CustomElFunctions {
 
     @Title

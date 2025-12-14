@@ -11,4 +11,5 @@ public class NaviItemDto {
     private String widgetId;
     private String url;
     private List<NaviItemDto> subItems;
+    private List<String> subUrls;
 }

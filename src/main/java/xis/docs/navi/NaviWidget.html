@@ -4,10 +4,13 @@
             <h5>Table of Content</h5>
             <ul xis:selection-group>
                 <li xis:repeat="item:naviItems">
-                    <strong><a href="${item.url}">${item.label}</a></strong>
+                    <strong><a
+                            class="${contains(item.url, pathname) || contains(item.subUrls, pathname) ? 'highlight': ''}"
+                            href="${item.url}">${item.label}</a></strong>
                     <ul>
                         <li xis:repeat="subItem:item.subItems">
-                            <a href="${subItem.url}">${subItem.label}</a>
+                            <a class="${pathname == subItem.url ? 'highlight': ''}"
+                               href="${subItem.url}">${subItem.label}</a>
                         </li>
                     </ul>
                 </li>

@@ -29,6 +29,7 @@ class NaviItemMapper {
         dto.setUrl(item.getUrl());
         if (item.getFirstSubItem() != null) {
             dto.setSubItems(toDtos(item.getFirstSubItem()));
+            dto.setSubUrls(dto.getSubItems().stream().map(NaviItemDto::getUrl).toList());
         } else {
             dto.setSubItems(emptyList());
         }
