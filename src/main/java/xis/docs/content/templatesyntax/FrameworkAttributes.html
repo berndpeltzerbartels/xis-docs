@@ -6,8 +6,8 @@
         whichever syntax is more readable for your use case - both work identically.
     </p>
     <p>
-        <strong>Key Concept:</strong> When you write <code>xis:foreach="user:$&#8203;{users}"</code> as an attribute, 
-        XIS internally transforms it to <code>&lt;xis:foreach var="user" array="$&#8203;{users}"&gt;</code>. The 
+        <strong>Key Concept:</strong> When you write <code>xis:foreach="user:$​{users}"</code> as an attribute, 
+        XIS internally transforms it to <code>&lt;xis:foreach var="user" array="$​{users}"&gt;</code>. The 
         normalization happens automatically before handlers are created.
     </p>
 
@@ -19,16 +19,16 @@
     
     <p><strong>Attribute Syntax:</strong></p>
     <xis:raw text="true">
-&lt;ul xis:foreach="user:$&#8203;{users}"&gt;
-    &lt;li&gt;$&#8203;{user.name} - $&#8203;{user.email}&lt;/li&gt;
+&lt;ul xis:foreach="user:$​{users}"&gt;
+    &lt;li&gt;$​{user.name} - $​{user.email}&lt;/li&gt;
 &lt;/ul&gt;
     </xis:raw>
 
     <p><strong>Normalized To:</strong></p>
     <xis:raw text="true">
 &lt;ul&gt;
-    &lt;xis:foreach var="user" array="$&#8203;{users}"&gt;
-        &lt;li&gt;$&#8203;{user.name} - $&#8203;{user.email}&lt;/li&gt;
+    &lt;xis:foreach var="user" array="$​{users}"&gt;
+        &lt;li&gt;$​{user.name} - $​{user.email}&lt;/li&gt;
     &lt;/xis:foreach&gt;
 &lt;/ul&gt;
     </xis:raw>
@@ -48,16 +48,16 @@
     
     <p><strong>Attribute Syntax:</strong></p>
     <xis:raw text="true">
-&lt;li class="user-item" xis:repeat="user:$&#8203;{users}"&gt;
-    $&#8203;{user.name}
+&lt;li class="user-item" xis:repeat="user:$​{users}"&gt;
+    $​{user.name}
 &lt;/li&gt;
     </xis:raw>
 
     <p><strong>Normalized To:</strong></p>
     <xis:raw text="true">
-&lt;xis:foreach var="user" array="$&#8203;{users}"&gt;
+&lt;xis:foreach var="user" array="$​{users}"&gt;
     &lt;li class="user-item"&gt;
-        $&#8203;{user.name}
+        $​{user.name}
     &lt;/li&gt;
 &lt;/xis:foreach&gt;
     </xis:raw>
@@ -71,43 +71,28 @@
     <h5>Conditional Attributes</h5>
 
     <h6>xis:if</h6>
-    <p>Conditionally renders the content of an element. Wraps the element's children in a 
-       <code>&lt;xis:if&gt;</code> tag, but the element itself remains.</p>
+    <p>Conditionally renders an element and its content. Wraps the entire element in a 
+       <code>&lt;xis:if&gt;</code> tag, so the element only appears when the condition is true.</p>
     
     <p><strong>Attribute Syntax:</strong></p>
     <xis:raw text="true">
-&lt;div class="status-container" xis:if="$&#8203;{user.isActive}"&gt;
+&lt;div class="status-container" xis:if="$​{user.isActive}"&gt;
     &lt;span class="badge"&gt;Active&lt;/span&gt;
 &lt;/div&gt;
     </xis:raw>
 
     <p><strong>Normalized To:</strong></p>
     <xis:raw text="true">
-&lt;div class="status-container"&gt;
-    &lt;xis:if condition="$&#8203;{user.isActive}"&gt;
+&lt;xis:if condition="$​{user.isActive}"&gt;
+    &lt;div class="status-container"&gt;
         &lt;span class="badge"&gt;Active&lt;/span&gt;
-    &lt;/xis:if&gt;
-&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/xis:if&gt;
     </xis:raw>
 
-    <p><strong>Result:</strong> The <code>&lt;div&gt;</code> always renders, but the <code>&lt;span&gt;</code> only 
-       appears when the condition is true.</p>
+    <p><strong>Result:</strong> The <code>&lt;div&gt;</code> and its content only render when the condition is true.</p>
 
-    <h6>xis:visible</h6>
-    <p>Conditionally renders the element itself. Wraps the entire element in a <code>&lt;xis:if&gt;</code> tag, 
-       making both the element and its content conditional.</p>
-    
-    <p><strong>Attribute Syntax:</strong></p>
-    <xis:raw text="true">
-&lt;div class="status-badge" xis:visible="$&#8203;{user.isActive}"&gt;
-    Active User
-&lt;/div&gt;
-    </xis:raw>
-
-    <p><strong>Normalized To:</strong></p>
-    <xis:raw text="true">
-&lt;xis:if condition="$&#8203;{user.isActive}"&gt;
-    &lt;div class="status-badge"&gt;
+    <h6>xis:repeat</h6>
         Active User
     &lt;/div&gt;
 &lt;/xis:if&gt;
@@ -229,20 +214,19 @@
     <ul>
         <li><code>xis:foreach</code> embeds content in a foreach tag → <strong>content repeats</strong></li>
         <li><code>xis:repeat</code> wraps element in a foreach tag → <strong>element repeats</strong></li>
-        <li><code>xis:if</code> wraps content in an if tag → <strong>element stays, content conditional</strong></li>
-        <li><code>xis:visible</code> wraps element in an if tag → <strong>element and content conditional</strong></li>
+        <li><code>xis:if</code> wraps element in an if tag → <strong>element conditional</strong></li>
     </ul>
 
     <h5>Complete Example</h5>
     <p>Attributes can be combined to create complex, dynamic interfaces:</p>
 
     <xis:raw text="true">
-&lt;div class="user-list" xis:if="$&#8203;{users.size() > 0}"&gt;
-    &lt;div class="user-card" xis:repeat="user:$&#8203;{users}" xis:visible="$&#8203;{user.isActive}"&gt;
-        &lt;h3&gt;$&#8203;{user.name}&lt;/h3&gt;
-        &lt;p&gt;$&#8203;{user.email}&lt;/p&gt;
+&lt;div class="user-list" xis:if="$​{users.size() > 0}"&gt;
+    &lt;div class="user-card" xis:repeat="user:$​{users}"&gt;
+        &lt;h3&gt;$​{user.name}&lt;/h3&gt;
+        &lt;p&gt;$​{user.email}&lt;/p&gt;
         &lt;button xis:action="editUser"&gt;
-            &lt;xis:parameter name="userId" value="$&#8203;{user.id}"/&gt;
+            &lt;xis:parameter name="userId" value="$​{user.id}"/&gt;
             Edit
         &lt;/button&gt;
     &lt;/div&gt;

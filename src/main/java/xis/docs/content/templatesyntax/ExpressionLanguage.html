@@ -1,19 +1,19 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
     <p>
-        The XIS Expression Language (EL) enables dynamic expressions in templates through the <code>$&#8203;{...}</code> 
+        The XIS Expression Language (EL) enables dynamic expressions in templates through the <code>$​{...}</code> 
         syntax. It's JavaScript-like but safe and focused on template needs, with no access to browser APIs or 
         unsafe objects. Use EL for accessing data, calculations, string formatting, and conditional logic directly 
         in your HTML templates.
     </p>
 
     <h5>Basic Syntax</h5>
-    <p>Expressions are enclosed in <code>$&#8203;{...}</code> and can appear in text content and attribute values:</p>
+    <p>Expressions are enclosed in <code>$​{...}</code> and can appear in text content and attribute values:</p>
     <ul>
-        <li><b>Variable access:</b> <code>$&#8203;{user.name}</code>, <code>$&#8203;{item.price}</code></li>
-        <li><b>Function calls:</b> <code>$&#8203;{toUpperCase(user.name)}</code>, <code>$&#8203;{formatDate(order.date, 'en-US')}</code></li>
-        <li><b>Operators:</b> <code>$&#8203;{a + b}</code>, <code>$&#8203;{count > 0 ? 'found' : 'none'}</code></li>
-        <li><b>Array/Object access:</b> <code>$&#8203;{items[0]}</code>, <code>$&#8203;{order['status']}</code></li>
+        <li><b>Variable access:</b> <code>$​{user.name}</code>, <code>$​{item.price}</code></li>
+        <li><b>Function calls:</b> <code>$​{toUpperCase(user.name)}</code>, <code>$​{formatDate(order.date, 'en-US')}</code></li>
+        <li><b>Operators:</b> <code>$​{a + b}</code>, <code>$​{count > 0 ? 'found' : 'none'}</code></li>
+        <li><b>Array/Object access:</b> <code>$​{items[0]}</code>, <code>$​{order['status']}</code></li>
     </ul>
 
     <h5>Operators</h5>
@@ -80,10 +80,10 @@
     <p>Different types of variables are available in templates:</p>
     <ul>
         <li><b>Model Data:</b> All data provided by controller <code>@ModelData</code> methods is directly accessible 
-            (<code>$&#8203;{user}</code>, <code>$&#8203;{orderList}</code>)</li>
+            (<code>$​{user}</code>, <code>$​{orderList}</code>)</li>
         <li><b>Loop Variables:</b> Variables defined by <code>xis:foreach</code> are available within the loop scope</li>
         <li><b>Action Parameters:</b> Values passed via <code>&lt;xis:parameter&gt;</code> tags</li>
-        <li><b>Storage Variables:</b> <code>$&#8203;{localStorage.theme}</code>, <code>$&#8203;{sessionStorage.tab}</code> 
+        <li><b>Storage Variables:</b> <code>$​{localStorage.theme}</code>, <code>$​{sessionStorage.tab}</code> 
             for client-side storage</li>
         <li><b>Variable Shadowing:</b> Inner scopes can shadow outer variables with the same name</li>
     </ul>
@@ -91,36 +91,36 @@
     <h5>Practical Examples</h5>
 
     <p><strong>String Formatting:</strong></p>
-    <pre><code>&lt;div&gt;Hello $&#8203;{toUpperCase(user.name)}!&lt;/div&gt;
-&lt;p&gt;Email: $&#8203;{toLowerCase(user.email)}&lt;/p&gt;</code></pre>
+    <pre><code>&lt;div&gt;Hello $​{toUpperCase(user.name)}!&lt;/div&gt;
+&lt;p&gt;Email: $​{toLowerCase(user.email)}&lt;/p&gt;</code></pre>
 
     <p><strong>Conditional Display:</strong></p>
-    <pre><code>&lt;span&gt;$&#8203;{count > 0 ? count + ' items found' : 'No results'}&lt;/span&gt;
-&lt;div class="$&#8203;{user.isActive ? 'active' : 'inactive'}"&gt;Status&lt;/div&gt;</code></pre>
+    <pre><code>&lt;span&gt;$​{count > 0 ? count + ' items found' : 'No results'}&lt;/span&gt;
+&lt;div class="$​{user.isActive ? 'active' : 'inactive'}"&gt;Status&lt;/div&gt;</code></pre>
 
     <p><strong>Calculations:</strong></p>
-    <pre><code>&lt;div&gt;Total: $&#8203;{quantity * price}&lt;/div&gt;
-&lt;div&gt;Discount: $&#8203;{round(price * 0.15, 2)}&lt;/div&gt;</code></pre>
+    <pre><code>&lt;div&gt;Total: $​{quantity * price}&lt;/div&gt;
+&lt;div&gt;Discount: $​{round(price * 0.15, 2)}&lt;/div&gt;</code></pre>
 
     <p><strong>Date Formatting:</strong></p>
-    <pre><code>&lt;div xis:foreach="order:$&#8203;{orders}"&gt;
-    &lt;div&gt;Order #$&#8203;{order.id} - $&#8203;{formatDate(order.date, 'en-US')}&lt;/div&gt;
+    <pre><code>&lt;div xis:foreach="order:$​{orders}"&gt;
+    &lt;div&gt;Order #$​{order.id} - $​{formatDate(order.date, 'en-US')}&lt;/div&gt;
 &lt;/div&gt;</code></pre>
 
     <p><strong>Default Values:</strong></p>
-    <pre><code>&lt;div&gt;$&#8203;{default(user.email, 'No email provided')}&lt;/div&gt;
-&lt;span&gt;$&#8203;{default(user.phone, 'N/A')}&lt;/span&gt;</code></pre>
+    <pre><code>&lt;div&gt;$​{default(user.email, 'No email provided')}&lt;/div&gt;
+&lt;span&gt;$​{default(user.phone, 'N/A')}&lt;/span&gt;</code></pre>
 
     <p><strong>Complex Expressions:</strong></p>
-    <pre><code>&lt;div xis:visible="$&#8203;{notEmpty(items) &amp;&amp; user.hasPermission}"&gt;
-    Found $&#8203;{length(items)} items for $&#8203;{user.name}
+    <pre><code>&lt;div xis:if="$​{notEmpty(items) &amp;&amp; user.hasPermission}"&gt;
+    Found $​{length(items)} items for $​{user.name}
 &lt;/div&gt;</code></pre>
 
     <h5>Safety & Best Practices</h5>
     <ul>
         <li><b>Safe Evaluation:</b> All expressions are evaluated in a secure sandbox with no access to 
             <code>window</code>, <code>document</code>, or other browser APIs</li>
-        <li><b>Function Nesting:</b> Functions can be nested arbitrarily: <code>$&#8203;{toUpperCase(trim(user.name))}</code></li>
+        <li><b>Function Nesting:</b> Functions can be nested arbitrarily: <code>$​{toUpperCase(trim(user.name))}</code></li>
         <li><b>Date Flexibility:</b> Date functions accept Date objects, ISO strings, or timestamps</li>
         <li><b>Keep It Simple:</b> For complex logic, move calculations to controller <code>@ModelData</code> methods 
             rather than embedding in templates</li>
@@ -130,12 +130,12 @@
 
     <h5>Advanced Usage</h5>
     <p>Expressions can be combined with framework attributes for powerful dynamic behavior:</p>
-    <pre><code>&lt;div xis:if="$&#8203;{users.size() > 0}"&gt;
-    &lt;div xis:foreach="user:$&#8203;{users}" 
-         xis:visible="$&#8203;{user.isActive &amp;&amp; user.age >= 18}"&gt;
-        &lt;h3&gt;$&#8203;{user.name} ($&#8203;{user.age} years old)&lt;/h3&gt;
-        &lt;p class="$&#8203;{user.isPremium ? 'premium' : 'standard'}"&gt;
-            Member since $&#8203;{formatDate(user.joinDate, 'en-US')}
+    <pre><code>&lt;div xis:if="$​{users.size() > 0}"&gt;
+    &lt;div xis:foreach="user:$​{users}" 
+         xis:if="$​{user.isActive &amp;&amp; user.age >= 18}"&gt;
+        &lt;h3&gt;$​{user.name} ($​{user.age} years old)&lt;/h3&gt;
+        &lt;p class="$​{user.isPremium ? 'premium' : 'standard'}"&gt;
+            Member since $​{formatDate(user.joinDate, 'en-US')}
         &lt;/p&gt;
     &lt;/div&gt;
 &lt;/div&gt;</code></pre>

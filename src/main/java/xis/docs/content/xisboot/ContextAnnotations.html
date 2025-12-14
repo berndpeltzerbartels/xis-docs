@@ -51,6 +51,103 @@ public class UsersPage {
     }
 }</code></pre>
 
+    <h6>Field Injection with @Inject</h6>
+    <p>Alternatively, you can use field injection with the <code>@Inject</code> annotation:</p>
+
+    <pre><code class="language-java">@Page("/users.html")
+public class UsersPage {
+    @Inject
+    private UserService userService;
+    
+    @ModelData("users")
+    public List&lt;User&gt; getUsers() {
+        return userService.findAll();
+    }
+}</code></pre>
+
+    <p><strong>Note:</strong> Constructor injection is generally preferred over field injection for better testability.</p>
+
+    <h5>Lifecycle Methods</h5>
+
+    <h6>@Init</h6>
+    <p>Methods annotated with <code>@Init</code> are called after the component is constructed and all dependencies 
+       are injected. This is useful for initialization logic that requires dependencies:</p>
+
+    <pre><code class="language-java">@Component
+public class DatabaseService {
+    private final ConfigService configService;
+    private Connection connection;
+    
+    public DatabaseService(ConfigService configService) {
+        this.configService = configService;
+    }
+    
+    @Init
+    public void initialize() {
+        // Called after constructor and dependency injection
+        this.connection = createConnection(configService.getDatabaseUrl());
+    }
+}</code></pre>
+
+    <h5>Bean Factory Methods</h5>
+
+    <h6>@Bean</h6>
+    <p>Methods annotated with <code>@Bean</code> act as factory methods that create and register components. 
+       This is useful when you need programmatic control over component creation:</p>
+
+    <pre><code class="language-java">@Component
+public class AppConfiguration {
+    
+    @Bean
+    public DataSource createDataSource() {
+        return new DataSource("jdbc:postgresql://localhost/mydb");
+    }
+    
+    @Bean
+    public CacheManager createCacheManager() {
+        return new CacheManager(/* config */);
+    }
+}</code></pre>
+
+    <p>The returned instances from <code>@Bean</code> methods are registered as singletons in the context and 
+       can be injected into other components.</p>
+
+    <h5>Event Handling</h5>
+
+    <h6>@EventListener</h6>
+    <p>Methods annotated with <code>@EventListener</code> are invoked when application events are emitted. 
+       The method parameter type determines which events it receives:</p>
+
+    <pre><code class="language-java">@Component
+public class UserActivityLogger {
+    
+    @EventListener
+    public void onUserLogin(UserLoginEvent event) {
+        log.info("User logged in: " + event.getUserId());
+    }
+    
+    @EventListener
+    public void onUserLogout(UserLogoutEvent event) {
+        log.info("User logged out: " + event.getUserId());
+    }
+}</code></pre>
+
+    <p>To emit events, inject <code>EventEmitter</code> and call <code>emitEvent()</code>:</p>
+
+    <pre><code class="language-java">@Service
+public class AuthService {
+    private final EventEmitter eventEmitter;
+    
+    public AuthService(EventEmitter eventEmitter) {
+        this.eventEmitter = eventEmitter;
+    }
+    
+    public void login(String userId) {
+        // ... authentication logic ...
+        eventEmitter.emitEvent(new UserLoginEvent(userId));
+    }
+}</code></pre>
+
     <h5>Component Scope</h5>
     <p>All components in XIS Boot are singletons (one instance per application). This is the only supported scope.
        There is no special annotation required - all components annotated with <code>@Component</code> or 
@@ -102,9 +199,10 @@ public class UsersPage {
 
     <p>Examples of supported Spring annotations include:</p>
     <ul>
-        <li>Component stereotypes like <code>@Component</code>, <code>@Service</code></li>
-        <li>Lifecycle callbacks like <code>@PostConstruct</code> (javax and jakarta)</li>
-        <li>Dependency injection with <code>@Autowired</code> and <code>@Inject</code></li>
+        <li>Component stereotypes: <code>@Component</code>, <code>@Service</code></li>
+        <li>Lifecycle callbacks: <code>@PostConstruct</code> (javax and jakarta)</li>
+        <li>Dependency injection: <code>@Autowired</code>, <code>@Inject</code></li>
+        <li>Factory methods: <code>@Bean</code></li>
     </ul>
 
     <p>To see the exact list of supported annotations and stay up-to-date with any changes, always check the

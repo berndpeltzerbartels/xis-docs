@@ -16,18 +16,18 @@
         name as the key, or an explicitly specified key via the annotation parameter.
     </p>
     <pre><code>@ModelData
-List&lt;User&gt; users() $&#8203;{
+List&lt;User&gt; users() $​{
     return userService.findAll();
 }
 
 @ModelData("currentUser")
-User getLoggedInUser() $&#8203;{
+User getLoggedInUser() $​{
     return securityContext.getCurrentUser();
 }</code></pre>
     <p>In templates, access the data using the key:</p>
-    <pre><code>&lt;h1&gt;Welcome $&#8203;{currentUser.name}&lt;/h1&gt;
-&lt;ul xis:foreach="user:$&#8203;{users}"&gt;
-    &lt;li&gt;$&#8203;{user.name} ($&#8203;{user.email})&lt;/li&gt;
+    <pre><code>&lt;h1&gt;Welcome $​{currentUser.name}&lt;/h1&gt;
+&lt;ul xis:foreach="user:$​{users}"&gt;
+    &lt;li&gt;$​{user.name} ($​{user.email})&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 
     <h5>@SharedValue</h5>
@@ -52,29 +52,29 @@ User getLoggedInUser() $&#8203;{
     </ul>
     <pre><code class="language-java">// Without @SharedValue: Database queried twice (inefficient)
 @ModelData("product")
-Product getProduct(@QueryParameter("productId") String productId) $&#8203;{
+Product getProduct(@QueryParameter("productId") String productId) $​{
     return database.loadProduct(productId); // 1st DB query
 }
 
 @PageTitle
-String getTitle(@QueryParameter("productId") String productId) $&#8203;{
+String getTitle(@QueryParameter("productId") String productId) $​{
     Product p = database.loadProduct(productId); // 2nd DB query - REDUNDANT!
     return p.getName();
 }
 
 // With @SharedValue: Database queried once (efficient)
 @SharedValue("product")
-Product loadProduct(@QueryParameter("productId") String productId) $&#8203;{
+Product loadProduct(@QueryParameter("productId") String productId) $​{
     return database.loadProduct(productId); // Only 1 DB query
 }
 
 @ModelData("product")
-Product getProduct(@SharedValue("product") Product product) $&#8203;{
+Product getProduct(@SharedValue("product") Product product) $​{
     return product; // Reuses cached value
 }
 
 @PageTitle
-String getTitle(@SharedValue("product") Product product) $&#8203;{
+String getTitle(@SharedValue("product") Product product) $​{
     return product.getName(); // Reuses cached value
 }</code></pre>
     <p>
@@ -89,18 +89,18 @@ String getTitle(@SharedValue("product") Product product) $&#8203;{
         <code>Class&lt;?&gt;</code> for navigation, or <code>void</code> to stay on the current page.
     </p>
     <pre><code>@Action("delete")
-void deleteProduct(@ActionParameter("productId") String productId) $&#8203;{
+void deleteProduct(@ActionParameter("productId") String productId) $​{
     productService.delete(productId);
     // Returns void - stays on current page
 }
 
 @Action("viewDetails")
-Class&lt;?&gt; viewProductDetails(@ActionParameter("productId") String productId) $&#8203;{
+Class&lt;?&gt; viewProductDetails(@ActionParameter("productId") String productId) $​{
     return ProductDetailsPage.class; // Navigate to different page
 }
 
 @Action("updateWidget")
-WidgetResponse refreshContent() $&#8203;{
+WidgetResponse refreshContent() $​{
     return new WidgetResponse(UpdatedContentWidget.class);
 }</code></pre>
 
@@ -110,7 +110,7 @@ WidgetResponse refreshContent() $&#8203;{
         Can be used both as a method annotation and as a parameter annotation.
     </p>
     <pre><code>@Action("save")
-void saveUser(@FormData("user") User user) $&#8203;{
+void saveUser(@FormData("user") User user) $​{
     userService.save(user);
 }</code></pre>
     <p>Used with form binding in templates:</p>
@@ -127,20 +127,20 @@ void saveUser(@FormData("user") User user) $&#8203;{
         methods to access this data without recomputing it.
     </p>
     <pre><code>@ModelData("user")
-User loadUser() $&#8203;{
+User loadUser() $​{
     return userService.getCurrentUser(); // Computed once
 }
 
 @ModelData("permissions")
-List&lt;Permission&gt; loadPermissions(@RequestScope("user") User user) $&#8203;{
+List&lt;Permission&gt; loadPermissions(@RequestScope("user") User user) $​{
     // User data injected from request scope
     return permissionService.getPermissionsForUser(user.getId());
 }
 
 @Action("updateProfile")
 void updateProfile(@FormData("profile") UserProfile profile,
-                  @RequestScope("user") User currentUser) $&#8203;{
-    if (currentUser.getId().equals(profile.getUserId())) $&#8203;{
+                  @RequestScope("user") User currentUser) $​{
+    if (currentUser.getId().equals(profile.getUserId())) $​{
         userService.updateProfile(profile);
     }
 }</code></pre>
@@ -161,28 +161,30 @@ void updateProfile(@FormData("profile") UserProfile profile,
     </ul>
     <pre><code>// Method: Writes return value to localStorage
 @LocalStorage("userTheme")
-String getUserTheme() $&#8203;{
+String getUserTheme() $​{
     return "dark"; // This value is written to localStorage
 }
 
 // Parameter: Reads current value from localStorage
 @Action("logTheme")
-void logTheme(@LocalStorage("userTheme") String currentTheme) $&#8203;{
+void logTheme(@LocalStorage("userTheme") String currentTheme) $​{
     System.out.println("Current theme: " + currentTheme);
 }
 
 // Action: Updates localStorage and notifies other widgets
-@Action(value = "changeTheme", updateEventKeys = $&#8203;{"theme-changed"})
+@Action(value = "changeTheme", updateEventKeys = {"theme-changed"})
 @LocalStorage("userTheme") // Return value is saved to localStorage
-String changeTheme(@ActionParameter("newTheme") String newTheme) $&#8203;{
+String changeTheme(@ActionParameter("newTheme") String newTheme) {
     return newTheme; // Saved to localStorage, emits "theme-changed" event
 }</code></pre>
     <p>In templates, access with the <code>localStorage.</code> prefix:</p>
-    <pre><code>&lt;body class="theme-$&#8203;{localStorage.userTheme}"&gt;
+    <pre><code>&lt;body class="theme-${localStorage.userTheme}"&gt;
     &lt;button xis:action="changeTheme"&gt;
         &lt;xis:parameter name="newTheme" value="light"/&gt;
         Switch to Light
     &lt;/button&gt;
+&lt;/body&gt;</code></pre>
+
     <h5>@SessionStorage</h5>
     <p>
         Manages client-side state using the browser's sessionStorage. Data persists across page navigations within 
@@ -200,25 +202,25 @@ String changeTheme(@ActionParameter("newTheme") String newTheme) $&#8203;{
     </ul>
     <pre><code>// Method: Writes return value to sessionStorage
 @SessionStorage("selectedTab")
-String getSelectedTab() $&#8203;{
+String getSelectedTab() $​{
     return "dashboard"; // This value is written to sessionStorage
 }
 
 // Parameter: Reads current value from sessionStorage
 @ModelData
-String getTabInfo(@SessionStorage("selectedTab") String tab) $&#8203;{
+String getTabInfo(@SessionStorage("selectedTab") String tab) $​{
     return "Currently viewing: " + tab;
 }
 
 // Action: Updates sessionStorage and notifies other widgets
-@Action(value = "selectTab", updateEventKeys = $&#8203;{"tab-changed"})
+@Action(value = "selectTab", updateEventKeys = $​{"tab-changed"})
 @SessionStorage("selectedTab") // Return value is saved to sessionStorage
-String selectTab(@ActionParameter("tab") String tab) $&#8203;{
+String selectTab(@ActionParameter("tab") String tab) $​{
     return tab; // Saved to sessionStorage, emits "tab-changed" event
 }</code></pre>
     <p>In templates, access with the <code>sessionStorage.</code> prefix:</p>
     <pre><code>&lt;nav&gt;
-    &lt;button class="$&#8203;{sessionStorage.selectedTab == 'dashboard' ? 'active' : ''}"
+    &lt;button class="$​{sessionStorage.selectedTab == 'dashboard' ? 'active' : ''}"
             xis:action="selectTab"&gt;
         &lt;xis:parameter name="tab" value="dashboard"/&gt;
         Dashboard
@@ -227,7 +229,7 @@ String selectTab(@ActionParameter("tab") String tab) $&#8203;{
     <p>Other widgets can reload when tab selection changes:</p>
     <pre><code>@Widget
 @RefreshOnUpdateEvents("tab-changed")
-class TabContentWidget $&#8203;{
+class TabContentWidget $​{
     // This widget will reload when "tab-changed" event is emitted
 }</code></pre>ard
     &lt;/button&gt;
@@ -235,7 +237,7 @@ class TabContentWidget $&#8203;{
     <p>Other widgets can reload when tab selection changes:</p>
     <pre><code>@Widget
 @RefreshOnUpdateEvents("tab-changed")
-class TabContentWidget $&#8203;{
+class TabContentWidget $​{
     // This widget will reload when "tab-changed" event is emitted
 }</code></pre>
 
@@ -245,23 +247,23 @@ class TabContentWidget $&#8203;{
         authorization. Can be applied at class level (affects all methods) or method level (specific actions).
     </p>
     <pre><code>@Page("/admin-panel.html")
-@Roles($&#8203;{"ADMIN", "MODERATOR"}) // Class-level
-class AdminPanelPage $&#8203;{
+@Roles($​{"ADMIN", "MODERATOR"}) // Class-level
+class AdminPanelPage $​{
     
     @ModelData
-    List&lt;Product&gt; getAllProducts() $&#8203;{
+    List&lt;Product&gt; getAllProducts() $​{
         return productService.findAll(); // Inherits class roles
     }
     
     @Action("deleteProduct")
     @Roles("ADMIN") // Only ADMIN can delete
-    void deleteProduct(@ActionParameter("productId") String productId) $&#8203;{
+    void deleteProduct(@ActionParameter("productId") String productId) $​{
         productService.delete(productId);
     }
     
     @Action("archiveProduct")
-    @Roles($&#8203;{"ADMIN", "EDITOR"}) // Multiple roles
-    void archiveProduct(@ActionParameter("productId") String productId) $&#8203;{
+    @Roles($​{"ADMIN", "EDITOR"}) // Multiple roles
+    void archiveProduct(@ActionParameter("productId") String productId) $​{
         productService.archive(productId);
     }
 }</code></pre>

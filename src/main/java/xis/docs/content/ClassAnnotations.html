@@ -16,13 +16,13 @@
         section. Quick reference:
     </p>
     <pre><code>@Page("/users/list.html")
-class UserListPage $&#8203;{ /* ... */ }
+class UserListPage $​{ /* ... */ }
 
 @Widget // ID defaults to "ProductCard"
-class ProductCard $&#8203;{ /* ... */ }
+class ProductCard $​{ /* ... */ }
 
 @Widget("customId")
-class CustomWidget $&#8203;{ /* ... */ }</code></pre>
+class CustomWidget $​{ /* ... */ }</code></pre>
 
     <h5>@WelcomePage</h5>
     <p>
@@ -36,9 +36,9 @@ class CustomWidget $&#8203;{ /* ... */ }</code></pre>
     </p>
     <pre><code>@WelcomePage
 @Page("/index.html")
-class HomePage $&#8203;{
+class HomePage $​{
     @ModelData
-    String getWelcomeMessage() $&#8203;{
+    String getWelcomeMessage() $​{
         return "Welcome to XIS Framework!";
     }
 }</code></pre>
@@ -58,25 +58,25 @@ class HomePage $&#8203;{
         coupling.
     </p>
     <p>
-        <strong>How it works:</strong> When an action method includes <code>@Action(updateEventKeys = $&#8203;{...})</code>, 
+        <strong>How it works:</strong> When an action method includes <code>@Action(updateEventKeys = $​{...})</code>, 
         XIS automatically reloads all widgets that are listening to those event keys via 
         <code>@RefreshOnUpdateEvents</code>.
     </p>
     <pre><code>// Widget that listens for events
 @Widget
 @RefreshOnUpdateEvents("user-data-changed")
-class UserListWidget $&#8203;{
+class UserListWidget $​{
     @ModelData
-    List&lt;User&gt; getUsers() $&#8203;{
+    List&lt;User&gt; getUsers() $​{
         return userService.findAll();
     }
 }
 
 // Widget that emits events
 @Widget
-class UserFormWidget $&#8203;{
-    @Action(value = "saveUser", updateEventKeys = $&#8203;{"user-data-changed"})
-    void saveUser(@FormData("user") User user) $&#8203;{
+class UserFormWidget $​{
+    @Action(value = "saveUser", updateEventKeys = $​{"user-data-changed"})
+    void saveUser(@FormData("user") User user) $​{
         userService.save(user);
         // UserListWidget will automatically reload
     }
@@ -84,8 +84,8 @@ class UserFormWidget $&#8203;{
 
 // Multiple events supported
 @Widget
-@RefreshOnUpdateEvents($&#8203;{"user-data-changed", "settings-updated", "theme-changed"})
-class DashboardWidget $&#8203;{
+@RefreshOnUpdateEvents($​{"user-data-changed", "settings-updated", "theme-changed"})
+class DashboardWidget $​{
     // Reloads when any of these events is emitted
 }</code></pre>
     <p>
@@ -115,33 +115,33 @@ class DashboardWidget $&#8203;{
     <pre><code>// All methods require ADMIN role
 @Page("/admin/dashboard.html")
 @Roles("ADMIN")
-class AdminDashboard $&#8203;{
+class AdminDashboard $​{
     
     @ModelData
-    List&lt;User&gt; getAllUsers() $&#8203;{
+    List&lt;User&gt; getAllUsers() $​{
         return userService.findAll(); // Requires ADMIN role
     }
     
     @Action("deleteUser")
-    void deleteUser(String userId) $&#8203;{
+    void deleteUser(String userId) $​{
         userService.delete(userId); // Requires ADMIN role
     }
 }
 
 // Multiple roles allowed at class level
 @Widget
-@Roles($&#8203;{"ADMIN", "MODERATOR"})
-class ModerationWidget $&#8203;{
+@Roles($​{"ADMIN", "MODERATOR"})
+class ModerationWidget $​{
     // All methods accessible by ADMIN or MODERATOR
     
     @Action("approvePost")
-    void approvePost(String postId) $&#8203;{
+    void approvePost(String postId) $​{
         postService.approve(postId);
     }
     
     @Action("deletePost")
     @Roles("ADMIN") // Method-level: further restricts to ADMIN only
-    void deletePost(String postId) $&#8203;{
+    void deletePost(String postId) $​{
         postService.delete(postId);
     }
 }</code></pre>

@@ -53,10 +53,10 @@ public class Header {
 &lt;/header&gt;</code></pre>
 
     <p>
-        The <code>@Include</code> annotation automatically marks the class as a Spring <code>@Component</code> 
-        (or Micronaut bean), so XIS discovers it during application startup. This approach keeps includes close 
-        to your business logic rather than buried in resource folders, making it easy to find related templates 
-        and code without excessive navigation.
+        <strong>Note:</strong> The <code>@Include</code> annotation already includes <code>@Component</code> (Spring) 
+        and <code>@XISComponent</code> (XIS Boot), so no additional component annotation is needed. XIS discovers 
+        includes during application startup. This approach keeps includes close to your business logic rather than 
+        buried in resource folders, making it easy to find related templates and code without excessive navigation.
     </p>
 
     <h5>Using Includes in Templates</h5>

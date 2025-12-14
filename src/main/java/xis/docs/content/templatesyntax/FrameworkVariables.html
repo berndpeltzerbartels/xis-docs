@@ -17,7 +17,7 @@
 &lt;span&gt;${localStorage.userPreference}&lt;/span&gt;
 
 &lt;!-- Use in conditions --&gt;
-&lt;div xis:visible="localStorage.darkMode == 'true'"&gt;Dark mode active&lt;/div&gt;</code></pre>
+&lt;div xis:if="localStorage.darkMode == 'true'"&gt;Dark mode active&lt;/div&gt;</code></pre>
     <p><strong>Scope:</strong> Persists across browser sessions. Cleared only when user clears browser data.</p>
 
     <h6>sessionStorage</h6>
@@ -65,7 +65,7 @@
 &lt;div&gt;Page: ${queryParams.page}&lt;/div&gt;
 
 &lt;!-- Use in conditions --&gt;
-&lt;div xis:visible="queryParams.debug == 'true'"&gt;Debug Info&lt;/div&gt;
+&lt;div xis:if="queryParams.debug == 'true'"&gt;Debug Info&lt;/div&gt;
 
 &lt;!-- For URL: /products?category=electronics&amp;page=2
      queryParams.category → "electronics"
@@ -100,7 +100,7 @@
 
 &lt;!-- Display field-specific error --&gt;
 &lt;input name="email" value="${user.email}"/&gt;
-&lt;span class="warn" xis:visible="validation.messages.email"&gt;
+&lt;span class="warn" xis:if="validation.messages.email"&gt;
     ${validation.messages.email}
 &lt;/span&gt;
 
@@ -127,7 +127,7 @@
 &lt;/div&gt;
 
 &lt;!-- Use query parameters --&gt;
-&lt;div xis:visible="queryParams.category"&gt;
+&lt;div xis:if="queryParams.category"&gt;
     Showing category: ${queryParams.category}
 &lt;/div&gt;</code></pre>
 

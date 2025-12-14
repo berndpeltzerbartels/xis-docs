@@ -64,10 +64,10 @@ js/custom-el-functions.js</code></pre>
     <h6>Step 3: Use in Templates</h6>
     <p>Once registered, custom functions work exactly like built-in functions:</p>
 
-    <pre><code class="language-html">&lt;div&gt;Price: $&#8203;{formatCurrency(product.price, 'USD')}&lt;/div&gt;
-&lt;div&gt;Name: $&#8203;{capitalize(user.firstName)}&lt;/div&gt;
-&lt;div&gt;Description: $&#8203;{truncate(product.description, 50)}&lt;/div&gt;
-&lt;p&gt;$&#8203;{items.size()} $&#8203;{pluralize(items.size(), 'item')}&lt;/p&gt;</code></pre>
+    <pre><code class="language-html">&lt;div&gt;Price: $​{formatCurrency(product.price, 'USD')}&lt;/div&gt;
+&lt;div&gt;Name: $​{capitalize(user.firstName)}&lt;/div&gt;
+&lt;div&gt;Description: $​{truncate(product.description, 50)}&lt;/div&gt;
+&lt;p&gt;$​{items.size()} $​{pluralize(items.size(), 'item')}&lt;/p&gt;</code></pre>
 
     <h5>Benefits of This Approach</h5>
     <ul>
@@ -188,13 +188,13 @@ elFunctions.addFunction('formatAddress', (address) => {
 });</code></pre>
 
     <h6>Using Domain Functions in Templates</h6>
-    <pre><code class="language-html">&lt;div class="product-rating"&gt;$&#8203;{starRating(product.rating)}&lt;/div&gt;
-&lt;span class="badge" style="background: $&#8203;{statusColor(user.status)}"&gt;
-    $&#8203;{capitalize(user.status)}
+    <pre><code class="language-html">&lt;div class="product-rating"&gt;$​{starRating(product.rating)}&lt;/div&gt;
+&lt;span class="badge" style="background: $​{statusColor(user.status)}"&gt;
+    $​{capitalize(user.status)}
 &lt;/span&gt;
-&lt;p class="timestamp"&gt;$&#8203;{relativeTime(comment.createdAt)}&lt;/p&gt;
-&lt;div&gt;Shipping: $&#8203;{formatCurrency(shippingCost(order.weight, order.country), 'USD')}&lt;/div&gt;
-&lt;address&gt;$&#8203;{formatAddress(user.address)}&lt;/address&gt;</code></pre>
+&lt;p class="timestamp"&gt;$​{relativeTime(comment.createdAt)}&lt;/p&gt;
+&lt;div&gt;Shipping: $​{formatCurrency(shippingCost(order.weight, order.country), 'USD')}&lt;/div&gt;
+&lt;address&gt;$​{formatAddress(user.address)}&lt;/address&gt;</code></pre>
 
     <h5>Best Practices</h5>
     <ul>
@@ -252,12 +252,12 @@ elFunctions.addFunction('truncate', (str, len) => {
 });</code></pre>
 
     <p><strong>Template usage:</strong></p>
-    <pre><code class="language-html">&lt;div class="product-card" xis:foreach="product:$&#8203;{products}"&gt;
-    &lt;h3&gt;$&#8203;{truncate(product.name, 30)}&lt;/h3&gt;
-    &lt;div class="rating"&gt;$&#8203;{starRating(product.rating)}&lt;/div&gt;
+    <pre><code class="language-html">&lt;div class="product-card" xis:foreach="product:$​{products}"&gt;
+    &lt;h3&gt;$​{truncate(product.name, 30)}&lt;/h3&gt;
+    &lt;div class="rating"&gt;$​{starRating(product.rating)}&lt;/div&gt;
     &lt;div class="price"&gt;
-        &lt;span class="original"&gt;$&#8203;{currency(product.price, 'USD')}&lt;/span&gt;
-        &lt;span class="discount"&gt;$&#8203;{percent(product.discount)} off&lt;/span&gt;
+        &lt;span class="original"&gt;$​{currency(product.price, 'USD')}&lt;/span&gt;
+        &lt;span class="discount"&gt;$​{percent(product.discount)} off&lt;/span&gt;
     &lt;/div&gt;
 &lt;/div&gt;</code></pre>
 
@@ -293,7 +293,7 @@ elFunctions.addFunction('truncate', (str, len) => {
         <li>Package as JAR and share across projects</li>
         <li>Always validate inputs and handle edge cases gracefully in your functions</li>
         <li>Keep functions pure and performant - they may be called frequently during template rendering</li>
-        <li>Custom functions work exactly like built-in functions in templates: <code>$&#8203;{myFunction(value)}</code></li>
+        <li>Custom functions work exactly like built-in functions in templates: <code>$​{myFunction(value)}</code></li>
         <li>Multiple JARs can provide their own extensions - they all load automatically and are merged</li>
     </ul>
 

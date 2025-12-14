@@ -14,6 +14,12 @@
         widget has a corresponding HTML template in the same package.
     </p>
     
+    <p>
+        <strong>Note:</strong> The <code>@Widget</code> annotation already includes <code>@Component</code> (Spring) 
+        and <code>@XISComponent</code> (XIS Boot), so no additional component annotation is needed. Widgets are 
+        automatically discovered and registered for dependency injection.
+    </p>
+    
     <pre><code>@Widget
 public class UserCard {
     
@@ -55,14 +61,14 @@ public class UserCard {
 
     <h5>Dynamic Widget Updates</h5>
     <p>
-        Widget containers can be dynamically updated through controller actions that return 
-        <code>WidgetResponse</code> objects. This enables partial page updates without full page reloads, 
-        perfect for interactive user interfaces:
+        Widget containers can be dynamically updated through controller actions. Return a widget class 
+        to replace the current widget in its container. This enables partial page updates without full 
+        page reloads, perfect for interactive user interfaces:
     </p>
     
     <pre><code>@Action
-public WidgetResponse updateUserInfo() {
-    return new WidgetResponse(UpdatedUserCard.class);
+public Class&lt;?&gt; updateUserInfo() {
+    return UpdatedUserCard.class;
 }</code></pre>
 
     <h5>Widget Composition</h5>

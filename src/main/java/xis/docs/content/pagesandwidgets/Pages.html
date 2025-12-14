@@ -12,6 +12,12 @@
         template file located in the same package following XIS's convention-based approach.
     </p>
     
+    <p>
+        <strong>Note:</strong> The <code>@Page</code> annotation already includes <code>@Component</code> (Spring) 
+        and <code>@XISComponent</code> (XIS Boot), so no additional component annotation is needed. Pages are 
+        automatically discovered and registered for dependency injection.
+    </p>
+    
     <pre><code>@Page("/hello")
 public class HelloPage {
     
@@ -22,13 +28,25 @@ public class HelloPage {
 }</code></pre>
 
     <p>
-        The corresponding <code>HelloPage.html</code> template would be placed in the same package and can 
-        access the model data provided by the controller:
+        The corresponding <code>HelloPage.html</code> template would be placed in the same package. 
+        <strong>Important:</strong> Page templates must always contain complete HTML documents with 
+        <code>&lt;html&gt;</code>, <code>&lt;head&gt;</code>, and <code>&lt;body&gt;</code> tags. 
+        The browser requires a valid HTML document structure.
     </p>
     
-    <pre><code>&lt;xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform"&gt;
+    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html xmlns:xis="https://xis.one/xsd"&gt;
+&lt;head&gt;
+    &lt;title&gt;Hello Page&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
     &lt;h1&gt;${greeting}&lt;/h1&gt;
-&lt;/xis:template&gt;</code></pre>
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <p>
+        <strong>Note:</strong> Unlike pages, widgets use <code>&lt;xis:template&gt;</code> and contain HTML fragments only.
+    </p>
 
     <h5>Page Lifecycle</h5>
     <p>
@@ -48,17 +66,14 @@ public class HelloPage {
     </p>
     
     <div class="warning">
-        <strong>Important: JavaScript Inclusion</strong><br/>
+        <strong>⚠️ JavaScript Inclusion</strong><br/>
         Pages and Widgets in XIS cannot include JavaScript files using standard HTML <code>&lt;script&gt;</code> 
-        tags directly in the template. This is because XIS is a Single Page Application (SPA) where content is 
+        tags directly in templates. This is because XIS is a Single Page Application (SPA) where content is 
         dynamically inserted into the DOM at runtime. Browsers do not execute <code>&lt;script&gt;</code> tags 
-        that are added to the DOM after the initial page load - this is an important browser security feature, 
-        but it requires a different approach for SPAs.
+        that are added to the DOM after the initial page load.
         <br/><br/>
-        Instead, XIS uses a convention-based approach where you place a <code>.js</code> file with the same name 
-        as your controller in the same package. These files are automatically discovered and included. You can 
-        also use the <code>@JavaScriptFile</code> annotation for explicit control. Other resources like CSS can 
-        be included directly in the template using standard HTML tags. See the Custom Assets documentation for details.
+        See <a href="#" xis:widget="xis.docs.content.customizing.CustomJavaScript">Adding JavaScript</a> 
+        in the Customizing section for how to properly include JavaScript in your XIS application.
     </div>
     
     <h5>Deep Linking Support</h5>

@@ -7,7 +7,7 @@
     </p>
     <p>
         <strong>Important:</strong> Expressions in framework attributes can often be written with or without 
-        <code>$&#8203;{...}</code>. For example, <code>array="users"</code> and <code>array="$&#8203;{users}"</code> 
+        <code>$​{...}</code>. For example, <code>array="users"</code> and <code>array="$​{users}"</code> 
         both work when the context makes it clear an expression is expected.
     </p>
 
@@ -62,8 +62,7 @@
     <p><strong>Allowed attributes:</strong></p>
     <ul>
         <li><code>condition</code> (element syntax) - The boolean expression to evaluate</li>
-        <li><code>xis:if="expression"</code> (attribute syntax) - Wraps only the element's content in if condition</li>
-        <li><code>xis:visible="expression"</code> (alternative attribute syntax) - Wraps the entire element in if condition</li>
+        <li><code>xis:if="expression"</code> (attribute syntax) - Wraps the entire element in if condition</li>
     </ul>
 
     <p><strong>Element syntax:</strong></p>
@@ -75,14 +74,6 @@
     <pre><code class="language-html">&lt;div xis:if="user.isActive"&gt;
     &lt;div class="status-active"&gt;User is active&lt;/div&gt;
 &lt;/div&gt;</code></pre>
-
-    <p><strong>Attribute syntax (xis:visible):</strong></p>
-    <pre><code class="language-html">&lt;div class="status-active" xis:visible="user.isActive"&gt;
-    User is active
-&lt;/div&gt;</code></pre>
-
-    <p><strong>DOM Result:</strong> The xis:visible version surrounds the element with an if-tag, while xis:if wraps
-        only the content.</p>
 
     <h6>&lt;xis:widget-container&gt;</h6>
     <p>Creates a container for dynamic widget loading.<br>
@@ -304,12 +295,12 @@
 
     <p><strong>HTML mode (default):</strong> Inserts content as HTML</p>
     <pre><code class="language-html">&lt;xis:raw&gt;
-    &lt;div&gt;This HTML is inserted as-is: $&#8203;{not.processed}&lt;/div&gt;
+    &lt;div&gt;This HTML is inserted as-is: $​{not.processed}&lt;/div&gt;
 &lt;/xis:raw&gt;</code></pre>
 
     <p><strong>Text mode:</strong> Inserts content as plain text</p>
     <pre><code class="language-html">&lt;xis:raw text="true"&gt;
-    This is plain text: &lt;div&gt; tags are shown literally $&#8203;{not.processed}
+    This is plain text: &lt;div&gt; tags are shown literally $​{not.processed}
 &lt;/xis:raw&gt;</code></pre>
 
     <h5>Complete Example</h5>
@@ -318,23 +309,23 @@
     <pre><code class="language-html">&lt;!DOCTYPE html&gt;
 &lt;html xmlns:xis="https://xis.one/xsd"&gt;
 &lt;body&gt;
-    &lt;div xis:if="$&#8203;{users.size() > 0}"&gt;
-        &lt;h2&gt;Active Users ($&#8203;{users.size()})&lt;/h2&gt;
-        &lt;div xis:foreach="user:$&#8203;{users}"&gt;
-            &lt;div class="user-card" xis:visible="$&#8203;{user.isActive}"&gt;
-                &lt;h3&gt;$&#8203;{user.name}&lt;/h3&gt;
+    &lt;div xis:if="$​{users.size() > 0}"&gt;
+        &lt;h2&gt;Active Users ($​{users.size()})&lt;/h2&gt;
+        &lt;div xis:foreach="user:$​{users}"&gt;
+            &lt;div class="user-card" xis:if="$​{user.isActive}"&gt;
+                &lt;h3&gt;$​{user.name}&lt;/h3&gt;
                 &lt;xis:form binding="user"&gt;
                     &lt;xis:input binding="email" type="email"/&gt;
                     &lt;xis:message message-for="email"&gt;&lt;/xis:message&gt;
                     &lt;xis:button action="updateUser"&gt;
-                        &lt;xis:parameter name="userId" value="$&#8203;{user.id}"/&gt;
+                        &lt;xis:parameter name="userId" value="$​{user.id}"/&gt;
                         Update
                     &lt;/xis:button&gt;
                 &lt;/xis:form&gt;
             &lt;/div&gt;
         &lt;/div&gt;
     &lt;/div&gt;
-    &lt;div xis:if="$&#8203;{users.size() == 0}"&gt;
+    &lt;div xis:if="$​{users.size() == 0}"&gt;
         &lt;p&gt;No users found.&lt;/p&gt;
     &lt;/div&gt;
 &lt;/body&gt;
@@ -346,7 +337,6 @@
     <ul>
         <li>Element syntax (<code>&lt;xis:tag&gt;</code>) and attribute syntax (<code>xis:attribute</code>) are interchangeable</li>
         <li>During DOM normalization, attributes are converted to tags internally</li>
-        <li><code>xis:if</code> wraps content, <code>xis:visible</code> wraps the element itself</li>
         <li><code>xis:foreach</code> repeats content, <code>xis:repeat</code> repeats the element itself</li>
         <li>Form elements (<code>&lt;xis:form&gt;</code>, <code>&lt;xis:input&gt;</code>, etc.) normalize to standard HTML with <code>xis:</code> attributes</li>
         <li>Use <code>&lt;xis:raw&gt;</code> to prevent XIS processing of template syntax</li>

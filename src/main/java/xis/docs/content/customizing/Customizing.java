@@ -7,7 +7,7 @@ import xis.docs.content.DistributedApplications;
 import xis.docs.navi.Navigation;
 
 @XISComponent
-@Navigation(title = "Customizing", firstSubItem = SelectableHighlighting.class, nextItem = DistributedApplications.class)
+@Navigation(title = "Customizing", firstSubItem = CustomJavaScript.class, nextItem = DistributedApplications.class)
 public class Customizing {
 
     @Title
