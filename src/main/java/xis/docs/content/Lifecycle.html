@@ -1,125 +1,281 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
-    <p>Understanding the XIS request lifecycle helps you write effective controllers. This chapter explains how
-        requests flow through the framework, when controller methods are executed, and how responses are generated.</p>
+    <p>Understanding the XIS request lifecycle helps you write effective controllers. This chapter uses
+        visual diagrams to show how requests flow through the framework, when controller methods execute,
+        and which annotations control the behavior at each step.</p>
 
-    <h5>Request Flow Overview</h5>
-    <p>Every user interaction in XIS follows a predictable flow:</p>
-    <xis:raw>
-        <ol>
-            <li><strong>User Action:</strong> User clicks a link, submits a form, or triggers an action</li>
-            <li><strong>Request Processing:</strong> XIS routes the request to the appropriate controller</li>
-            <li><strong>Parameter Binding:</strong> URL parameters, form data, and action parameters are bound to
-                controller fields
-            </li>
-            <li><strong>Action Execution:</strong> <code>@Action</code> methods are called (if triggered)</li>
-            <li><strong>Navigation Decision:</strong> Framework determines the target page or widget based on action
-                return value
-            </li>
-            <li><strong>Data Loading:</strong> <code>@ModelData</code> methods are executed to load data for the
-                template
-            </li>
-            <li><strong>Template Rendering:</strong> HTML template is rendered with the model data</li>
-            <li><strong>Response:</strong> Rendered HTML is sent to the browser and displayed</li>
-        </ol>
-    </xis:raw>
-
-    <h5>Initial Page Load</h5>
-    <p>When a page is first loaded (e.g., user navigates to <code>/products.html</code>):</p>
-    <xis:raw>
-        <ol>
-            <li>XIS identifies the <code>@Page</code> controller matching the URL</li>
-            <li><code>@PathVariable</code> and <code>@QueryParameter</code> values are injected</li>
-            <li>All <code>@ModelData</code> methods are executed to prepare template data</li>
-            <li>The HTML template is rendered with the model data</li>
-            <li>The complete page is sent to the browser</li>
-        </ol>
-    </xis:raw>
-
-    <h5>Action Execution Phase</h5>
-    <p>When a user triggers an action (button click, link action, form submission):</p>
-    <xis:raw>
-        <ol>
-            <li>The corresponding <code>@Action</code> method is invoked</li>
-            <li><code>@ActionParameter</code> values from the template are injected</li>
-            <li><code>@FormData</code> is bound if the action was triggered by a form submission</li>
-            <li>The action method executes business logic (save, update, delete, etc.)</li>
-            <li>The action returns a navigation target (page class, widget response, or void)</li>
-        </ol>
-    </xis:raw>
-
-    <h5>ModelData Phase</h5>
-    <p>After determining the target page or widget, XIS loads the data:</p>
-    <xis:raw>
-        <ol>
-            <li>All <code>@ModelData</code> methods in the target controller are executed</li>
-            <li>Return values become template variables (method name = variable name)</li>
-            <li>Methods are called in declaration order within the class</li>
-            <li><code>@RequestScope</code> data is shared between methods in the same request</li>
-        </ol>
-        <pre><code>@ModelData
-User currentUser() {
-    return userService.findById(userId); // Executed during ModelData phase
-}
-
-@ModelData
-List&lt;Order&gt; orders() {
-    return orderService.findByUser(currentUser()); // Can call other @ModelData methods
-}</code></pre>
-    </xis:raw>
-
-    <h5>Navigation and Response</h5>
-    <p>The navigation target determines what gets rendered:</p>
+    <h5>Core Concepts</h5>
     <xis:raw>
         <ul>
-            <li><strong>void or null:</strong> Current page/widget is refreshed with updated data</li>
-            <li><strong>Class&lt;?&gt;:</strong> Navigate to the specified page, full page reload</li>
-            <li><strong>WidgetResponse:</strong> Load a different widget in the same container, only widget area updates
-            </li>
-            <li><strong>PageResponse:</strong> Navigate to a page with specific URL parameters</li>
+            <li><strong>Data Provider Methods:</strong> Methods with <code>@ModelData</code>, <code>@ClientStorage</code>, 
+                <code>@LocalStorage</code>, <code>@SessionStorage</code></li>
+            <li><strong>Tree Refresh:</strong> Traversing the HTML DOM, executing tag handlers (<code>&lt;xis:if&gt;</code>, 
+                <code>&lt;xis:foreach&gt;</code>), and injecting data</li>
         </ul>
+    </xis:raw>
+
+    <h5>1. Initial Page Load</h5>
+    <p>When a user navigates to a page URL:</p>
+    <xis:raw>
+        <pre>
+Browser Request
+      │
+      ▼
+┌─────────────────────────────┐
+│  @Page("/url.html")         │  Match URL to controller
+└───────────────┬─────────────┘
+                │
+                ▼
+┌─────────────────────────────┐
+│  Data Provider Methods      │  @ModelData, @LocalStorage,
+│  Execute                    │  @SessionStorage, @ClientStorage
+└───────────────┬─────────────┘
+                │
+                ▼
+┌─────────────────────────────┐
+│  Tree Refresh               │  Inject ${data}, process tags
+│  ├─ @FormData binding       │  Load form field values
+│  ├─ &lt;xis:widget-container&gt;  │  Load widgets recursively
+│  └─ Tag handlers            │  &lt;xis:if&gt;, &lt;xis:foreach&gt;
+└───────────────┬─────────────┘
+                │
+                ▼
+        HTML to Browser
+        </pre>
+        <p><strong>Annotations:</strong> <code>@Page</code>, <code>@ModelData</code>, <code>@FormData</code>, 
+           <code>@LocalStorage</code>, <code>@SessionStorage</code>, <code>@ClientStorage</code></p>
+        <p><strong>Details:</strong> See <a href="#" xis:page="MethodAnnotations">Method Annotations</a> for detailed 
+           annotation reference.</p>
+    </xis:raw>
+
+    <h5>2. Navigation Without Actions</h5>
+    <p>Links can navigate to pages or replace widgets:</p>
+    <xis:raw>
+        <pre>
+User clicks link/button
+      │
+      ├─────────────────┬─────────────────┐
+      │                 │                 │
+      ▼                 ▼                 ▼
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│ xis:page=    │  │ xis:widget=  │  │ href="*.html"│
+│ "/url.html"  │  │ "WidgetClass"│  │ (auto-SPA)   │
+└──────┬───────┘  └──────┬───────┘  └──────┬───────┘
+       │                 │                 │
+       ├─────────────────┴─────────────────┘
+       │
+       ▼
+Full Page Load (see 1)  OR  Replace Widget Only
+        </pre>
+        <p><strong>Template Examples:</strong></p>
+        <pre><code>&lt;a xis:page="/products.html"&gt;Products&lt;/a&gt;
+&lt;a href="/products.html"&gt;Products&lt;/a&gt;  &lt;!-- Auto-SPA --&gt;
+&lt;a xis:widget="ProductDetailsWidget"&gt;Details&lt;/a&gt;</code></pre>
+        <p><strong>Details:</strong> See <a href="#" xis:page="Pages">@Page</a> and 
+           <a href="#" xis:page="Widgets">@Widget</a> chapters.</p>
+    </xis:raw>
+
+    <h5>3. Actions with Navigation</h5>
+    <p>Actions can execute business logic and control navigation based on return type:</p>
+    <xis:raw>
+        <pre>
+User triggers action
+      │
+      ▼
+┌──────────────────────────┐
+│  @Action                 │  Execute method
+│  doSomething()           │
+└────────────┬─────────────┘
+             │
+             │ Return value determines behavior:
+             │
+   ┌─────────┴─────────────────────────────┐
+   │                                       │
+   ▼                                       ▼
+void / null                    Class&lt;?&gt; / Response
+   │                                       │
+   ├─── Stay on current page              ├─── Page Navigation
+    │    Refresh widget or page             │    return OtherPage.class;
+    │                                       │    return PageResponse(...);
+    │                                       │
+    │                                       ├─── Widget Replacement
+    │                                       │    return WidgetClass.class;
+    │                                       │    return WidgetResponse(...);
+    │                                       │
+   └──────────┬────────────────────────────┘
+              │
+              ▼
+     Re-execute Data Providers → Tree Refresh → Update DOM
+        </pre>
+        <p><strong>Code Examples:</strong></p>
         <pre><code>@Action
-Class&lt;?&gt; deleteItem() {
-    itemService.delete(itemId);
-    return ItemListPage.class; // Navigate to list page
+void refresh() { }  // Stay on page/widget, refresh data
+
+@Action
+Class&lt;?&gt; navigate() {
+    return DashboardPage.class;  // Go to page
+}
+
+@Action  
+Class&lt;?&gt; switchWidget() {
+    return ProductGridWidget.class;  // Replace widget
 }
 
 @Action
-void updateItem() {
-    itemService.update(item);
-    // void = stay on current page, refresh data
+PageResponse navigateWithParams() {
+    return new PageResponse(UserPage.class)
+        .withPathVariable("id", "123");  // /user/123.html
 }</code></pre>
+        <p><strong>Details:</strong> See <a href="#" xis:page="MethodAnnotations">@Action</a> in Method Annotations.</p>
     </xis:raw>
 
-    <h5>Update Events and Refresh</h5>
-    <p>XIS enables reactive updates through an event system that allows widgets to notify each other of changes:</p>
+    <h5>4. Form Submissions</h5>
+    <p>Forms include automatic data binding and validation:</p>
     <xis:raw>
-        <pre><code>// Widget that emits an event
-@Action(value = "addToCart", updateEventKeys = {"cart-updated"})
-void addToCart(@ActionParameter("productId") String productId) {
-    cartService.addProduct(productId);
-    // After action completes, "cart-updated" event is broadcast
+        <pre>
+User submits form
+      │
+      ▼
+┌──────────────────────────┐
+│  Serialize Form Fields   │  JSON from form inputs
+└────────────┬─────────────┘
+             │
+             ▼
+┌──────────────────────────┐
+│  Validation              │  @Mandatory, @EMail, etc.
+│  (if annotations exist)  │  on @FormData fields
+└────────────┬─────────────┘
+             │
+        ┌────┴────┐
+        │         │
+   Valid?     Invalid?
+        │         │
+        │         └──────────────┐
+        │                        │
+        ▼                        ▼
+┌──────────────────────┐   Show validation
+│  @Action             │   errors in form
+│  save(@FormData)     │
+└──────────────────────┘
+        │
+        ▼
+  Continue as Action (see 3)
+        </pre>
+        <p><strong>Code Example:</strong></p>
+        <pre><code>@FormData("user")  // Field in controller
+UserForm userForm;
+
+@Action
+void save() {
+    userService.save(userForm);  // Form data auto-bound
 }
 
-// Widget that listens for the event
+// Form with validation
+record UserForm(
+    @Mandatory @LabelKey("Name") String name,
+    @Mandatory @EMail String email
+) { }</code></pre>
+        <p><strong>Details:</strong> See <a href="#" xis:page="FormBinding">Form Binding</a> and 
+           <a href="#" xis:page="Validation">Validation</a> chapters.</p>
+    </xis:raw>
+
+    <h5>5. Update Events (Widget Synchronization)</h5>
+    <p>Broadcast events to refresh multiple widgets after an action:</p>
+    <xis:raw>
+        <pre>
+┌──────────────────────────────────┐
+│  @Action(updateEventKeys =       │
+│    {"cart-updated"})             │
+│  addToCart()                     │
+└────────────┬─────────────────────┘
+             │ Action completes
+             ▼
+     Event "cart-updated" broadcast
+             │
+   ┌─────────┴─────────┐
+   │                   │
+   ▼                   ▼
+┌─────────┐       ┌─────────┐
+│ Widget1 │       │ Widget2 │
+│ @RefreshOnUpdateEvents("cart-updated")
+└────┬────┘       └────┬────┘
+     │                 │
+     └────────┬────────┘
+              │
+              ▼
+     Re-execute @ModelData
+     Tree Refresh
+     Update DOM
+        </pre>
+        <p><strong>Code Example:</strong></p>
+        <pre><code>// Emit event
+@Action(value = "addToCart", updateEventKeys = {"cart-updated"})
+void addToCart() {
+    cartService.addProduct(productId);
+}
+
+// Listen for event
 @Widget
 @RefreshOnUpdateEvents("cart-updated")
 class CartSummaryWidget {
     @ModelData
     int itemCount() {
-        return cartService.getItemCount();
-        // This method is called again when "cart-updated" fires
+        return cartService.getItemCount();  // Re-executed on event
     }
 }</code></pre>
-        <p>When an action emits an update event, all widgets annotated with <code>@RefreshOnUpdateEvents</code>
-            listening for that event key will automatically refresh their <code>@ModelData</code> and re-render
-            their templates.</p>
-        <p>See the <a href="#" xis:page="WidgetUpdateEvents">Update Events</a> chapter for detailed examples
-            including shopping carts, notifications, and multi-widget synchronization patterns.</p>
+        <p><strong>Details:</strong> See <a href="#" xis:page="WidgetUpdateEvents">Update Events</a> chapter.</p>
     </xis:raw>
 
-    <h5>Optimization: Lazy Loading</h5>
-    <p>Only components visible on screen execute their <code>@ModelData</code> methods. Widgets inside
-        <code>&lt;xis:widget-container&gt;</code> that haven't been loaded yet don't execute until they're
-        actually displayed.</p>
+    <h5>6. Complete Request Flow</h5>
+    <p>Putting it all together - every request follows this pattern:</p>
+    <xis:raw>
+        <pre>
+┌───────────────────────────┐
+│   User Interaction        │  Page load, link, action, form
+└────────────┬──────────────┘
+             │
+             ▼
+┌───────────────────────────┐
+│   Controller Resolution   │  @Page or @Widget
+│   + @Action (if present)  │  Execute action method
+└────────────┬──────────────┘
+             │
+             ▼
+┌───────────────────────────┐
+│   Data Provider Methods   │  @ModelData, @LocalStorage,
+│                           │  @SessionStorage, @ClientStorage
+└────────────┬──────────────┘
+             │
+             ▼
+┌───────────────────────────┐
+│   Tree Refresh            │  Top-down DOM traversal:
+│   ├─ Data Injection       │  ${variables} → actual values
+│   ├─ Forms (@FormData)    │  Bind field values
+│   ├─ Widgets (recursive)  │  &lt;xis:widget-container&gt;
+│   └─ Tags                 │  &lt;xis:if&gt;, &lt;xis:foreach&gt;
+└────────────┬──────────────┘
+             │
+             ▼
+┌───────────────────────────┐
+│   Render & Send           │  Updated HTML to browser
+└───────────────────────────┘
+        </pre>
+    </xis:raw>
+
+    <h5>Summary</h5>
+    <p>The XIS request lifecycle is centered around three key steps:</p>
+    <xis:raw>
+        <ol>
+            <li><strong>Execute:</strong> Run <code>@Action</code> methods (if triggered) and data provider methods</li>
+            <li><strong>Refresh:</strong> Traverse the DOM tree, inject data, process tags and widgets</li>
+            <li><strong>Update:</strong> Send updated HTML to the browser</li>
+        </ol>
+        <p>For detailed information about individual annotations and features, see:</p>
+        <ul>
+            <li><a href="#" xis:page="MethodAnnotations">Method Annotations</a> - Complete annotation reference</li>
+            <li><a href="#" xis:page="FormBinding">Form Binding</a> - Working with forms</li>
+            <li><a href="#" xis:page="WidgetUpdateEvents">Update Events</a> - Coordinating widget updates</li>
+            <li><a href="#" xis:page="TemplateSyntax">Template Syntax</a> - Tag handlers and expressions</li>
+        </ul>
+    </xis:raw>
 </xis:template>

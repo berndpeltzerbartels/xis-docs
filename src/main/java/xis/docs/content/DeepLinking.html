@@ -1,0 +1,107 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>${chapterHeadline}</h3>
+    <xis:raw>
+        <p>Deep linking enables users to navigate directly to specific pages and states within your XIS application
+            through URLs. This chapter explains how XIS handles URLs and maintains Single Page Application behavior
+            while supporting bookmarkable links and browser navigation.</p>
+
+        <p><em>This chapter is under development.</em></p>
+
+        <h4>Deep linking and SPA principle</h4>
+        <p>
+            XIS always loads pages in a way that preserves the Single Page Application (SPA) principle. If you open or
+            share the URL of a page (as defined in the <code>@Page</code> annotation) directly in the browser, the page
+            will load correctly—including all model data and template logic. Navigation always remains client-side and
+            fast.
+        </p>
+
+        <p>
+            <strong>Note:</strong> The state of widget containers (e.g., which widget is currently shown) is
+            <em>not</em> automatically part of the URL. If you want a specific widget or state to be directly
+            addressable via a link, you must explicitly control this via parameters (e.g., path, query, model data).
+        </p>
+        <p>
+            Deep linking in XIS means that you can always share or open a page URL (as defined in the <code>@Page</code>
+            annotation) and the correct page—including all model data—will be loaded, without breaking the SPA
+            principle. However, the state of widget containers (which widget is shown) is not part of the URL by
+            default. If you want a specific widget or state to be addressable, you must control this yourself via
+            parameters (path, query, or model data).
+        </p>
+        <p>
+            You can use variables provided by the page controller as model data to control which widget is shown in a
+            container, or to pass parameters to widgets. All widget parameters can use the same annotations as page
+            parameters: <code>@PathVariable</code>, <code>@QueryParameter</code>, <code>@ClientStorage</code>, <code>@UserId</code>,
+            etc. This allows you to build flexible deep links that not only open a page, but also select a specific
+            widget or widget state.
+        </p>
+
+        <h4>Static widget embedding with path variable</h4>
+        <p>
+            Example: A product page (<code>ProductPage</code>) statically embeds a <code>ProductDetailsWidget</code>.
+            The product ID is passed as a path variable and is available to both the page and the widget.
+        </p>
+        <pre><code class="language-java">@Page("/product/{productId}.html")
+class ProductPage {
+
+    @ModelData("productId")
+    String getProductId(@PathVariable("productId") String productId) {
+        return productId;
+    }
+}
+</code></pre>
+        <pre><code class="language-html">&lt;xis:template xmlns:xis="https://xis.one/xsd"&gt;
+    &lt;h1&gt;Product details&lt;/h1&gt;
+    &lt;xis:widget-container container-id="main" default-widget="ProductDetailsWidget"&gt;
+        &lt;xis:parameter name="productId" value="${productId}"/&gt;
+    &lt;/xis:widget-container&gt;
+&lt;/xis:template&gt;
+</code></pre>
+        <pre><code class="language-java">@Widget
+ class ProductDetailsWidget {
+
+    ProductDetailsWidget(ProductService productService) {
+        this.productService = productService;
+    }
+
+    @ModelData
+    Product product(@WidgetParameter("productId") String productId) {
+        return productService.findById(productId);
+    }
+}
+</code></pre>
+
+        <h4>Dynamic widget selection via ModelData</h4>
+        <p>
+            Alternatively, you can control which widget and parameters are shown dynamically via ModelData. For example,
+            you can use query parameters, user ID, or other variables to determine which widget is displayed in the
+            container and with which parameters.
+        </p>
+        <pre><code class="language-java">@Page("/product/{productId}.html")
+public class ProductPage {
+
+    @ModelData("widgetClass")
+    String widgetClass(@PathVariable("productId") String productId) {
+        // Dynamically select widget
+            ...
+        return "ProductDetailsWidget";
+    }
+
+    @ModelData("widgetParams")
+    Map&lt;String, Object&gt; widgetParams() {
+        return Map.of("productId", productId);
+    }
+}
+</code></pre>
+        <pre><code class="language-html">&lt;xis:template xmlns:xis="https://xis.one/xsd"&gt;
+    &lt;xis:widget-container container-id="main" default-widget="${widgetClass}"&gt;
+        &lt;xis:parameter name="productId" value="${widgetParams.productId}"/&gt;
+    &lt;/xis:widget-container&gt;
+&lt;/xis:template&gt;
+</code></pre>
+
+        <p>
+            <strong>Note:</strong> All parameters you pass to a widget can use the same annotations as on pages: <code>@PathVariable</code>,
+            <code>@QueryParameter</code>, <code>@ClientStorage</code>, <code>@UserId</code>, etc.
+        </p>
+    </xis:raw>
+</xis:template>

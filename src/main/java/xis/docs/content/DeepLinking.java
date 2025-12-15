@@ -1,13 +1,14 @@
-package xis.docs.content.controllermethods;
+package xis.docs.content;
 
 import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
+import xis.docs.content.forms.Forms;
 import xis.docs.navi.Navigation;
 
-@Widget(url = "/docs/linkaction.html", containerId = "main")
-@Navigation(title = "Link Action", nextItem = ActionsForNavigation.class)
-class LinkAction {
+@Widget(url = "/docs/deeplinking.html", containerId = "main")
+@Navigation(title = "Deep Linking", nextItem = Forms.class)
+public class DeepLinking {
 
     @Title
     @ModelData

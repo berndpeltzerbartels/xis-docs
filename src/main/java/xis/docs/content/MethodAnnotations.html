@@ -103,6 +103,22 @@ Class&lt;?&gt; viewProductDetails(@ActionParameter("productId") String productId
 WidgetResponse refreshContent() $​{
     return new WidgetResponse(UpdatedContentWidget.class);
 }</code></pre>
+    <p><strong>Trigger Actions via Links:</strong> Use <code>xis:action</code> on <code>&lt;a&gt;</code> tags 
+        to execute controller methods when users click links:</p>
+    <pre><code>@Action
+void markAsRead() $​{
+    message.read = true;
+    messageService.update(message);
+}</code></pre>
+    <p>Template:</p>
+    <pre><code>&lt;a xis:action="markAsRead"&gt;Mark as read&lt;/a&gt;
+
+&lt;!-- With parameters --&gt;
+&lt;a xis:action="deleteItem"&gt;
+    &lt;xis:parameter name="itemId" value="$​{item.id}"/&gt;
+    Delete
+&lt;/a&gt;</code></pre>
+    <p>See the <a href="#" xis:page="Lifecycle">Lifecycle</a> chapter for complete flow diagrams.</p>
 
     <h5>@FormData</h5>
     <p>
@@ -120,7 +136,7 @@ void saveUser(@FormData("user") User user) $​{
     &lt;button xis:action="save" type="submit"&gt;Save&lt;/button&gt;
 &lt;/form&gt;</code></pre>
 
-    <h5>@RequestScope (→ @RequestContextVar)</h5>
+    <h5>@SharedValue</h5>
     <p>
         Injects request-scoped data that is available throughout the current request lifecycle. XIS automatically 
         makes return values of <code>@ModelData</code> methods available in the request scope, allowing other 
@@ -132,23 +148,59 @@ User loadUser() $​{
 }
 
 @ModelData("permissions")
-List&lt;Permission&gt; loadPermissions(@RequestScope("user") User user) $​{
+List&lt;Permission&gt; loadPermissions(@SharedValue("user") User user) $​{
     // User data injected from request scope
     return permissionService.getPermissionsForUser(user.getId());
 }
 
 @Action("updateProfile")
 void updateProfile(@FormData("profile") UserProfile profile,
-                  @RequestScope("user") User currentUser) $​{
+                  @SharedValue("user") User currentUser) $​{
     if (currentUser.getId().equals(profile.getUserId())) $​{
         userService.updateProfile(profile);
     }
 }</code></pre>
 
-    <h5>@LocalStorage</h5>
+    <h5>Client-Side Storage: @LocalStorage, @SessionStorage, @ClientStorage</h5>
     <p>
-        Accesses the browser's localStorage for persistent client-side data storage. Data survives page reloads, 
-        browser restarts, and persists until explicitly cleared. Perfect for user preferences and long-term settings.
+        XIS provides three storage mechanisms for managing client-side state. All work similarly but differ in 
+        persistence and location:
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>Annotation</th>
+                <th>Storage Location</th>
+                <th>Persistence</th>
+                <th>Use Cases</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>@LocalStorage</code></td>
+                <td>Browser (localStorage)</td>
+                <td>Permanent (until cleared)</td>
+                <td>User preferences, theme, language</td>
+            </tr>
+            <tr>
+                <td><code>@SessionStorage</code></td>
+                <td>Browser (sessionStorage)</td>
+                <td>Tab session only</td>
+                <td>Current tab state, filters, pagination</td>
+            </tr>
+            <tr>
+                <td><code>@ClientStorage</code></td>
+                <td>Server-side</td>
+                <td>Client session</td>
+                <td>Sensitive data, large datasets</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h6>@LocalStorage</h6>
+    <p>
+        Persistent browser storage that survives page reloads and browser restarts. Perfect for user preferences 
+        and long-term settings.
     </p>
     <p>
         <strong>Behavior:</strong>
@@ -156,6 +208,7 @@ void updateProfile(@FormData("profile") UserProfile profile,
     <ul>
         <li><strong>On methods:</strong> The return value is <strong>always written</strong> to localStorage</li>
         <li><strong>As parameter:</strong> The value is <strong>read from</strong> localStorage</li>
+        <li><strong>In templates:</strong> Access with <code>localStorage.key</code></li>
         <li><strong>Updates:</strong> Changes do not automatically trigger updates in other components. Use 
             <code>@Action(updateEventKeys = {...})</code> to notify other widgets via <code>@RefreshOnUpdateEvents</code></li>
     </ul>
@@ -185,47 +238,38 @@ String changeTheme(@ActionParameter("newTheme") String newTheme) {
     &lt;/button&gt;
 &lt;/body&gt;</code></pre>
 
-    <h5>@SessionStorage</h5>
+    <h6>@SessionStorage</h6>
     <p>
-        Manages client-side state using the browser's sessionStorage. Data persists across page navigations within 
-        the same browser tab/session but is cleared when the tab is closed. Ideal for tab-specific UI state like 
-        selected tabs or temporary form data.
+        Tab-specific storage that persists only within the current browser tab/window. Cleared when tab closes. 
+        Ideal for tab-specific UI state.
     </p>
-    <p>
-        <strong>Behavior:</strong>
-    </p>
-    <ul>
-        <li><strong>On methods:</strong> The return value is <strong>always written</strong> to sessionStorage</li>
-        <li><strong>As parameter:</strong> The value is <strong>read from</strong> sessionStorage</li>
-        <li><strong>Updates:</strong> Changes do not automatically trigger updates in other components. Use 
-            <code>@Action(updateEventKeys = {...})</code> to notify other widgets via <code>@RefreshOnUpdateEvents</code></li>
-    </ul>
-    <pre><code>// Method: Writes return value to sessionStorage
+    <pre><code>// Initialize default value
 @SessionStorage("selectedTab")
 String getSelectedTab() $​{
-    return "dashboard"; // This value is written to sessionStorage
+    return "dashboard";
 }
 
-// Parameter: Reads current value from sessionStorage
-@ModelData
-String getTabInfo(@SessionStorage("selectedTab") String tab) $​{
-    return "Currently viewing: " + tab;
-}
-
-// Action: Updates sessionStorage and notifies other widgets
+// Update and emit event
 @Action(value = "selectTab", updateEventKeys = $​{"tab-changed"})
-@SessionStorage("selectedTab") // Return value is saved to sessionStorage
+@SessionStorage("selectedTab")
 String selectTab(@ActionParameter("tab") String tab) $​{
-    return tab; // Saved to sessionStorage, emits "tab-changed" event
+    return tab;
 }</code></pre>
-    <p>In templates, access with the <code>sessionStorage.</code> prefix:</p>
-    <pre><code>&lt;nav&gt;
-    &lt;button class="$​{sessionStorage.selectedTab == 'dashboard' ? 'active' : ''}"
-            xis:action="selectTab"&gt;
-        &lt;xis:parameter name="tab" value="dashboard"/&gt;
-        Dashboard
-    &lt;/button&gt;
-&lt;/nav&gt;</code></pre>
+    <p>Template access: <code>${sessionStorage.selectedTab}</code></p>
+
+    <h6>@ClientStorage</h6>
+    <p>
+        Server-side storage associated with the client session. Use for sensitive data or large datasets that 
+        shouldn't be sent to the browser.
+    </p>
+    <pre><code>@ClientStorage("userCart")
+ShoppingCart cart;
+
+@Action
+void addToCart(@ActionParameter("productId") String productId) $​{
+    cart.addItem(productId);  // Stored server-side
+}</code></pre>
+    <p>Template access: <code>${clientStorage.userCart}</code></p>
     <p>Other widgets can reload when tab selection changes:</p>
     <pre><code>@Widget
 @RefreshOnUpdateEvents("tab-changed")
@@ -269,7 +313,7 @@ class AdminPanelPage $​{
 }</code></pre>
 
 </xis:template>    }</xis:raw></code></pre>
-    <p>XIS automatically makes the return values of @ModelData methods available in the request scope using the same key. You can then inject this data into other methods using @RequestScope. This creates a clean data flow where expensive operations (like database queries) only happen once per request, and the results are shared across all methods that need them.</p>
+    <p>XIS automatically makes the return values of @ModelData methods available in the request scope using the same key. You can then inject this data into other methods using @SharedValue. This creates a clean data flow where expensive operations (like database queries) only happen once per request, and the results are shared across all methods that need them.</p>
 
     <h6>@Roles</h6>
     <p>Provides role-based access control for methods and classes. Used in conjunction with security frameworks to enforce authorization.</p>
