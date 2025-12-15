@@ -86,15 +86,15 @@ public class ProductPage {
         return "ProductDetailsWidget";
     }
 
-    @ModelData("widgetParams")
-    Map&lt;String, Object&gt; widgetParams() {
-        return Map.of("productId", productId);
+    @ModelData
+    String productId(@PathVariable("productId") String productId) {
+        return productId;
     }
 }
 </code></pre>
         <pre><code class="language-html">&lt;xis:template xmlns:xis="https://xis.one/xsd"&gt;
     &lt;xis:widget-container container-id="main" default-widget="${widgetClass}"&gt;
-        &lt;xis:parameter name="productId" value="${widgetParams.productId}"/&gt;
+        &lt;xis:parameter name="productId" value="${productId}"/&gt;
     &lt;/xis:widget-container&gt;
 &lt;/xis:template&gt;
 </code></pre>
