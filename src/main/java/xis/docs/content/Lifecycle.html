@@ -21,26 +21,26 @@
 Browser Request
       │
       ▼
-┌─────────────────────────────┐
-│  @Page("/url.html")         │  Match URL to controller
-└───────────────┬─────────────┘
+┌───────────────────────────────────┐
+│  @Page("/url.html")               │  Match URL to controller
+└───────────────┬───────────────────┘
                 │
                 ▼
-┌─────────────────────────────┐
-│  Data Provider Methods      │  @ModelData, @LocalStorage,
-│  Execute                    │  @SessionStorage, @ClientStorage
-└───────────────┬─────────────┘
+┌───────────────────────────────────┐
+│  Data Provider Methods            │  @ModelData, @LocalStorage,
+│  Execute                          │  @SessionStorage, @ClientStorage
+└───────────────┬───────────────────┘
                 │
                 ▼
-┌─────────────────────────────┐
-│  Tree Refresh               │  Inject ${data}, process tags
-│  ├─ @FormData binding       │  Load form field values
+┌───────────────────────────────────┐
+│  Tree Refresh                     │  Inject ${data}, process tags
+│  ├─ @FormData binding             │  Load form field values
 │  ├─ &lt;xis:widget-container&gt;  │  Load widgets recursively
-│  └─ Tag handlers            │  &lt;xis:if&gt;, &lt;xis:foreach&gt;
-└───────────────┬─────────────┘
+│  └─ Tag handlers                  │  &lt;xis:if&gt;, &lt;xis:foreach&gt;
+└───────────────┬───────────────────┘
                 │
                 ▼
-        HTML to Browser
+        HTML is displayed
         </pre>
         <p><strong>Annotations:</strong> <code>@Page</code>, <code>@ModelData</code>, <code>@FormData</code>, 
            <code>@LocalStorage</code>, <code>@SessionStorage</code>, <code>@ClientStorage</code></p>
@@ -65,7 +65,7 @@ User clicks link/button
        ├─────────────────┴─────────────────┘
        │
        ▼
-Full Page Load (see 1)  OR  Replace Widget Only
+New Page is displayed (SPA/Dom) (see 1)  OR  Replace Widget Only.
         </pre>
         <p><strong>Template Examples:</strong></p>
         <pre><code>&lt;a xis:page="/products.html"&gt;Products&lt;/a&gt;
@@ -89,23 +89,32 @@ User triggers action
              │
              │ Return value determines behavior:
              │
-   ┌─────────┴─────────────────────────────┐
-   │                                       │
-   ▼                                       ▼
-void / null                    Class&lt;?&gt; / Response
-   │                                       │
-   ├─── Stay on current page              ├─── Page Navigation
-    │    Refresh widget or page             │    return OtherPage.class;
-    │                                       │    return PageResponse(...);
-    │                                       │
-    │                                       ├─── Widget Replacement
-    │                                       │    return WidgetClass.class;
-    │                                       │    return WidgetResponse(...);
-    │                                       │
-   └──────────┬────────────────────────────┘
-              │
-              ▼
-     Re-execute Data Providers → Tree Refresh → Update DOM
+        ┌─────┴────────────┬───────────────────────┬───────────────────────┐
+    ┌──────┴──────┐   ┌───────┴─────────┐   ┌─────────┴─────────┐
+    │ returns:    │   │  returns:       │   │  returns:         │
+    │  -void      │   │ -Widget-class   │   │  -Page-class      │
+    │  -ModelData │   │ -Widget-ID      │   │  -PageResponse    │
+    │             │   │ -WidgetResponse │   │  -URL-String(.html)│
+    └──────┬──────┘   └───────┬─────────┘   └─────────┬─────────┘
+        │                  │                       │
+        ▼                  ▼                       ▼
+
+        ┌────────────────────┐ ┌────────────────────┐ ┌────────────────────┐
+        │ Stay on page       │ │ Widget replaced/new │ │ Whole page replaced│
+        └─────────┬──────────┘ └─────────┬──────────┘ └─────────┬──────────┘
+            │                      │                      │
+            ▼                      ▼                      ▼
+        ┌────────────────────────────┐ ┌────────────────────────────┐ ┌────────────────────────────┐
+        │ ModelData for page         │ │ ModelData for new widget   │ │ ModelData for new page     │
+        │ of the controller is       │ │ is called                  │ │ is called                  │
+        │ called                     │ └────────────────────────────┘ └────────────────────────────┘
+        └────────────────────────────┘
+            │                      │                      │
+            ▼                      ▼                      ▼
+        ┌────────────────────────────┐ ┌────────────────────────────┐ ┌────────────────────────────┐
+        │ Component is displayed     │ │ Component is displayed     │ │ Component is displayed     │
+        └────────────────────────────┘ └────────────────────────────┘ └────────────────────────────┘
+
         </pre>
         <p><strong>Code Examples:</strong></p>
         <pre><code>@Action

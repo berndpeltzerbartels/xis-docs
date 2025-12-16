@@ -1,0 +1,45 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>${chapterHeadline}</h3>
+    <p>
+        Testing is a core part of XIS development. The framework provides integration testing utilities that allow you to test controllers, pages, and widgets without running a full web server.
+    </p>
+
+    <h5>Integration Testing</h5>
+    <p>
+        Use <code>IntegrationTestContext</code> to create isolated test environments for your controllers. This enables fast, reliable tests for page and widget logic, including data binding and action handling.
+    </p>
+    <pre><code>var context = IntegrationTestContext.builder()
+    .withSingleton(MyPage.class)
+    .build();
+var result = context.openPage(MyPage.class);
+assertThat(result.getDocument().getElementById("test").getInnerText())
+    .isEqualTo("expected");
+</code></pre>
+
+    <h5>Widget Testing</h5>
+    <p>
+        Widgets can be tested in isolation by opening them in the test context and asserting on their rendered output and data.
+    </p>
+    <pre><code>var widgetResult = context.openWidget(MyWidget.class);
+assertThat(widgetResult.getDocument().getElementById("widgetTitle").getInnerText())
+    .isEqualTo("Widget Title");
+</code></pre>
+
+    <h5>Browser Testing</h5>
+    <p>
+        For end-to-end browser tests, XIS supports Selenide-based tests. These allow you to automate real browser interactions and verify the complete user experience.
+    </p>
+    <pre><code>// Example Selenide test
+open("/mypage.html");
+$("#myButton").click();
+$("#result").shouldHave(text("Success!"));
+</code></pre>
+
+    <h5>Best Practices</h5>
+    <ul>
+        <li>Test both controller logic and rendered output</li>
+        <li>Use integration tests for fast feedback</li>
+        <li>Use browser tests for full-stack verification</li>
+        <li>Mock external dependencies where possible</li>
+    </ul>
+</xis:template>

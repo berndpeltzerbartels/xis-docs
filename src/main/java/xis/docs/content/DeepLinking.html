@@ -79,8 +79,8 @@ class ProductPage {
         <pre><code class="language-java">@Page("/product/{productId}.html")
 public class ProductPage {
 
-    @ModelData("widgetClass")
-    String widgetClass(@PathVariable("productId") String productId) {
+    @ModelData
+    String widget(@PathVariable("productId") String productId) {
         // Dynamically select widget
             ...
         return "ProductDetailsWidget";
@@ -93,7 +93,7 @@ public class ProductPage {
 }
 </code></pre>
         <pre><code class="language-html">&lt;xis:template xmlns:xis="https://xis.one/xsd"&gt;
-    &lt;xis:widget-container container-id="main" default-widget="${widgetClass}"&gt;
+    &lt;xis:widget-container container-id="main" default-widget="${widget}"&gt;
         &lt;xis:parameter name="productId" value="${productId}"/&gt;
     &lt;/xis:widget-container&gt;
 &lt;/xis:template&gt;

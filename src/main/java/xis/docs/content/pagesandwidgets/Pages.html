@@ -1,29 +1,30 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
     <p>
-        Pages are the entry points of your XIS application. They are controllers annotated with <code>@Page</code> 
+        Pages are the entry points of your XIS application. They are controllers annotated with <code>@Page</code>
         that map to specific URLs and render complete HTML pages in response to HTTP requests.
     </p>
-    
+
     <h5>Defining a Page</h5>
     <p>
-        A page controller is a Java class annotated with <code>@Page("/path")</code>, where the path parameter 
-        specifies the URL at which the page will be accessible. Each page controller has a corresponding HTML 
-        template file located in the same package following XIS's convention-based approach.
+        A page controller is a Java class annotated with <code>@Page("/path.html")</code>, where the path parameter
+        specifies the URL at which the page will be accessible. Each page controller has a corresponding HTML
+        template file located in the same package following XIS's convention-based approach. The path must start
+        with "/" and must explicitly have the suffix ".html".
     </p>
-    
+
     <div class="warning">
         <strong>⚠️ URL Requirement</strong><br/>
-        XIS only accepts URLs ending with <code>.html</code>. The <code>@Page</code> annotation path must 
+        XIS only accepts URLs ending with <code>.html</code>. The <code>@Page</code> annotation path must
         include this extension (e.g., <code>@Page("/hello.html")</code>).
     </div>
-    
+
     <p>
-        <strong>Note:</strong> The <code>@Page</code> annotation already includes <code>@Component</code> (Spring) 
-        and <code>@XISComponent</code> (XIS Boot), so no additional component annotation is needed. Pages are 
+        <strong>Note:</strong> The <code>@Page</code> annotation already includes <code>@Component</code> (Spring)
+        and <code>@XISComponent</code> (XIS Boot), so no additional component annotation is needed. Pages are
         automatically discovered and registered for dependency injection.
     </p>
-    
+
     <pre><code>@Page("/hello.html")
 public class HelloPage {
     
@@ -34,12 +35,12 @@ public class HelloPage {
 }</code></pre>
 
     <p>
-        The corresponding <code>HelloPage.html</code> template would be placed in the same package. 
-        <strong>Important:</strong> Page templates must always contain complete HTML documents with 
-        <code>&lt;html&gt;</code>, <code>&lt;head&gt;</code>, and <code>&lt;body&gt;</code> tags. 
+        The corresponding <code>HelloPage.html</code> template would be placed in the same package.
+        <strong>Important:</strong> Page templates must always contain complete HTML documents with
+        <code>&lt;html&gt;</code>, <code>&lt;head&gt;</code>, and <code>&lt;body&gt;</code> tags.
         The browser requires a valid HTML document structure.
     </p>
-    
+
     <pre><code>&lt;!DOCTYPE html&gt;
 &lt;html xmlns:xis="https://xis.one/xsd"&gt;
 &lt;head&gt;
@@ -51,7 +52,8 @@ public class HelloPage {
 &lt;/html&gt;</code></pre>
 
     <p>
-        <strong>Note:</strong> Unlike pages, widgets use <code>&lt;xis:template&gt;</code> and contain HTML fragments only.
+        <strong>Note:</strong> Unlike pages, widgets use <code>&lt;xis:template&gt;</code> and contain HTML fragments
+        only.
     </p>
 
     <h5>Page Lifecycle</h5>
@@ -67,35 +69,35 @@ public class HelloPage {
 
     <h5>Page vs Widget</h5>
     <p>
-        Unlike widgets, pages are directly accessible via URL and represent complete, standalone views. 
+        Unlike widgets, pages are directly accessible via URL and represent complete, standalone views.
         Pages can embed widgets to compose complex interfaces from reusable components.
     </p>
-    
+
     <div class="warning">
         <strong>⚠️ JavaScript Inclusion</strong><br/>
-        Pages and Widgets in XIS cannot include JavaScript files using standard HTML <code>&lt;script&gt;</code> 
-        tags directly in templates. This is because XIS is a Single Page Application (SPA) where content is 
-        dynamically inserted into the DOM at runtime. Browsers do not execute <code>&lt;script&gt;</code> tags 
+        Pages and Widgets in XIS cannot include JavaScript files using standard HTML <code>&lt;script&gt;</code>
+        tags directly in templates. This is because XIS is a Single Page Application (SPA) where content is
+        dynamically inserted into the DOM at runtime. Browsers do not execute <code>&lt;script&gt;</code> tags
         that are added to the DOM after the initial page load.
         <br/><br/>
-        See <a href="#" xis:widget="xis.docs.content.customizing.CustomJavaScript">Adding JavaScript</a> 
+        See <a href="#" xis:widget="xis.docs.content.customizing.CustomJavaScript">Adding JavaScript</a>
         in the Customizing section for how to properly include JavaScript in your XIS application.
     </div>
-    
+
     <h5>Deep Linking Support</h5>
     <p>
-        XIS pages are inherently deep-link capable - each page is accessible via its unique URL path specified 
-        in the <code>@Page</code> annotation. Additionally, widgets embedded in pages can also participate in 
-        deep linking by specifying their own <code>url</code>, <code>title</code>, and <code>containerId</code> 
+        XIS pages are inherently deep-link capable - each page is accessible via its unique URL path specified
+        in the <code>@Page</code> annotation. Additionally, widgets embedded in pages can also participate in
+        deep linking by specifying their own <code>url</code>, <code>title</code>, and <code>containerId</code>
         in the <code>@Widget</code> annotation.
     </p>
-    
+
     <p>
-        This enables powerful navigation scenarios where users can bookmark specific widget states within a page, 
-        and the application will correctly restore both the page and the widget to the expected state when the 
+        This enables powerful navigation scenarios where users can bookmark specific widget states within a page,
+        and the application will correctly restore both the page and the widget to the expected state when the
         URL is accessed.
     </p>
-    
+
     <pre><code>// Page provides the foundation
 @Page("/dashboard")
 class DashboardPage { }
@@ -105,9 +107,9 @@ class DashboardPage { }
        url = "/dashboard/stats/{period}",
        title = "Statistics")
 class StatisticsWidget { }</code></pre>
-    
+
     <p>
-        For detailed information on widget deep linking, including <code>containerId</code> for container control, 
+        For detailed information on widget deep linking, including <code>containerId</code> for container control,
         see the <a href="#" xis:page="WidgetsDetails">Widget Details</a> section.
     </p>
 </xis:template>
