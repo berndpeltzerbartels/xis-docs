@@ -2,13 +2,12 @@ package xis.docs.content.xisboot;
 
 import one.xis.ModelData;
 import one.xis.Title;
-import one.xis.context.XISComponent;
-import xis.docs.content.pagesandwidgets.PagesAndWidgets;
+import one.xis.Widget;
 import xis.docs.navi.Navigation;
 
-@XISComponent
-@Navigation(title = "XIS Boot", nextItem = PagesAndWidgets.class, firstSubItem = XisBootInstallation.class)
-public class XisBoot {
+@Widget(url = "/docs/xis-installation.html", containerId = "main")
+@Navigation(title = "Installation", nextItem = MainClass.class)
+class XisBootInstallation {
 
     @Title
     @ModelData

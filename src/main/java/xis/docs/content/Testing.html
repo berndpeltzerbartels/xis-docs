@@ -1,45 +1,144 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
     <p>
-        Testing is a core part of XIS development. The framework provides integration testing utilities that allow you to test controllers, pages, and widgets without running a full web server.
-    </p>
+        XIS provides a comprehensive testing framework for ensuring the quality and reliability of your applications.
 
-    <h5>Integration Testing</h5>
+        It allows creating a simple application context for tests where you can explicitly specify which components
+        should be loaded. Both classes and instances can be loaded. This makes it possible to use mocks. Additionally,
+        packages can be specified for package scanning. The package scan works similarly to Spring using annotations.
+    </p>
     <p>
-        Use <code>IntegrationTestContext</code> to create isolated test environments for your controllers. This enables fast, reliable tests for page and widget logic, including data binding and action handling.
+        When using XIS Boot, the XIS context annotations are used, but it is equally possible to use Spring components.
+        Note that a real Spring context is not created; instead a lightweight XIS context is created that supports
+        Spring components but does not provide all Spring features.
     </p>
-    <pre><code>var context = IntegrationTestContext.builder()
-    .withSingleton(MyPage.class)
-    .build();
-var result = context.openPage(MyPage.class);
-assertThat(result.getDocument().getElementById("test").getInnerText())
-    .isEqualTo("expected");
-</code></pre>
-
-    <h5>Widget Testing</h5>
+    <p>The advantage is very fast test execution and context creation so fast that recreating the context for each test
+        is not disruptive. Side effects typical for Spring are thus avoided. XIS was built with this testing approach in
+        mind and benefits greatly from this strategy. For tests I used JUnit 5 with AssertJ and Mockito, but it is
+        equally possible to use other test frameworks. In the examples I remained with JUnit 5, AssertJ, and Mockito.
+    </p>
     <p>
-        Widgets can be tested in isolation by opening them in the test context and asserting on their rendered output and data.
+      For using the testing framework, a dependency on `xis-test` must be added:
     </p>
-    <pre><code>var widgetResult = context.openWidget(MyWidget.class);
-assertThat(widgetResult.getDocument().getElementById("widgetTitle").getInnerText())
-    .isEqualTo("Widget Title");
-</code></pre>
+    <pre><code>plugins {
+    id 'one.xis.plugin' version '${xisVersion}'
+}
+dependencies {
+    implementation 'one.xis:xis-spring'
+    implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
 
-    <h5>Browser Testing</h5>
+    testImplementation 'one.xis:xis-test'
+}</code></pre>
     <p>
-        For end-to-end browser tests, XIS supports Selenide-based tests. These allow you to automate real browser interactions and verify the complete user experience.
+      Now a test context can be created as follows:
     </p>
-    <pre><code>// Example Selenide test
-open("/mypage.html");
-$("#myButton").click();
-$("#result").shouldHave(text("Success!"));
-</code></pre>
+    <pre><code>class ProductDetailsPageTest {
+    private IntegrationTestContext context;
+    private ProductService productService;
 
-    <h5>Best Practices</h5>
-    <ul>
-        <li>Test both controller logic and rendered output</li>
-        <li>Use integration tests for fast feedback</li>
-        <li>Use browser tests for full-stack verification</li>
-        <li>Mock external dependencies where possible</li>
-    </ul>
-</xis:template>
+    @BeforeEach
+    void setUp() {
+        productService = Mockito.mock(ProductService.class);
+        context = IntegrationTestContext.builder()
+            .withSingleton(ProductPage.class)
+            .withSingleton(productService)
+            .build();
+    }
+
+    ...
+}</code></pre>
+
+    <p>
+        The context is now ready to test pages and widgets. There are two `openPage` methods: one expects a Page class
+        and the other a URL. I consider the second variant better because it keeps the test closer to reality and
+        respects the mapping from URLs to page classes. It also makes it easier to test path variables.
+    </p>
+    <p>Display page by class:</p>
+    <pre><code>var pageResult = context.openPage(ProductPage.class);</code></pre>
+
+    <p>Display page by URL:</p>
+<pre><code>var pageResult = context.openPage("/products/42.html?ref=test");</code></pre>
+
+    <p>
+        The return value is a `PageResult` object that provides access to the rendered document tree and browser-like
+        objects such as windows, localStorage, etc. The document tree can be traversed with standard DOM methods to find
+        elements and assert their content, but it also offers convenience methods, for example to find an element by tag
+        name when you expect only one such element.
+    </p>
+    <p>
+        The `openPage` method performs the full page lifecycle, including all controller methods, data binding, actions,
+        etc. Thus you can be confident the page behaves like in a real browser. The XIS JavaScript code is executed with
+        GraalVM to provide a realistic simulation of browser behavior. Tests are headless and integrate smoothly into
+        CI/CD pipelines.
+    </p>
+
+    <pre><code>@Test
+void displayAProduct() {
+    Product product = new Product(42, "Test Product", 19.99);
+    Mockito.when(productService.getProductById(42)).thenReturn(product);
+
+    var pageResult = context.openPage("/products/42.html");
+    var document = pageResult.getDocument();
+
+
+    assertThat(document.getElementByTagName("h5").getInnerText()).isEqualTo("Test Product");
+    assertThat(document.getElementById("price").getInnerText()).isEqualTo("$19.99");
+}</code></pre>
+
+    <p>
+        Further navigation, e.g. via actions, can be performed using the click method on elements. Form elements also
+        support setting values which are then considered on the next action.
+
+    </p>
+    <pre><code>document.getElementById("addToCartButton").click();
+
+assertThat(document.getElementByTagName("title").isEqualTo("Shopping Cart - My Store"));
+assertThat(document.getElementById("cartItemCount").getInnerText()).isEqualTo("1");
+assertThat(document.getElementById("total").getInnerText()).isEqualTo("$19.99");
+</code></pre>
+        <div class="warning">
+            <strong>⚠️ Warning</strong><br/>
+            `openPage` can only be called once per test. For further navigation, use element interactions like `click()`.
+        </div>
+        <p>
+            How to design integration tests is a matter of taste. With XIS integration tests you can either test only
+            the frontend by mocking the service layer, or test the full stack by using real services and databases. Both
+            approaches have pros and cons. Personally I prefer to mock as many services as possible to get fast,
+            reliable tests that focus on page logic and test services separately. But there are scenarios where testing
+            the entire stack is sensible, e.g. for critical paths or complex data dependencies.
+        </p>
+        <p>
+            Widgets cannot be tested alone; they must be tested in the context of a page that contains the widgets. Finally,
+            here is a complete example putting everything together in one test:
+        </p>
+<pre><code>class ProductDetailsPageTest {
+    private IntegrationTestContext context;
+    private ProductService productService;
+
+    @BeforeEach
+    void setUp() {
+        productService = Mockito.mock(ProductService.class);
+        context = IntegrationTestContext.builder()
+            .withSingleton(ProductPage.class)
+            .withSingleton(productService)
+            .build();
+    }
+
+    @Test
+    void displayAProduct() {
+        Product product = new Product(42, "Test Product", 19.99);
+        Mockito.when(productService.getProductById(42)).thenReturn(product);
+
+        var pageResult = context.openPage("/products/42.html");
+        var document = pageResult.getDocument();
+
+        assertThat(document.getElementByTagName("h5").getInnerText()).isEqualTo("Test Product");
+        assertThat(document.getElementById("price").getInnerText()).isEqualTo("$19.99");
+
+        document.getElementById("addToCartButton").click();
+
+        assertThat(document.getElementByTagName("title").isEqualTo("Shopping Cart - My Store"));
+        assertThat(document.getElementById("cartItemCount").getInnerText()).isEqualTo("1");
+        assertThat(document.getElementById("total").getInnerText()).isEqualTo("$19.99");
+    }
+}</code></pre>

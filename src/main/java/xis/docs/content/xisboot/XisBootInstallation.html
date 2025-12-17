@@ -1,16 +1,16 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
 
-    <div class="alert alert-info" role="alert">
-        <strong>ℹ️ Annotation Changes Coming</strong><br/>
-        Currently, XIS uses prefixed annotations like <code>@XISComponent</code>, <code>@XISService</code>, etc.
-        In a future version, these will be simplified to <code>@Component</code>, <code>@Service</code>, etc.
-        This documentation shows the future naming convention.
-    </div>
+    <p>Add the dependency to your project:</p>
+    <pre><code>plugins {
+    id 'one.xis.plugin' version '${xisVersion}'
+}
+dependencies {
+    implementation 'one.xis:xis-boot'
+    ...
 
-    <p>XIS Boot provides a lightweight dependency injection and component scanning system. Components are
-        registered and managed by the XIS context, similar to Spring or Micronaut but without the framework
-        overhead.</p>
+    testImplementation 'one.xis:xis-test'
+}</code></pre>
 
     <h5>Component Annotations</h5>
 
@@ -18,9 +18,10 @@
     <p>Mark a class as a managed component. XIS will create a single instance (singleton) and make it available for injection:</p>
 
     <pre><code class="language-java">@Component
-public class UserService {
-    public User findById(String id) {
-        // Business logic
+public class EmailServerClient {
+
+    public void sendEmail(Email email) {
+        // Email sending logic
     }
 }</code></pre>
 
@@ -28,9 +29,11 @@ public class UserService {
     <p>Specialized <code>@Component</code> for service layer classes:</p>
 
     <pre><code class="language-java">@Service
-public class EmailService {
-    public void sendEmail(String to, String subject, String body) {
-        // Email sending logic
+class ProductServiceImpl implements ProductService {
+
+    @Override
+    public void addProduct(Product product) {
+        // Business logic to add product
     }
 }</code></pre>
 
@@ -64,20 +67,6 @@ public class UsersPage {
         return userService.findAll();
     }
 }</code></pre>
-
-    <p>If you have more then one bean of the same base type, you can use a collection or array:</p>
-
-    <pre><code class="language-java">@Page("/users.html")
-public class UsersPage {
-    @Inject
-    private Collection&lt;Datasource&gt; dataSources;</code></pre>
-
-    <p>The attribute <code>annotatedWith</code> allows to inject beans by their annotations:</p>
-
-    <pre><code class="language-java">@Page("/users.html")
-public class UsersPage {
-    @Inject(annotatedWith = Page.class)
-    private Collection&lt;Object&gt; pages;</code></pre>
 
     <p><strong>Note:</strong> Constructor injection is generally preferred over field injection for better testability.</p>
 
@@ -113,19 +102,18 @@ public class DatabaseService {
 public class AppConfiguration {
     
     @Bean
-    public DataSource createDataSource(Config config) {
-        return new DataSource(config.getDbUrl(), config.getDbUser(), config.getDbPassword());
+    public DataSource createDataSource() {
+        return new DataSource("jdbc:postgresql://localhost/mydb");
     }
-
+    
+    @Bean
+    public CacheManager createCacheManager() {
+        return new CacheManager(/* config */);
+    }
 }</code></pre>
 
     <p>The returned instances from <code>@Bean</code> methods are registered as singletons in the context and 
        can be injected into other components.</p>
-
-    <div class="info">
-        Every singleton can be used as a method parameter in a <code>@Bean</code> or <code>@BInit</code>method as long
-        the dependency graph has no cycles.
-    </div>
 
     <h5>Event Handling</h5>
 
