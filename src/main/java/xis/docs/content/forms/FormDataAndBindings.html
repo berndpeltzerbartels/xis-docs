@@ -1,43 +1,46 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
-    <p>XIS automatically binds form data to Java objects using the <code>@FormData</code> annotation. This eliminates 
+    <p>XIS automatically binds form data to Java objects using the <code>@FormData</code> annotation. This eliminates
         manual request parameter parsing and type conversion.</p>
 
     <h5>Basic Form Binding</h5>
-    <p>Declare a form object with <code>@FormData</code> and XIS will automatically populate it from form submissions:</p>
+    <p>Declare a form object with <code>@FormData</code> and XIS will automatically populate it from form submissions.
+        Use <code>xis:binding</code> for all form fields (bidirectional binding):</p>
     <xis:raw>
         <pre><code>@Widget
-class UserFormWidget {
-    
+class UserDataWidget {
     @FormData("user")
-    UserForm userForm;
+    UserData userData() {
+        return new UserData();
+    }
     
     @Action
-    void saveUser() {
-        userService.save(userForm);
-        // userForm is automatically populated from form fields
+    void saveUser(@FormData("user") UserData userData) {
+        userService.save(userData);
+        // userData is automatically populated from form fields
     }
 }</code></pre>
         <p><strong>Template:</strong></p>
         <pre><code>&lt;form xis:binding="user"&gt;
-    &lt;input type="text" xis:binding="firstName" value="${user.firstName}"/&gt;
-    &lt;input type="text" xis:binding="lastName" value="${user.lastName}"/&gt;
-    &lt;input type="email" xis:binding="email" value="${user.email}"/&gt;
+    &lt;input type="text" xis:binding="firstName"/&gt;
+    &lt;input type="text" xis:binding="lastName"/&gt;
+    &lt;input type="email" xis:binding="email"/&gt;
     &lt;button type="submit" xis:action="saveUser"&gt;Save&lt;/button&gt;
 &lt;/form&gt;</code></pre>
     </xis:raw>
 
     <h5>Form Object Structure</h5>
-    <p>Form objects can be simple POJOs or Java records:</p>
+    <p>Form objects can be simple POJOs or Java records. Choose a meaningful name for your data object:</p>
     <xis:raw>
-        <pre><code>public record UserForm(String firstName, String lastName, String email) {
+        <pre><code>public record UserData(String firstName, String lastName, String email) {
 }</code></pre>
     </xis:raw>
 
     <h5>Nested Objects</h5>
-    <p>Form binding supports nested object structures using dot notation:</p>
+    <p>Form binding supports nested object structures. Use <code>xis:binding</code> with dot notation for nested fields:
+    </p>
     <xis:raw>
-        <pre><code>public class OrderForm {
+        <pre><code>public class OrderData {
     private CustomerInfo customer;
     private AddressInfo shippingAddress;
     // ...
@@ -49,15 +52,15 @@ public class CustomerInfo {
     // ...
 }</code></pre>
         <p><strong>Template:</strong></p>
-        <pre><code>&lt;input type="text" name="order.customer.name" value="${order.customer.name}"/&gt;
-&lt;input type="email" name="order.customer.email" value="${order.customer.email}"/&gt;
-&lt;input type="text" name="order.shippingAddress.street" value="${order.shippingAddress.street}"/&gt;</code></pre>
+        <pre><code>&lt;input type="text" xis:binding="customer.name"/&gt;
+&lt;input type="email" xis:binding="customer.email"/&gt;
+&lt;input type="text" xis:binding="shippingAddress.street"/&gt;</code></pre>
     </xis:raw>
 
     <h5>Lists and Arrays</h5>
-    <p>Bind multiple values using indexed notation:</p>
+    <p>Bind multiple values using indexed notation and <code>xis:binding</code>:</p>
     <xis:raw>
-        <pre><code>public class CartForm {
+        <pre><code>public class CartData {
     private List&lt;CartItem&gt; items;
     // ...
 }
@@ -68,34 +71,36 @@ public class CartItem {
     // ...
 }</code></pre>
         <p><strong>Template:</strong></p>
-        <pre><code>&lt;div xis:foreach="item:${cart.items}" xis:foreach-index="i"&gt;
-    &lt;input type="hidden" name="cart.items[${i}].productId" value="${item.productId}"/&gt;
-    &lt;input type="number" name="cart.items[${i}].quantity" value="${item.quantity}"/&gt;
+        <pre><code>&lt;div xis:foreach="item:${cart.items}"&gt;
+    &lt;input type="hidden" xis:binding="items[${itemIndex}].productId"/&gt;
+    &lt;input type="number" xis:binding="items[${itemIndex}].quantity"/&gt;
 &lt;/div&gt;</code></pre>
     </xis:raw>
 
     <h5>Checkboxes</h5>
-    <p>Checkboxes bind to boolean fields:</p>
+    <p>Checkboxes bind to boolean fields. Use <code>xis:binding</code> for the field and <code>value</code> only if
+        needed for true/false mapping:</p>
     <xis:raw>
-        <pre><code>&lt;input type="checkbox" name="user.acceptTerms" xis:checked="${user.acceptTerms}"/&gt;
-&lt;input type="checkbox" name="user.newsletter" xis:checked="${user.newsletter}"/&gt;</code></pre>
+        <pre><code>&lt;input type="checkbox" xis:binding="acceptTerms"/>&gt;
+&lt;input type="checkbox" xis:binding="newsletter"/>&gt;</code></pre>
     </xis:raw>
 
     <h5>Radio Buttons</h5>
-    <p>Radio buttons bind to string or enum fields:</p>
+    <p>Radio buttons bind to string or enum fields. Use <code>xis:binding</code> and <code>value</code> for each option:
+    </p>
     <xis:raw>
-        <pre><code>&lt;input type="radio" name="user.gender" value="MALE" xis:checked="${user.gender == 'MALE'}"/&gt; Male
-&lt;input type="radio" name="user.gender" value="FEMALE" xis:checked="${user.gender == 'FEMALE'}"/&gt; Female</code></pre>
+        <pre><code>&lt;input type="radio" xis:binding="gender" value="MALE"/&gt; Male
+&lt;input type="radio" xis:binding="gender" value="FEMALE"/&gt; Female</code></pre>
     </xis:raw>
 
     <h5>Select Boxes</h5>
-    <p>Select boxes bind to string, enum, or object fields. Use <code>@ModelData</code> to provide the options:</p>
+    <p>Select boxes bind to string, enum, or object fields. Use <code>@ModelData</code> to provide the options. Use
+        <code>xis:binding</code> for the select element, and <code>value</code> only in <code>&lt;option&gt;</code>:</p>
     <xis:raw>
         <pre><code>@Widget
-class ProductFormWidget {
-    
+class ProductDataWidget {
     @FormData("product")
-    ProductForm productForm;
+    ProductData productData;
     
     @ModelData("categories")
     List&lt;Category&gt; getCategories() {
@@ -104,17 +109,13 @@ class ProductFormWidget {
     
     @Action
     void saveProduct() {
-        productService.save(productForm);
+        productService.save(productData);
     }
 }</code></pre>
         <p><strong>Template:</strong></p>
-        <pre><code>&lt;select name="product.categoryId"&gt;
+        <pre><code>&lt;select xis:binding="categoryId"&gt;
     &lt;option value=""&gt;Select category...&lt;/option&gt;
-    &lt;option xis:foreach="cat:${categories}" 
-            value="${cat.id}" 
-            xis:selected="${cat.id == product.categoryId}"&gt;
-        ${cat.name}
-    &lt;/option&gt;
+    &lt;option xis:foreach="cat:${categories}" value="${cat.id}"&gt;${cat.name}&lt;/option&gt;
 &lt;/select&gt;</code></pre>
     </xis:raw>
 
@@ -125,7 +126,9 @@ class ProductFormWidget {
             <li><strong>Primitives:</strong> int, long, double, boolean, etc.</li>
             <li><strong>Strings:</strong> Direct binding</li>
             <li><strong>Enums:</strong> By name (case-insensitive)</li>
-            <li><strong>Dates:</strong> LocalDate, LocalDateTime, Date (with formatters)</li>
+            <li><strong>Dates:</strong> LocalDate, LocalDateTime, Date (see <a xis:page="Formatters">Formatters</a> for
+                details)
+            </li>
             <li><strong>Numbers:</strong> Integer, Long, Double, BigDecimal</li>
         </ul>
         <p>For custom conversions, use the <code>@UseFormatter</code> annotation (see Formatters chapter).</p>
@@ -135,21 +138,22 @@ class ProductFormWidget {
     <p>Provide initial values by populating the form object in <code>@ModelData</code>:</p>
     <xis:raw>
         <pre><code>@FormData("user")
-UserForm userForm;
+UserData userData;
 
 @ModelData
 void loadUser(@WidgetParameter("userId") String userId) {
     if (userId != null) {
         User user = userService.findById(userId);
-        userForm.setFirstName(user.getFirstName());
-        userForm.setLastName(user.getLastName());
-        userForm.setEmail(user.getEmail());
+        userData.setFirstName(user.getFirstName());
+        userData.setLastName(user.getLastName());
+        userData.setEmail(user.getEmail());
     }
 }</code></pre>
     </xis:raw>
 
     <div class="warning">
-        <strong>Security Note:</strong> Always validate form data before processing. Form binding does not perform 
-        validation - use <code>@Validated</code> or manual validation in your action methods. See the Validation chapter.
+        <strong>Security Note:</strong> Always validate form data before processing. Form binding does not perform
+        validation - use <code>@Validated</code> or manual validation in your action methods. See the Validation
+        chapter.
     </div>
 </xis:template>
