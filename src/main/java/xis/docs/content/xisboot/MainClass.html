@@ -1,33 +1,33 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
-    
-    <p>The main class is the entry point of your XIS Boot application. It bootstraps the XIS runtime and starts 
+
+    <p>The main class is the entry point of your XIS Boot application. It bootstraps the XIS runtime and starts
         the embedded web server.</p>
-    
+
     <h5>Basic Main Class</h5>
     <p>Create a simple main class that starts XIS Boot:</p>
-    
+
     <pre><code class="language-java">package com.example.myapp;
 
-import one.xis.boot.XisApplication;
+import one.xis.boot.XISBootRunner;
 
 public class Application {
     public static void main(String[] args) {
-        XisApplication.run(Application.class, args);
+        XISBootRunner.run(Application.class, args);
     }
 }</code></pre>
-    
+
     <p>The <code>XisApplication.run()</code> method:</p>
     <ul>
-        <li>Scans for <code>@Page</code> and <code>@Widget</code> annotated classes in the same package</li>
+        <li>Scans packages in this package or its subpackages (like SpringBoot)</li>
         <li>Registers all controllers and components</li>
         <li>Starts the embedded web server (default port 8080)</li>
         <li>Processes the port number from command-line arguments if provided</li>
     </ul>
-    
+
     <h5>Application Structure</h5>
     <p>Organize your application with a clear package structure:</p>
-    
+
     <pre><code>com.example.myapp/
 ├── Application.java         # Main class
 ├── pages/
@@ -36,11 +36,11 @@ public class Application {
 └── widgets/
     ├── HeaderWidget.java
     └── HeaderWidget.html</code></pre>
-    
+
     <h5>Specifying the Port</h5>
     <p>You can specify the server port by passing it as a command-line argument:</p>
-    
+
     <pre><code class="language-bash">java -jar myapp.jar 9090</code></pre>
-    
+
     <p>If no port is specified, the application will use the default port 8080.</p>
 </xis:template>

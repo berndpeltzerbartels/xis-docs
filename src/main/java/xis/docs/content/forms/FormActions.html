@@ -1,123 +1,98 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
-    <p>Form submissions trigger <code>@Action</code> methods just like button clicks. Understanding form action 
+    <p>Form submissions trigger <code>@Action</code> methods just like button clicks. Understanding form action
         behavior helps you create effective form workflows.</p>
 
     <h5>Basic Form Submission</h5>
-    <p>The form uses <code>xis:binding</code> to match the <code>@FormData</code> annotation, and the submit button triggers the action:</p>
+    <p>The form uses <code>xis:binding</code> to match the <code>@FormData</code> annotation, and the submit button
+        triggers the action. The controller is stateless:</p>
     <xis:raw>
-        <pre><code>@FormData("user")
-UserForm userForm;
+        <pre><code>// Provide form data for the template
+@FormData("userData")
+public UserData getUserData(@PathVariable("userId") String userId) {
+    return userService.findById(userId);
+}
 
+// Action receives form data as parameter
 @Action
-void saveUser() {
-    userService.save(userForm);
+void saveUser(@FormData("userData") UserData userData) {
+    userService.save(userData);
 }</code></pre>
         <p><strong>Template:</strong></p>
-        <pre><code>&lt;form xis:binding="user"&gt;
-    &lt;input type="text" xis:binding="name" value="${user.name}"/&gt;
+        <pre><code>&lt;form xis:binding="userData"&gt;
+    &lt;input type="text" xis:binding="name"/&gt;
     &lt;button type="submit" xis:action="saveUser"&gt;Save&lt;/button&gt;
 &lt;/form&gt;</code></pre>
     </xis:raw>
 
     <h5>Multiple Submit Buttons</h5>
-    <p>A form can have multiple submit buttons, each triggering different actions:</p>
+    <p>A form can have multiple submit buttons, each triggering different actions. The form data binding (and @FormData
+        value) always stays the same. The action is selected by the string in the <code>@Action</code> annotation and
+        <code>xis:action</code> in the template:</p>
     <xis:raw>
-        <pre><code>@Action
-void saveDraft() {
-    document.status = Status.DRAFT;
-    documentService.save(document);
+        <pre><code>@FormData("documentData")
+public DocumentData getDocument(@PathVariable("docId") String docId) {
+    return documentService.findById(docId);
 }
 
-@Action
-void publish() {
-    document.status = Status.PUBLISHED;
-    documentService.save(document);
+@Action("saveDraft")
+void saveDraft(@FormData("documentData") DocumentData document) {
+    documentService.saveAsDraft(document);
+}
+
+@Action("publish")
+void publish(@FormData("documentData") DocumentData document) {
+    documentService.publish(document);
 }</code></pre>
         <p><strong>Template:</strong></p>
-        <pre><code>&lt;form xis:binding="document"&gt;
-    &lt;input type="text" xis:binding="title" value="${document.title}"/&gt;
-    &lt;textarea xis:binding="content"&gt;${document.content}&lt;/textarea&gt;
-    
+        <pre><code>&lt;form xis:binding="documentData"&gt;
+    &lt;input type="text" xis:binding="title"/&gt;
+    &lt;textarea xis:binding="content"/&gt;
     &lt;button type="submit" xis:action="saveDraft"&gt;Save Draft&lt;/button&gt;
     &lt;button type="submit" xis:action="publish"&gt;Publish&lt;/button&gt;
 &lt;/form&gt;</code></pre>
     </xis:raw>
 
     <h5>Form Actions with Navigation</h5>
-    <p>Return a page class or widget response to navigate after form submission:</p>
+    <p>Return a page class or widget response to navigate after form submission. Always use @FormData parameter:</p>
     <xis:raw>
         <pre><code>@Action
-Class&lt;?&gt; saveAndContinue() {
-    userService.save(userForm);
+Class&lt;?&gt; saveAndContinue(@FormData("userData") UserData userData) {
+    userService.save(userData);
     return UserListPage.class;
 }
 
 @Action
-void saveAndStay() {
-    userService.save(userForm);
+void saveAndStay(@FormData("userData") UserData userData) {
+    userService.save(userData);
     // void = stay on current page/widget
 }</code></pre>
     </xis:raw>
 
     <h5>Form Actions with Update Events</h5>
-    <p>Emit events to refresh other widgets after form submission:</p>
+    <p>Emit events to refresh other widgets after form submission. Always use @FormData parameter:</p>
     <xis:raw>
         <pre><code>@Action(value = "saveProduct", updateEventKeys = {"product-saved"})
-void saveProduct() {
-    productService.save(productForm);
+void saveProduct(@FormData("productData") ProductData productData) {
+    productService.save(productData);
     // Widgets listening for "product-saved" will refresh
 }</code></pre>
     </xis:raw>
 
     <h5>Conditional Form Processing</h5>
-    <p>Use action logic to handle different scenarios:</p>
+    <p>Use action logic to handle different scenarios. Errors should be returned, not in a field:</p>
     <xis:raw>
         <pre><code>@Action
-Class&lt;?&gt; submitOrder() {
-    ValidationResult result = orderValidator.validate(orderForm);
-    
+Class&lt;?&gt; submitOrder(@FormData("orderData") OrderData orderData) {
+    ValidationResult result = orderValidator.validate(orderData);
     if (!result.isValid()) {
-        this.errors = result.getErrors();
+        // return error info, e.g. as ModelData or WidgetResponse
         return null; // Stay on form to show errors
     }
-    
-    orderService.create(orderForm);
+    orderService.create(orderData);
     return OrderConfirmationPage.class;
 }</code></pre>
     </xis:raw>
-
-    <h5>Form Actions with Parameters</h5>
-    <p>Combine form data with action parameters for flexible workflows:</p>
-    <xis:raw>
-        <pre><code>@FormData("wizard")
-WizardForm wizardForm;
-
-@Action
-void saveAndNext(@ActionParameter("nextStep") String nextStep) {
-    wizardService.save(currentStep, wizardForm);
-    this.currentStep = nextStep;
-}</code></pre>
-        <p><strong>Template:</strong></p>
-        <pre><code>&lt;form xis:binding="wizard"&gt;
-    &lt;input type="text" xis:binding="companyName" value="${wizard.companyName}"/&gt;
-    &lt;button type="submit" xis:action="saveAndNext"&gt;
-        &lt;xis:parameter name="nextStep" value="address"/&gt;
-        Next: Address
-    &lt;/button&gt;
-&lt;/form&gt;</code></pre>
-    </xis:raw>
-
-    <h5>Cancel Buttons</h5>
-    <p>Use regular links or buttons without <code>type="submit"</code> for cancel actions:</p>
-    <xis:raw>
-        <pre><code>&lt;form xis:binding="user"&gt;
-    &lt;!-- form fields --&gt;
-    &lt;button type="submit" xis:action="saveUser"&gt;Save&lt;/button&gt;
-    &lt;a xis:page="UserListPage"&gt;Cancel&lt;/a&gt;
-&lt;/form&gt;</code></pre>
-    </xis:raw>
-
     <h5>Form Submission Behavior</h5>
     <p>Understanding how XIS processes form submissions:</p>
     <xis:raw>
@@ -125,12 +100,12 @@ void saveAndNext(@ActionParameter("nextStep") String nextStep) {
             <li>User clicks submit button</li>
             <li>Form data is collected from all input fields</li>
             <li><code>@FormData</code> objects are populated via data binding</li>
-            <li>The specified <code>@Action</code> method is executed</li>
+            <li>If no validation errors occurred, the specified <code>@Action</code> method is executed</li>
             <li>Navigation occurs based on the action's return value</li>
             <li>If staying on the same page/widget, <code>@ModelData</code> methods refresh</li>
         </ol>
     </xis:raw>
 
-    <p><strong>Note:</strong> XIS handles form submission via JavaScript, preventing full page reloads. This enables 
+    <p><strong>Note:</strong> XIS handles form submission via JavaScript, preventing full page reloads. This enables
         seamless widget-based forms without traditional page refresh behavior.</p>
 </xis:template>

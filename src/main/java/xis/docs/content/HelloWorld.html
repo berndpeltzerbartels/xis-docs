@@ -1,22 +1,24 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
     <p>
-        Let's create your first XIS page with a simple Hello World example. This demonstrates the core concepts 
+        Let's create your first XIS page with a simple Hello World example. This demonstrates the core concepts
         of XIS in just a few lines of code.
     </p>
 
     <h5>The Controller</h5>
     <p>
-        Create a Java class annotated with <code>@Page</code> to define the URL where your page will be accessible. 
+        Create a Java class annotated with <code>@Page</code> to define the URL where your page will be accessible.
         Use the <code>@ModelData</code> annotation on methods to provide data to the template:
     </p>
-    
+
     <pre><code>package com.example;
 
 import one.xis.Page;
 import one.xis.ModelData;
+import one.xis.WelcomePage;
 
 @Page("/hello")
+@WelcomePage
 public class HelloWorldPage {
     
     @ModelData
@@ -32,10 +34,10 @@ public class HelloWorldPage {
 
     <h5>The Template</h5>
     <p>
-        Create an HTML file named <code>HelloWorldPage.html</code> in the same package as your controller. 
+        Create an HTML file named <code>HelloWorldPage.html</code> in the same package as your controller.
         The template uses standard HTML with expression language <code>$​{...}</code> to access the model data:
     </p>
-    
+
     <pre><code>&lt;!DOCTYPE html&gt;
 &lt;html&gt;
 &lt;head&gt;
@@ -49,15 +51,20 @@ public class HelloWorldPage {
 
     <h5>That's It!</h5>
     <p>
-        Start your application and navigate to <code>http://localhost:8080/hello</code>. XIS automatically 
-        wires everything together - the controller provides the data, the template renders it, and you have 
+        Start your application and navigate to <code>http://localhost:8080/hello.html</code>. XIS automatically
+        wires everything together - the controller provides the data, the template renders it, and you have
         a working web page. No configuration files, no complex setup, just plain Java and HTML working together.
     </p>
-    
+
     <p>
-        The <code>@ModelData</code> annotation makes the method's return value available in the template using 
-        the method name as the key. For more details on controller methods and annotations, see the dedicated 
+        The <code>@ModelData</code> annotation makes the method's return value available in the template using
+        the method name as the key. For more details on controller methods and annotations, see the dedicated
         chapters later in this documentation.
+    </p>
+
+    <p>
+        @WelcomePage marks this page as the default landing page of your application. When users visit the root URL
+        (<code>/</code>) or any unknown URL, they will be redirected to this page automatically.
     </p>
 
 </xis:template>
