@@ -73,6 +73,52 @@ public class HelloPage {
         Pages can embed widgets to compose complex interfaces from reusable components.
     </p>
 
+    <h5>Static Resources</h5>
+    <p>
+        Pages can reference static resources like CSS files, fonts, images, and other assets. These resources
+        must be placed in the <code>src/main/resources/public</code> directory of your project. When referencing
+        these resources in your HTML templates, omit the <code>/public</code> prefix from the path:
+    </p>
+
+    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html xmlns:xis="https://xis.one/xsd"&gt;
+&lt;head&gt;
+    &lt;title&gt;Styled Page&lt;/title&gt;
+    &lt;!-- CSS file from src/main/resources/public/css/styles.css --&gt;
+    &lt;link rel="stylesheet" href="/css/styles.css"/&gt;
+    
+    &lt;!-- Custom font from src/main/resources/public/fonts/custom.woff2 --&gt;
+    &lt;style&gt;
+        @font-face {
+            font-family: 'CustomFont';
+            src: url('/fonts/custom.woff2') format('woff2');
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;!-- Image from src/main/resources/public/images/logo.png --&gt;
+    &lt;img src="/images/logo.png" alt="Logo"/&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <p>
+        <strong>File System Structure:</strong>
+    </p>
+    <pre><code>src/main/resources/
+└── public/
+    ├── css/
+    │   └── styles.css
+    ├── fonts/
+    │   └── custom.woff2
+    └── images/
+        └── logo.png</code></pre>
+
+    <p>
+        <strong>Important:</strong> This automatic path mapping works for CSS, fonts, images, and other static
+        assets, but <strong>not for JavaScript files</strong>. JavaScript requires special handling due to XIS's
+        SPA architecture.
+    </p>
+
     <div class="warning">
         <strong>⚠️ JavaScript Inclusion</strong><br/>
         Pages and Widgets in XIS cannot include JavaScript files using standard HTML <code>&lt;script&gt;</code>

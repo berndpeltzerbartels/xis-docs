@@ -18,70 +18,104 @@
 
     <ul>
         <li>Tokens are generated within the application (not by an external IDP)</li>
-        <li>Custom login form can replace the default login page</li>
+        <li>XIS provides a built-in login controller and default login page</li>
         <li>Token validation happens locally</li>
-        <li>Users and roles are managed in your database</li>
+        <li>Users and roles are managed through <code>UserInfoService</code></li>
     </ul>
 
-    <h4>Creating Tokens (Login)</h4>
+    <h4>Implementing User Management</h4>
     <p>
-        After successfully verifying username/password, create a token:
+        To use local authentication, implement the <code>UserInfoService</code> interface:
     </p>
 
-    <pre><code>@Page("/login.html")
-public class LoginPage {
+    <pre><code>@Component
+public class MyUserService implements UserInfoService&lt;UserInfo&gt; {
     
-    private final AuthenticationService authenticationService;
-    private final UserService userService;
+    private final UserRepository userRepository;
     
-    @Action
-    @FormData("loginForm")
-    PageResponse login(LoginFormDto dto) {
-        // Load user from your database
-        User user = userService.findByUsername(dto.getUsername());
-        
-        if (user == null || !passwordMatches(dto.getPassword(), user)) {
-            return new PageResponse(LoginPage.class); // Show error
-        }
-        
-        // Create token with roles
-        authenticationService.createToken(
-            user.getId(),
-            user.getRoles() // ["ADMIN", "USER"]
-        );
-        
-        return new PageResponse(HomePage.class);
+    @Override
+    public boolean validateCredentials(String username, String password) {
+        User user = userRepository.findByUsername(username);
+        return user != null && passwordMatches(password, user.getPasswordHash());
+    }
+    
+    @Override
+    public UserInfo createUserInfo(String username) {
+        User user = userRepository.findByUsername(username);
+        UserInfo info = new UserInfo();
+        info.setUserId(user.getId());
+        info.setRoles(user.getRoles());
+        return info;
     }
 }</code></pre>
 
-    <h4>Custom Login Form</h4>
     <p>
-        XIS provides a default login page that you can replace with your own.
-        Simply implement a controller with <code>@Page("/login.html")</code>:
+        The built-in <code>LoginFormController</code> handles login requests automatically. 
+        You don't need to create your own login controller.
     </p>
 
-    <pre><code>@Page("/login.html")
-public class CustomLoginPage {
-    
-    @ModelData
-    LoginFormDto loginForm() {
-        return new LoginFormDto();
-    }
-    
-    @Action
-    @FormData("loginForm")
-    PageResponse login(LoginFormDto dto) {
-        // Your login logic
-    }
-}</code></pre>
+    <h4>Custom Login Page</h4>
+    <p>
+        XIS provides a default login page. To customize it, create your own <code>/login.html</code> 
+        file in <code>src/main/resources/</code>. This file will automatically replace the default 
+        login page (classpath override mechanism).
+    </p>
 
-    <p>HTML template:</p>
+    <p>
+        Your custom login page must use the same structure as the default. Here's the default template 
+        as a starting point:
+    </p>
 
-    <pre><code>&lt;form xis:action="login"&gt;
-    &lt;input type="text" name="loginForm.username" placeholder="Username"/&gt;
-    &lt;input type="password" name="loginForm.password" placeholder="Password"/&gt;
-    &lt;button type="submit"&gt;Sign In&lt;/button&gt;
-&lt;/form&gt;</code></pre>
+    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml" xmlns:xis="http://xis.one/html"&gt;
+&lt;head&gt;
+    &lt;title&gt;Login&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class="container"&gt;
+    &lt;div class="form_container" xis:if="${displayLoginForm}"&gt;
+        &lt;form xis:binding="login"&gt;
+            &lt;h1&gt;Login&lt;/h1&gt;
+            &lt;div class="form-group"&gt;
+                &lt;label xis:binding="username" xis:error-class="error" for="username"&gt;Username:&lt;/label&gt;
+                &lt;input xis:binding="username" type="text" id="username" name="username"/&gt;
+            &lt;/div&gt;
+            &lt;div class="form-group"&gt;
+                &lt;label xis:binding="password" xis:error-class="error" for="password"&gt;Password:&lt;/label&gt;
+                &lt;input xis:binding="password" type="password" id="password" name="password"/&gt;
+            &lt;/div&gt;
+            &lt;input type="hidden" name="state" xis:binding="state"/&gt;
+            &lt;button xis:action="login" type="submit"&gt;Login&lt;/button&gt;
+        &lt;/form&gt;
+    &lt;/div&gt;
+    &lt;!--  Links to external IDPs like Google  --&gt;
+    &lt;div class="idp_container"&gt;
+        &lt;div xis:repeat="idpId:externalIdpIds"&gt;
+            &lt;a href="$​{externalIdpUrls[idpId]}"&gt;$​{idpId}&lt;/a&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <p>
+        <strong>Key elements that must be present:</strong>
+    </p>
+    <ul>
+        <li><code>xis:binding="login"</code> on the form</li>
+        <li><code>xis:binding="username"</code> and <code>xis:binding="password"</code> on input fields</li>
+        <li><code>xis:binding="state"</code> on hidden input (required for redirect handling)</li>
+        <li><code>xis:action="login"</code> on submit button</li>
+        <li><code>xis:if="${displayLoginForm}"</code> to hide form when only external IDPs are used</li>
+        <li><code>&lt;div class="idp_container"&gt;...&lt;/div&gt;</code> section is only needed if you use external identity providers (see <a href="/docs/externalidp.html">External IDP</a>)</li>
+    </ul>
+
+    <div class="info-box">
+        <strong>Classpath Override:</strong> When XIS looks for <code>/login.html</code>, it searches the 
+        classpath from most specific to least specific. Your <code>src/main/resources/login.html</code> 
+        takes precedence over the default <code>/default-login.html</code> from the xis-authentication module.
+        This same mechanism works for JavaScript extensions and other resources.
+    </div>
 
     <h4>Retrieving Current User</h4>
     <p>

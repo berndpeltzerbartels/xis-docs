@@ -1,4 +1,236 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
-    <h3>System Error Handling</h3>
-    <!-- Further documentation will follow. -->
+    <h3>${chapterHeadline}</h3>
+
+    <p>
+        XIS provides built-in system error handling through the <code>MessageHandler</code> class, which displays 
+        error, warning, and info messages in a dedicated container. You can customize the appearance and behavior 
+        of system error messages through CSS styling.
+    </p>
+
+    <h4>The Messages Container</h4>
+    <p>
+        System errors are displayed in the <code>&lt;div id="messages"&gt;</code> container, which must be present 
+        in your root HTML template (index.html or develop-index.html). This container is automatically managed by 
+        XIS and should be placed where you want error messages to appear:
+    </p>
+
+    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title ignore="true"&gt;&lt;/title&gt;
+    &lt;script src="/bundle.min.js" ignore="true"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body onload="main()"&gt;
+    &lt;!-- Your application content --&gt;
+    
+    &lt;!-- Messages container for system errors --&gt;
+    &lt;div id="messages" ignore="true" ignore-position="end"&gt;&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <div class="info-box">
+        <strong>Important Attributes:</strong>
+        <ul>
+            <li><code>id="messages"</code> - Required identifier for the MessageHandler to find the container</li>
+            <li><code>ignore="true"</code> - Tells XIS to preserve this element during page navigation</li>
+            <li><code>ignore-position="end"</code> - Keeps the element at the end of the body during updates</li>
+        </ul>
+    </div>
+
+    <h4>Message Structure</h4>
+    <p>
+        The MessageHandler automatically generates HTML structure for different message levels. Each level 
+        (error, warning, info) is rendered as a separate block:
+    </p>
+
+    <pre><code>&lt;!-- Single error message --&gt;
+&lt;div class="error" role="alert" aria-live="assertive"&gt;
+    An error occurred during processing
+&lt;/div&gt;
+
+&lt;!-- Multiple error messages --&gt;
+&lt;ul class="error" role="alert" aria-live="assertive"&gt;
+    &lt;li&gt;Field 'email' is required&lt;/li&gt;
+    &lt;li&gt;Password must be at least 8 characters&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;!-- Warning message --&gt;
+&lt;div class="warning" role="status" aria-live="polite"&gt;
+    This action cannot be undone
+&lt;/div&gt;
+
+&lt;!-- Info message --&gt;
+&lt;div class="info" role="status" aria-live="polite"&gt;
+    Changes saved successfully
+&lt;/div&gt;</code></pre>
+
+    <h4>Styling Error Messages</h4>
+    <p>
+        You can customize the appearance of error messages by defining CSS styles for the <code>.error</code>, 
+        <code>.warning</code>, and <code>.info</code> classes. The XIS theme provides default styles, but you 
+        can override them in your own CSS:
+    </p>
+
+    <pre><code>/* Custom error styling */
+#messages .error {
+    background-color: #fee;
+    border-left: 4px solid #c00;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    color: #c00;
+    border-radius: 4px;
+}
+
+#messages .warning {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    color: #856404;
+}
+
+#messages .info {
+    background-color: #d1ecf1;
+    border-left: 4px solid #17a2b8;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    color: #0c5460;
+}
+
+/* Style for multiple messages (ul) */
+#messages ul.error,
+#messages ul.warning,
+#messages ul.info {
+    list-style-position: inside;
+    padding-left: 1rem;
+}
+
+#messages ul.error li,
+#messages ul.warning li,
+#messages ul.info li {
+    margin: 0.5rem 0;
+}</code></pre>
+
+    <h4>Programmatic Error Display</h4>
+    <p>
+        Errors are automatically displayed when:
+    </p>
+    <ul>
+        <li>Server-side exceptions occur during action processing</li>
+        <li>Form validation fails</li>
+        <li>JavaScript errors are caught by XIS</li>
+        <li>Custom code calls <code>app.messageHandler.addErrorMessage()</code></li>
+    </ul>
+
+    <p>
+        You can also trigger error messages programmatically in custom JavaScript:
+    </p>
+
+    <pre><code>// Add an error message
+app.messageHandler.addErrorMessage('Something went wrong');
+
+// Add a warning
+app.messageHandler.addWarningMessage('Please review your input');
+
+// Add an info message
+app.messageHandler.addInfoMessage('Operation completed successfully');
+
+// Clear all messages
+app.messageHandler.clearMessages();
+
+// Clear specific levels
+app.messageHandler.clearErrors();
+app.messageHandler.clearWarnings();
+app.messageHandler.clearInfos();</code></pre>
+
+    <h4>Auto-Hide Behavior</h4>
+    <p>
+        By default, XIS configures different auto-hide durations for each message level:
+    </p>
+    <ul>
+        <li><strong>Info messages:</strong> Auto-hide after 5 seconds</li>
+        <li><strong>Warning messages:</strong> Auto-hide after 8 seconds</li>
+        <li><strong>Error messages:</strong> Never auto-hide (require manual dismissal)</li>
+    </ul>
+
+    <p>
+        You can customize this behavior by configuring the MessageHandler during initialization (advanced usage).
+    </p>
+
+    <h4>Accessibility</h4>
+    <p>
+        XIS automatically adds ARIA attributes to error messages for screen reader support:
+    </p>
+    <ul>
+        <li><code>role="alert"</code> for error messages (high priority)</li>
+        <li><code>role="status"</code> for warnings and info messages</li>
+        <li><code>aria-live="assertive"</code> for errors (immediate announcement)</li>
+        <li><code>aria-live="polite"</code> for warnings/info (announced after current speech)</li>
+    </ul>
+
+    <h4>Custom Message Handler</h4>
+    <p>
+        For advanced customization, you can replace the default MessageHandler with your own implementation. 
+        This is useful when integrating with UI frameworks like Bootstrap or Material Design:
+    </p>
+
+    <pre><code>// Example: Custom message handler with toast notifications
+class CustomMessageHandler {
+    constructor() {
+        this.messageTag = document.getElementById('messages');
+        this.errorMessages = [];
+        this.warningMessages = [];
+        this.infoMessages = [];
+    }
+    
+    addErrorMessage(message) {
+        this.errorMessages.push(message);
+        this.render();
+        this.showToast(message, 'error');
+    }
+    
+    showToast(message, level) {
+        // Your custom toast implementation
+    }
+    
+    render() {
+        // Your custom rendering logic
+    }
+    
+    clearMessages() {
+        this.errorMessages = [];
+        this.warningMessages = [];
+        this.infoMessages = [];
+        this.render();
+    }
+}
+
+// Register your custom handler
+app.messageHandler = new CustomMessageHandler();</code></pre>
+
+    <div class="tipp">
+        <strong>💡 Best Practice</strong><br/>
+        Place the <code>#messages</code> container in a fixed or sticky position at the top or bottom of 
+        the viewport for maximum visibility. This ensures users always see important error messages 
+        regardless of scroll position.
+    </div>
+
+    <h4>Integration with XIS Theme</h4>
+    <p>
+        If you're using the <code>xis-theme</code> module, error messages are automatically styled with 
+        professional-looking alert boxes. The theme also provides a separate toast notification system 
+        for transient messages:
+    </p>
+
+    <pre><code>&lt;!-- Additional toast container for temporary notifications --&gt;
+&lt;div class="toast-container" id="toast-container" 
+     ignore="true" ignore-position="end"&gt;&lt;/div&gt;</code></pre>
+
+    <div class="warning">
+        <strong>⚠️ Multiple Error Display</strong><br/>
+        There is a known issue where certain system errors may be displayed multiple times in the messages 
+        container. This is currently being addressed in future framework updates. As a workaround, implement 
+        duplicate message filtering in your custom CSS or JavaScript.
+    </div>
+
 </xis:template>

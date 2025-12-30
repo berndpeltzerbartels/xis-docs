@@ -35,10 +35,13 @@
         <p><strong>Element syntax:</strong></p>
         <pre><code class="language-html">&lt;xis:foreach var="user" array="users"&gt;
     &lt;div class="user-card"&gt;
-        &lt;h3&gt;${user.name}&lt;/h3&gt;
+        &lt;h3&gt;${userIndex + 1}. ${user.name}&lt;/h3&gt;
         &lt;p&gt;${user.email}&lt;/p&gt;
     &lt;/div&gt;
 &lt;/xis:foreach&gt;</code></pre>
+        <p>foreach and repeat tags add an index variable with the composed by the name of the item variable plus
+            "Index" (e.g. <code>userIndex</code>) to the context, allowing access to the current iteration
+            index.</p>
 
         <p><strong>Attribute syntax:</strong></p>
         <pre><code class="language-html">&lt;div xis:foreach="user:users"&gt;

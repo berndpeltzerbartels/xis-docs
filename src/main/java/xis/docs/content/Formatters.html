@@ -1,6 +1,6 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
-    <p>Formatters enable bidirectional conversion between string representations and Java objects. They work in both 
+    <p>Formatters enable bidirectional conversion between string representations and Java objects. They work in both
         directions: parsing form input to Java types and formatting Java objects for template display.</p>
 
     <h5>Why Formatters?</h5>
@@ -46,6 +46,7 @@ public interface Formatter&lt;T&gt; {
         <pre><code>import one.xis.Formatter;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.time.ZoneId;
 import java.util.Locale;
 
@@ -59,15 +60,12 @@ public class MoneyFormatter implements Formatter&lt;BigDecimal&gt; {
     }
     
     @Override
-    public BigDecimal parse(String value, Locale locale, ZoneId zoneId) {
+    public BigDecimal parse(String value, Locale locale, ZoneId zoneId) throws ParseException {
         // "1.234,56 €" → BigDecimal
-        String cleaned = value.replaceAll("[^0-9,.-]", "");
-        if (locale.getLanguage().equals("de")) {
-            cleaned = cleaned.replace(".", "").replace(",", ".");
-        } else {
-            cleaned = cleaned.replace(",", "");
-        }
-        return new BigDecimal(cleaned);
+        // Any exception is automatically caught by XIS and shown as validation error
+        NumberFormat format = NumberFormat.getCurrencyInstance(locale);
+        Number number = format.parse(value);
+        return new BigDecimal(number.toString());
     }
 }
 
@@ -90,25 +88,29 @@ public class ProductForm {
     <h5>Example: Percentage Formatting</h5>
     <p>Format percentages with locale-specific patterns:</p>
     <xis:raw>
-        <pre><code>public class PercentageFormatter implements Formatter&lt;BigDecimal&gt; {
+        <pre><code>import one.xis.Formatter;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.time.ZoneId;
+import java.util.Locale;
+
+public class PercentageFormatter implements Formatter&lt;BigDecimal&gt; {
     
     @Override
     public String format(BigDecimal value, Locale locale, ZoneId zoneId) {
         // 0.755 → "75,5 %" (Germany) or "75.5%" (US)
-        BigDecimal percentage = value.multiply(new BigDecimal("100"));
         NumberFormat format = NumberFormat.getPercentInstance(locale);
         format.setMaximumFractionDigits(1);
         return format.format(value);
     }
     
     @Override
-    public BigDecimal parse(String value, Locale locale, ZoneId zoneId) {
+    public BigDecimal parse(String value, Locale locale, ZoneId zoneId) throws ParseException {
         // "75,5 %" → 0.755 (BigDecimal)
-        String cleaned = value.replace("%", "").trim();
-        if (locale.getLanguage().equals("de")) {
-            cleaned = cleaned.replace(",", ".");
-        }
-        return new BigDecimal(cleaned).divide(new BigDecimal("100"));
+        NumberFormat format = NumberFormat.getPercentInstance(locale);
+        Number number = format.parse(value);
+        return new BigDecimal(number.toString());
     }
 }
 
@@ -125,7 +127,11 @@ public class DiscountForm {
     <h5>Complex Business Objects</h5>
     <p>Formatters can handle complex domain objects:</p>
     <xis:raw>
-        <pre><code>public class Coordinate {
+        <pre><code>import one.xis.Formatter;
+import java.time.ZoneId;
+import java.util.Locale;
+
+public class Coordinate {
     private double latitude;
     private double longitude;
     // constructor, getters
@@ -144,6 +150,9 @@ public class CoordinateFormatter implements Formatter&lt;Coordinate&gt; {
     public Coordinate parse(String value, Locale locale, ZoneId zoneId) {
         // "52.5200,13.4050" → Coordinate
         String[] parts = value.split(",");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Expected format: lat,lon");
+        }
         double lat = Double.parseDouble(parts[0].trim());
         double lon = Double.parseDouble(parts[1].trim());
         return new Coordinate(lat, lon);
@@ -224,42 +233,49 @@ void updateDiscount(
     </xis:raw>
 
     <h5>Handling Formatting Errors</h5>
-    <p>Formatters should throw <code>FormattingException</code> for invalid input:</p>
+    <p>When parsing form input (deserialization), XIS automatically catches any exceptions thrown by the
+        <code>parse()</code> method and converts them to validation errors. This only happens for fields in
+        <code>@FormData</code> objects during form submission - just like entering "abc" for an Integer field produces
+        a validation error.</p>
     <xis:raw>
-        <pre><code>import one.xis.formatter.FormattingException;
+        <pre><code>import one.xis.Formatter;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Locale;
 
-@Override
-public LocalDate parse(String value, Locale locale, ZoneId zoneId) {
-    try {
+public class DateFormatter implements Formatter&lt;LocalDate&gt; {
+    
+    @Override
+    public String format(LocalDate value, Locale locale, ZoneId zoneId) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        return value.format(formatter);
+    }
+    
+    @Override
+    public LocalDate parse(String value, Locale locale, ZoneId zoneId) {
+        // No try-catch needed - XIS catches all exceptions automatically
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
         return LocalDate.parse(value, formatter);
-    } catch (DateTimeParseException e) {
-        throw new FormattingException(
-            "Invalid date format. Expected: dd.MM.yyyy", e
-        );
     }
-}</code></pre>
-        <p>Formatting errors appear as validation errors in the template.</p>
-    </xis:raw>
+}
 
-    <h5>Formatter Registration</h5>
-    <p>Register global formatters for specific types:</p>
-    <xis:raw>
-        <pre><code>@Configuration
-public class FormatterConfig {
-    
-    @Bean
-    public FormatterRegistry formatterRegistry() {
-        FormatterRegistry registry = new FormatterRegistry();
-        registry.registerFormatter(LocalDate.class, new GermanDateFormatter());
-        registry.registerFormatter(Price.class, new PriceFormatter());
-        return registry;
-    }
+// Usage in form
+public class EventForm {
+    @UseFormatter(DateFormatter.class)
+    private LocalDate eventDate;  // Invalid input automatically shows validation error
 }</code></pre>
-        <p>With global registration, you don't need <code>@UseFormatter</code> on every field of that type.</p>
+        <p><strong>Key points:</strong></p>
+        <ul>
+            <li>Exception handling only applies during <strong>deserialization</strong> (parsing form input)</li>
+            <li>Only for fields in <code>@FormData</code> objects</li>
+            <li>All exceptions are caught: <code>ParseException</code>, <code>NumberFormatException</code>,
+                <code>DateTimeParseException</code>, <code>IllegalArgumentException</code>, etc.
+            </li>
+            <li>Behaves exactly like built-in type conversion errors (e.g., "abc" for an Integer field)</li>
+            <li>No try-catch needed - let exceptions propagate naturally</li>
+        </ul>
     </xis:raw>
 
     <h5>Note on Date/Time Inputs</h5>
@@ -269,18 +285,22 @@ public class FormatterConfig {
 &lt;input type="date" name="event.date" value="${event.date}"/&gt;
 &lt;input type="time" name="event.time" value="${event.time}"/&gt;
 &lt;input type="datetime-local" name="event.timestamp" value="${event.timestamp}"/&gt;</code></pre>
-        <p>These work with standard Java temporal types (LocalDate, LocalTime, LocalDateTime) without custom formatters.</p>
+        <p>These work with standard Java temporal types (LocalDate, LocalTime, LocalDateTime) without custom
+            formatters.</p>
     </xis:raw>
 
     <h5>Best Practices</h5>
     <xis:raw>
         <ul>
-            <li><strong>Thread Safety:</strong> Formatters must be stateless and thread-safe (reused across requests)</li>
+            <li><strong>Thread Safety:</strong> Formatters must be stateless and thread-safe (reused across requests)
+            </li>
             <li><strong>Null Handling:</strong> Handle null values gracefully - return null or empty string</li>
-            <li><strong>Error Messages:</strong> Throw FormattingException with clear messages for invalid input</li>
+            <li><strong>Error Handling:</strong> Let exceptions propagate naturally - XIS automatically catches and displays them</li>
             <li><strong>Locale Awareness:</strong> Consider user locale for money, percentages, decimal separators</li>
             <li><strong>Immutable Objects:</strong> Parse to immutable types when possible for thread safety</li>
-            <li><strong>Validation:</strong> Formatters handle conversion, not validation - use @Validated for business rules</li>
+            <li><strong>Validation:</strong> Formatters handle conversion, not validation - use @Validated for business
+                rules
+            </li>
         </ul>
     </xis:raw>
 
@@ -291,11 +311,11 @@ public class FormatterConfig {
             <li><strong>Formatter:</strong> Converts between string and Java type ("1.234,56 €" ↔ BigDecimal)</li>
             <li><strong>Validator:</strong> Checks business rules (price must be positive, within range, etc.)</li>
         </ul>
-        <p>Use formatters for representation, validators for business constraints. A value can be formatted correctly 
+        <p>Use formatters for representation, validators for business constraints. A value can be formatted correctly
             but still fail validation (e.g., "-10,00 €" formats to BigDecimal(-10) but fails @Min(0) validation).</p>
     </xis:raw>
 
-    <p><strong>Bidirectional Flow:</strong> Formatters work in both directions - parsing user input in forms 
-        (String → Java) and formatting values for display in templates (Java → String). This ensures consistent 
+    <p><strong>Bidirectional Flow:</strong> Formatters work in both directions - parsing user input in forms
+        (String → Java) and formatting values for display in templates (Java → String). This ensures consistent
         representation across your application.</p>
 </xis:template>

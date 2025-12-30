@@ -165,6 +165,23 @@
 &lt;/div&gt;
     </xis:raw>
 
+    <h6>xis:global-messages</h6>
+    <p>Automatically displays all global validation messages (not tied to specific fields). 
+       Typically used on a <code>&lt;ul&gt;</code> element to create a list of error messages.</p>
+    
+    <xis:raw text="true">
+&lt;form xis:binding="user"&gt;
+    &lt;!-- Global validation errors rendered here --&gt;
+    &lt;ul xis:global-messages="true" class="form-error-global"&gt;&lt;/ul&gt;
+    
+    &lt;input xis:binding="email" type="email"/&gt;
+    &lt;button xis:action="save"&gt;Save&lt;/button&gt;
+&lt;/form&gt;
+    </xis:raw>
+    
+    <p>XIS automatically creates <code>&lt;li&gt;</code> elements with class <code>error</code> 
+       for each global validation message. Use this for form-level errors that aren't tied to a specific field.</p>
+
     <h6>xis:error-class</h6>
     <p>Applies a CSS class to an element when its bound field has validation errors. Used together with 
        <code>xis:binding</code>.</p>

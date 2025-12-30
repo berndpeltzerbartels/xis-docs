@@ -3,6 +3,10 @@
     <p>XIS provides a comprehensive set of parameter annotations to inject various types of data into controller method
         parameters. These annotations handle everything from URL parameters to reactive state injection.</p>
     
+    <p><strong>Important:</strong> All parameters are <strong>mandatory by default</strong>. If a parameter value is 
+        missing or null, XIS will throw a validation error. Use <code>@NullAllowed</code> to explicitly allow null values 
+        for optional parameters.</p>
+    
     <p><strong>Availability:</strong> All parameter annotations can be used in both <code>@Page</code> and 
         <code>@Widget</code> controllers, with one exception: <code>@WidgetParameter</code> is widget-specific and 
         only available in widget controllers.</p>
@@ -274,8 +278,30 @@ void deleteAccount(@UserId String userId,
     <h5>Validation Annotations</h5>
     <p>XIS provides validation annotations that can be applied to method parameters:</p>
 
+    <h6>@NullAllowed</h6>
+    <p>Explicitly allows null values for optional parameters. By default, all parameters are mandatory and will cause 
+        a validation error if null or missing. Use <code>@NullAllowed</code> to make a parameter optional.</p>
+    <pre><code class="language-java">@Action("updateProfile")
+void updateProfile(@FormData("user") User user,
+                   @QueryParameter("returnUrl") @NullAllowed String returnUrl) {
+    userService.update(user);
+    
+    // Navigate to returnUrl if provided, otherwise stay on current page
+    if (returnUrl != null) {
+        navigation.redirect(returnUrl);
+    }
+}</code></pre>
+    <p><strong>Use Cases:</strong></p>
+    <ul>
+        <li>Optional query parameters (e.g., filters, sorting, pagination)</li>
+        <li>Optional action parameters (e.g., return URLs, confirmation flags)</li>
+        <li>Optional widget parameters (e.g., configuration overrides)</li>
+        <li>Nullable storage values (e.g., user preferences not yet set)</li>
+    </ul>
+
     <h6>@Mandatory</h6>
-    <p>Validates that a parameter value is not null or empty. For collections, validates that they contain elements.</p>
+    <p>Validates that a parameter value is not null or empty. For collections, validates that they contain elements. 
+        This annotation is redundant since all parameters are mandatory by default, but can be used for explicit documentation.</p>
     <pre><code class="language-java">@Action("createUser")
 void createUser(@FormData("user") @Mandatory User user,
                 @ActionParameter("email") @Mandatory String email) {

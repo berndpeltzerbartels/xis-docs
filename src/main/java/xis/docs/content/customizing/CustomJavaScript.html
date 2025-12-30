@@ -33,6 +33,19 @@ js/custom-el-functions.js</code></pre>
         automatically bundled and loaded with the XIS framework at application startup.
     </p>
 
+    <div class="info-box">
+        <strong>Classpath Override:</strong> The META-INF extension mechanism uses classpath search order. 
+        You can place the extensions file and JavaScript files in your project's <code>src/main/resources/</code>, 
+        or provide them via a dependency JAR. XIS searches from most specific (your project) to least specific 
+        (framework modules), allowing you to override or extend default behavior.
+    </div>
+
+    <p>
+        <strong>Important:</strong> Once registered via META-INF, JavaScript files are automatically included 
+        in the application bundle. <strong>Do not</strong> add <code>&lt;script&gt;</code> tags in your HTML 
+        templates for these files - XIS handles the inclusion automatically.
+    </p>
+
     <h5>CSS and Other Resources</h5>
     <p>
         Unlike JavaScript, CSS files and other resources can be included directly in templates using 

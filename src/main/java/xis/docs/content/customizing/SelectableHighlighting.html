@@ -1,0 +1,109 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>${chapterHeadline}</h3>
+
+    <p>
+        XIS provides a simple mechanism to highlight selected elements in lists, menus, or any grouped content
+        using the <code>xis:selection-class</code> and <code>xis:selection-group</code> attributes.
+    </p>
+
+    <h4>Basic Usage</h4>
+    <p>
+        To make elements selectable with visual highlighting:
+    </p>
+
+    <ol>
+        <li>Wrap the selectable elements in a container with <code>xis:selection-group</code></li>
+        <li>Add <code>xis:selection-class="className"</code> to each selectable element</li>
+        <li>Define the CSS class that represents the selected state</li>
+    </ol>
+
+    <h4>Example: List Selection</h4>
+
+    <pre><code>&lt;ul xis:selection-group&gt;
+    &lt;li xis:selection-class="selected" id="item1"&gt;Item 1&lt;/li&gt;
+    &lt;li xis:selection-class="selected" id="item2"&gt;Item 2&lt;/li&gt;
+    &lt;li xis:selection-class="selected" id="item3"&gt;Item 3&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+
+    <p>CSS for highlighting:</p>
+
+    <pre><code>.selected {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+}</code></pre>
+
+    <h4>How It Works</h4>
+    <p>
+        When a user clicks on an element with <code>xis:selection-class</code>:
+    </p>
+
+    <ul>
+        <li>The specified CSS class is added to the clicked element</li>
+        <li>The CSS class is removed from all other elements in the same selection group</li>
+        <li>Only one element per group can have the selection class at a time</li>
+    </ul>
+
+    <h4>Menu Navigation Example</h4>
+
+    <pre><code>&lt;nav xis:selection-group&gt;
+    &lt;a href="#home" xis:selection-class="active"&gt;Home&lt;/a&gt;
+    &lt;a href="#about" xis:selection-class="active"&gt;About&lt;/a&gt;
+    &lt;a href="#contact" xis:selection-class="active"&gt;Contact&lt;/a&gt;
+&lt;/nav&gt;</code></pre>
+
+    <pre><code>nav a.active {
+    border-bottom: 3px solid #007bff;
+    color: #007bff;
+}</code></pre>
+
+    <h4>Multiple Selection Groups</h4>
+    <p>
+        You can have multiple independent selection groups on the same page:
+    </p>
+
+    <pre><code>&lt;!-- First group --&gt;
+&lt;div xis:selection-group&gt;
+    &lt;button xis:selection-class="selected"&gt;Option A&lt;/button&gt;
+    &lt;button xis:selection-class="selected"&gt;Option B&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;!-- Second group --&gt;
+&lt;div xis:selection-group&gt;
+    &lt;button xis:selection-class="highlighted"&gt;Choice 1&lt;/button&gt;
+    &lt;button xis:selection-class="highlighted"&gt;Choice 2&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+
+    <h4>Dynamic Selection Classes</h4>
+    <p>
+        The selection class can be determined dynamically using expressions:
+    </p>
+
+    <pre><code>&lt;div xis:selection-group&gt;
+    &lt;div xis:selection-class="$​{item.selectedClass}" xis:repeat="item:items"&gt;
+        $​{item.name}
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+    <h4>Use Cases</h4>
+    <ul>
+        <li><strong>Navigation menus:</strong> Highlight the current page/section</li>
+        <li><strong>Tab interfaces:</strong> Show active tab with visual feedback</li>
+        <li><strong>List selection:</strong> Allow users to select items from a list</li>
+        <li><strong>Dashboard tiles:</strong> Highlight selected dashboard sections</li>
+        <li><strong>Image galleries:</strong> Show which image is currently selected</li>
+    </ul>
+
+    <div class="tipp">
+        <strong>💡 Best Practice</strong><br/>
+        Use semantic class names like "active", "selected", or "current" that clearly indicate the purpose.
+        This makes your CSS more maintainable and easier to understand.
+    </div>
+
+    <div class="info-box">
+        <strong>Note:</strong> The selection mechanism is purely visual and does not affect form data or state.
+        It's designed for UI feedback only. For form selections, use standard HTML form elements like
+        <code>&lt;select&gt;</code>, radio buttons, or checkboxes.
+    </div>
+
+</xis:template>
