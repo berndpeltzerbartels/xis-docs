@@ -2,11 +2,11 @@ package xis.docs.content.xisboot;
 
 import one.xis.ModelData;
 import one.xis.Title;
-import one.xis.context.XISComponent;
+import one.xis.context.Component;
 import xis.docs.content.pagesandwidgets.PagesAndWidgets;
 import xis.docs.navi.Navigation;
 
-@XISComponent
+@Component
 @Navigation(title = "XIS Boot", nextItem = PagesAndWidgets.class, firstSubItem = XisBootInstallation.class)
 public class XisBoot {
 

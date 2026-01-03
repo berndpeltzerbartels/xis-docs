@@ -6,6 +6,46 @@
         controllers, and provide framework-wide functionality.
     </p>
 
+    <h5>@DefaultComponent</h5>
+    <p>
+        Marks a class as a default component implementation that can be overridden by user-defined components. 
+        This annotation is particularly useful for library authors who want to provide default implementations 
+        that applications can optionally replace.
+    </p>
+    <p>
+        When multiple implementations of the same interface exist, the XIS context will prefer components annotated 
+        with <code>@Component</code> over those with <code>@DefaultComponent</code>. This allows libraries to 
+        ship with sensible defaults while giving applications full control to override them when needed.
+    </p>
+    <pre><code>// In a library: default implementation
+@DefaultComponent
+class DefaultUserSecurityService implements UserSecurityService $​{
+    public boolean hasAccess(User user, String resource) $​{
+        return user.isAuthenticated();
+    }
+}
+
+// In your application: custom implementation overrides the default
+@Component
+class CustomUserSecurityService implements UserSecurityService $​{
+    public boolean hasAccess(User user, String resource) $​{
+        return user.hasRole("ADMIN") || user.owns(resource);
+    }
+}</code></pre>
+    <p>
+        <strong>Use Cases:</strong>
+    </p>
+    <ul>
+        <li>Library default implementations (authentication, authorization, logging, etc.)</li>
+        <li>Fallback components when no custom implementation is provided</li>
+        <li>Providing sensible defaults while allowing customization</li>
+    </ul>
+    <p>
+        <strong>Note:</strong> If no <code>@Component</code> implementation exists, the <code>@DefaultComponent</code> 
+        will be used. If multiple <code>@DefaultComponent</code> implementations exist for the same interface, 
+        the behavior is undefined.
+    </p>
+
     <h5>@Page and @Widget</h5>
     <p>
         The fundamental annotations that define your application structure. <code>@Page</code> marks a controller 

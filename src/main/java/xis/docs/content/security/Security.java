@@ -2,11 +2,11 @@ package xis.docs.content.security;
 
 import one.xis.ModelData;
 import one.xis.Title;
-import one.xis.context.XISComponent;
+import one.xis.context.Component;
 import xis.docs.content.customizing.Customizing;
 import xis.docs.navi.Navigation;
 
-@XISComponent
+@Component
 @Navigation(title = "Security", firstSubItem = RolesAnnotation.class, nextItem = Customizing.class)
 public class Security {
 

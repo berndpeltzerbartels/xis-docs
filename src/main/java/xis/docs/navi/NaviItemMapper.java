@@ -2,14 +2,14 @@ package xis.docs.navi;
 
 
 import one.xis.Widget;
-import one.xis.context.XISComponent;
+import one.xis.context.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
 
-@XISComponent
+@Component
 class NaviItemMapper {
 
     List<NaviItemDto> toDtos(NaviItem naviItem) {

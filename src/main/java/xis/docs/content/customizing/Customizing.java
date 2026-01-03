@@ -2,11 +2,11 @@ package xis.docs.content.customizing;
 
 import one.xis.ModelData;
 import one.xis.Title;
-import one.xis.context.XISComponent;
+import one.xis.context.Component;
 import xis.docs.content.DistributedApplications;
 import xis.docs.navi.Navigation;
 
-@XISComponent
+@Component
 @Navigation(title = "Customizing", firstSubItem = CustomJavaScript.class, nextItem = DistributedApplications.class)
 public class Customizing {
 

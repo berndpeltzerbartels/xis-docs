@@ -2,32 +2,32 @@ package xis.docs.navi;
 
 import lombok.Getter;
 import one.xis.Widget;
-import one.xis.context.XISComponent;
-import one.xis.context.XISInit;
-import one.xis.context.XISInject;
+import one.xis.context.Component;
+import one.xis.context.Init;
+import one.xis.context.Inject;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-@XISComponent
+@Component
 class NaviServiceImpl implements NaviService {
 
     @Getter
     private List<NaviItemDto> naviItems;
 
-    @XISInject(annotatedWith = Navigation.class)
+    @Inject(annotatedWith = Navigation.class)
     private List<Object> contentWidgets;
 
-    @XISInject
+    @Inject
     private NaviValidator naviValidator;
 
-    @XISInject
+    @Inject
     private NaviItemMapper naviItemMapper;
 
 
-    @XISInit
+    @Init
     void buildNavi() {
         Navi navi = new Navi(getFirstNaviItem());
         naviValidator.validate(navi, new ArrayList<>(contentWidgets));

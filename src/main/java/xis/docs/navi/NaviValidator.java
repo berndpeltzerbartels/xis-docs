@@ -1,12 +1,12 @@
 package xis.docs.navi;
 
-import one.xis.context.XISComponent;
+import one.xis.context.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
-@XISComponent
+@Component
 class NaviValidator {
 
     void validate(Navi navi, Collection<Object> contentWidgets) {

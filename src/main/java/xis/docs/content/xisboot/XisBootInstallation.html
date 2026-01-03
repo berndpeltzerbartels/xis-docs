@@ -181,7 +181,7 @@ public class AuthService {
         </thead>
         <tbody>
         <tr>
-            <td><code>@XISComponent</code></td>
+            <td><code>@Component</code></td>
             <td><code>@Component</code></td>
             <td>Generic managed component</td>
         </tr>
@@ -192,10 +192,7 @@ public class AuthService {
         </tr>
         </tbody>
     </table>
-
-    <p><strong>Note:</strong> Use the current <code>@XIS*</code> prefixed annotations in your code today.
-        The migration to unprefixed annotations will be handled automatically in a future release.</p>
-
+    
     <h5>Spring Framework Compatibility</h5>
     <p>XIS Boot is designed to be significantly simpler and more lightweight than the Spring Framework application
         context.
@@ -227,6 +224,6 @@ public class AuthService {
         the recommended approach</strong> for new XIS Boot applications. Using Spring annotations can lead to
         misunderstandings about which features are actually supported by XIS Boot, as the framework is intentionally
         much simpler than Spring. <strong>For new code, always use the native XIS context annotations</strong>
-        (<code>@XISComponent</code>, <code>@XISService</code>, etc.) to avoid confusion and ensure clear expectations.
+        (<code>@Component</code>, <code>@XISService</code>, etc.) to avoid confusion and ensure clear expectations.
     </div>
 </xis:template>

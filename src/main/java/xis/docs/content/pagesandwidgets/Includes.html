@@ -1,13 +1,13 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>Includes</h3>
-    
+
     <p>
-        Includes are reusable HTML fragments that can be embedded in pages and widgets. Unlike widgets, 
-        includes are not backed by Java controllers - they are pure HTML templates that get inserted 
-        statically at application startup. This makes them ideal for common UI elements like headers, 
+        Includes are reusable HTML fragments that can be embedded in pages and widgets. Unlike widgets,
+        includes are not backed by Java controllers - they are pure HTML templates that get inserted
+        statically at application startup. This makes them ideal for common UI elements like headers,
         footers, navigation bars, and other repetitive HTML structures.
     </p>
-    
+
     <h5>Key Differences: Includes vs. Widgets</h5>
     <ul>
         <li><strong>No Java Controller:</strong> Includes are pure HTML without backend logic</li>
@@ -19,12 +19,13 @@
 
     <h5>Registering Includes</h5>
     <p>
-        Includes are registered by creating a Java class annotated with <code>@Include</code>. The annotation 
-        value specifies the key used to reference the include in templates. Like pages and widgets, each 
-        include has a corresponding HTML template file in the same package, following XIS's convention-over-configuration 
+        Includes are registered by creating a Java class annotated with <code>@Include</code>. The annotation
+        value specifies the key used to reference the include in templates. Like pages and widgets, each
+        include has a corresponding HTML template file in the same package, following XIS's
+        convention-over-configuration
         approach.
     </p>
-    
+
     <pre><code>package my.app.includes;
 
 import one.xis.Include;
@@ -36,7 +37,7 @@ public class Header {
     <p>
         The corresponding HTML template would be <code>Header.html</code> in the same package:
     </p>
-    
+
     <pre><code>&lt;!-- my/app/includes/Header.html --&gt;
 &lt;header&gt;
     &lt;div class="logo"&gt;
@@ -53,18 +54,18 @@ public class Header {
 &lt;/header&gt;</code></pre>
 
     <p>
-        <strong>Note:</strong> The <code>@Include</code> annotation already includes <code>@Component</code> (Spring) 
-        and <code>@XISComponent</code> (XIS Boot), so no additional component annotation is needed. XIS discovers 
-        includes during application startup. This approach keeps includes close to your business logic rather than 
+        <strong>Note:</strong> The <code>@Include</code> annotation already includes <code>@Component</code> (Spring)
+        and <code>@Component</code> (XIS Boot), so no additional component annotation is needed. XIS discovers
+        includes during application startup. This approach keeps includes close to your business logic rather than
         buried in resource folders, making it easy to find related templates and code without excessive navigation.
     </p>
 
     <h5>Using Includes in Templates</h5>
     <p>
-        Once registered, includes can be embedded in your page or widget templates using the 
+        Once registered, includes can be embedded in your page or widget templates using the
         <code>&lt;xis:include&gt;</code> tag:
     </p>
-    
+
     <pre><code>&lt;!DOCTYPE html&gt;
 &lt;html xmlns:xis="https://xis.one/xsd"&gt;
 &lt;head&gt;
@@ -85,15 +86,15 @@ public class Header {
     <p>
         Alternatively, you can use the attribute syntax on any HTML element:
     </p>
-    
+
     <pre><code>&lt;header xis:include="header"&gt;&lt;/header&gt;</code></pre>
 
     <h5>Include Content Example</h5>
     <p>
-        An include's HTML file is placed in the same package as its Java class, following the same 
+        An include's HTML file is placed in the same package as its Java class, following the same
         convention as pages and widgets. For example, if you have:
     </p>
-    
+
     <pre><code>// my/app/includes/Header.java
 @Include("header")
 public class Header {
@@ -102,7 +103,7 @@ public class Header {
     <p>
         The template file should be <code>my/app/includes/Header.html</code>:
     </p>
-    
+
     <pre><code>&lt;header&gt;
     &lt;div class="logo"&gt;
         &lt;img src="/images/logo.png" alt="Logo"/&gt;
@@ -119,11 +120,11 @@ public class Header {
 
     <h5>ModelData in Includes</h5>
     <p>
-        Includes have access to the ModelData from their parent page or widget. In the example above, 
-        <code>${userName}</code> would be resolved from the page's or widget's <code>@ModelData</code> 
+        Includes have access to the ModelData from their parent page or widget. In the example above,
+        <code>${userName}</code> would be resolved from the page's or widget's <code>@ModelData</code>
         methods. This allows includes to display dynamic content while remaining stateless HTML fragments.
     </p>
-    
+
     <pre><code>@Page("/mypage.html")
 public class MyPage {
     
@@ -140,10 +141,10 @@ public class MyPage {
 
     <h5>Include Architecture</h5>
     <p>
-        Internally, XIS uses an <code>Include</code> and <code>IncludeInstance</code> pattern similar 
-        to widgets, but with an important improvement: each <code>Include</code> manages its own instances. 
-        When you use the same include multiple times (e.g., a card component in a list), each usage gets 
-        its own <code>IncludeInstance</code> with separate handlers and state, preventing handler conflicts 
+        Internally, XIS uses an <code>Include</code> and <code>IncludeInstance</code> pattern similar
+        to widgets, but with an important improvement: each <code>Include</code> manages its own instances.
+        When you use the same include multiple times (e.g., a card component in a list), each usage gets
+        its own <code>IncludeInstance</code> with separate handlers and state, preventing handler conflicts
         and ensuring proper ModelData evaluation.
     </p>
     <p>
@@ -160,7 +161,7 @@ public class MyPage {
         <li>Access to parent page/widget's ModelData</li>
         <li>Minimal overhead and maximum performance</li>
     </ul>
-    
+
     <p>
         Use <strong>widgets</strong> when you need:
     </p>
