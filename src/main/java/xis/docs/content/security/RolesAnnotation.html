@@ -43,7 +43,11 @@ public class UserManagementPage {
     @Action
     void deleteUser(@Parameter("userId") String userId) {
         // Accessible for ADMIN OR USER_MANAGER
-    }Methods can have their own <code>@Roles</code> annotation. The behavior depends on whether the class is also annotated:
+    }
+}</code></pre>
+
+    <h5>Method-Level Roles</h5>
+    <p>Methods can have their own <code>@Roles</code> annotation. The behavior depends on whether the class is also annotated:
     </p>
 
     <pre><code>// Class WITH roles - methods inherit or add requirements

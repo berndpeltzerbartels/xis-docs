@@ -275,14 +275,7 @@ void addToCart(@ActionParameter("productId") String productId) $​{
 @RefreshOnUpdateEvents("tab-changed")
 class TabContentWidget $​{
     // This widget will reload when "tab-changed" event is emitted
-}</code></pre>ard
-    &lt;/button&gt;
-&lt;/nav&gt;</code></pre>
-    <p>Other widgets can reload when tab selection changes:</p>
-    <pre><code>@Widget
-@RefreshOnUpdateEvents("tab-changed")
-class TabContentWidget $​{
-    // This widget will reload when "tab-changed" event is emitted
+
 }</code></pre>
 
     <h5>@Roles</h5>
@@ -312,12 +305,11 @@ class AdminPanelPage $​{
     }
 }</code></pre>
 
-</xis:template>    }</xis:raw></code></pre>
     <p>XIS automatically makes the return values of @ModelData methods available in the request scope using the same key. You can then inject this data into other methods using @SharedValue. This creates a clean data flow where expensive operations (like database queries) only happen once per request, and the results are shared across all methods that need them.</p>
 
     <h6>@Roles</h6>
     <p>Provides role-based access control for methods and classes. Used in conjunction with security frameworks to enforce authorization.</p>
-    <pre><code class="language-java"><xis:raw><xis:raw>@Page("/admin-panel.html")
+    <pre><code class="language-java"><xis:raw>@Page("/admin-panel.html")
 @Roles(&#123;"ADMIN", "MODERATOR"}) // Class-level: entire page requires these roles
 class AdminPanelPage &#123;
     
@@ -381,7 +373,7 @@ class OfflineDataWidget &#123;
         logger.info("Previous data: " + existingData);
     }
 }</xis:raw></code></pre>
-    <p>In templates, localDatabase values are accessed with the <code>localDatabase.</xis:raw></code> prefix:</p>
+    <p>In templates, localDatabase values are accessed with the <code>localDatabase.&lt;property&gt;</code> prefix:</p>
     <pre><code class="language-html"><xis:raw>&lt;div xis:if="&#036;&#123;localDatabase.userData != '&#123;}'}"&gt;
     &lt;h3&gt;Offline Data Available&lt;/h3&gt;
     &lt;p&gt;Data: &#036;&#123;localDatabase.userData}&lt;/p&gt;
@@ -390,7 +382,7 @@ class OfflineDataWidget &#123;
     &lt;p&gt;No offline data found&lt;/p&gt;
 &lt;/div&gt;</xis:raw></code></pre>
 
-</xis:template>m form data to reactive state management.</p>
+    <p>XIS provides comprehensive method annotations for everything from form data to reactive state management.</p>
 
     <h6>@ModelData</h6>
     <p>Provides data to templates. The key defaults to the method name or can be specified explicitly.</p>
@@ -458,7 +450,7 @@ class UserProfileWidget &#123;
         // Global variable will automatically update in UserHeaderWidget
     }
 }</xis:raw></code></pre>
-    <p>In templates, global variables are accessed with the <code>global.</xis:raw></code> prefix and update reactively across all
+    <p>In templates, global variables are accessed with the <code>global.&lt;property&gt;</code> prefix and update reactively across all
         components:</p>
     <pre><code class="language-html"><xis:raw>&lt;!-- UserHeaderWidget.html --&gt;
 &lt;header&gt;
@@ -554,7 +546,7 @@ class LayoutWidget &#123;
         return "layout-" + theme;
     }
 }</xis:raw></code></pre>
-    <p>In templates, localStorage values are accessed with the <code>localStorage.</xis:raw></code> prefix and update reactively
+    <p>In templates, localStorage values are accessed with the <code>localStorage.&lt;property&gt;</code> prefix and update reactively
         across all components:</p>
     <pre><code class="language-html"><xis:raw>&lt;!DOCTYPE html&gt;
 &lt;html xmlns:xis="https://xis.one/xsd"&gt;

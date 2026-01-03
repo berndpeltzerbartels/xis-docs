@@ -93,7 +93,7 @@
     <p><strong>Result:</strong> The <code>&lt;div&gt;</code> and its content only render when the condition is true.</p>
 
     <h6>xis:repeat</h6>
-        Active User
+    <xis:raw text="true">        Active User
     &lt;/div&gt;
 &lt;/xis:if&gt;
     </xis:raw>
@@ -142,12 +142,10 @@
     <p>Binds a form or input element to a data model for automatic data binding and validation.</p>
     
     <p><strong>Form Binding:</strong></p>
-    <xis:raw text="true">
-&lt;form xis:binding="user"&gt;
+    <xis:raw text="true">&lt;form xis:binding="user"&gt;
     &lt;input xis:binding="name" type="text"/&gt;
     &lt;input xis:binding="email" type="email"/&gt;
-&lt;/form&gt;
-    </xis:raw>
+&lt;/form&gt;</xis:raw>
 
     <h6>xis:message-for</h6>
     <p>Displays validation messages for a specific form field. Creates a <code>&lt;xis:message&gt;</code> 

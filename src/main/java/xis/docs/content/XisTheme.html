@@ -13,16 +13,12 @@
 }</code></pre>
     </xis:raw>
 
-    <p>The CSS and XIS logo are automatically included in your application. Simply reference <code>xis.css</code>
-        in your HTML templates:</p>
-    <xis:raw>
-        <pre><code>&lt;link rel="stylesheet" href="xis.css"&gt;</code></pre>
-    </xis:raw>
+    <p>This will automatically bind CSS to every page.</p>
+
 
     <h5>What's Included</h5>
     <ul>
         <li><strong>Professional Typography:</strong> Clean, readable fonts with proper sizing and spacing</li>
-        <li><strong>XIS Logo:</strong> SVG logo included and ready to use</li>
         <li><strong>Navigation Component:</strong> Responsive navbar with dropdown support</li>
         <li><strong>Grid System:</strong> Flexible 2-11 column grid layout system</li>
         <li><strong>Form Controls:</strong> Styled inputs, textareas, selects, buttons</li>
@@ -58,18 +54,14 @@
     &lt;div class="col2"&gt;
         &lt;div class="span1"&gt;
             &lt;label&gt;First Name&lt;/label&gt;
-            &lt;input type="text" name="firstName" value="${user.firstName}"/&gt;
-            &lt;div class="form-error" xis:if="${errors['user.firstName']}"&gt;
-                ${errors['user.firstName']}
-            &lt;/div&gt;
+            &lt;input type="text" xis:binding="firstName"/&gt;
+            &lt;span class="error" xis:message-for"firstName"/&gt;
         &lt;/div&gt;
         
-        &lt;div class="span1"&gt;
-            &lt;label&gt;Last Name&lt;/label&gt;
-            &lt;input type="text" name="lastName" value="${user.lastName}"/&gt;
-            &lt;div class="form-error" xis:if="${errors['user.lastName']}"&gt;
-                ${errors['user.lastName']}
-            &lt;/div&gt;
+        &lt;&lt;div class="span1"&gt;
+            &lt;label&gt;First Name&lt;/label&gt;
+            &lt;input type="text" xis:binding="lastName"/&gt;
+            &lt;span class="error" xis:message-for"lastName"/&gt;
         &lt;/div&gt;
         
         &lt;div class="span2"&gt;
@@ -100,134 +92,17 @@
 &lt;/nav&gt;</code></pre>
     </xis:raw>
 
-    <h5>Error Display</h5>
-    <p>Field-level and global error messages are styled automatically:</p>
-    <xis:raw>
-    <pre><code>&lt;!-- Field-level error --&gt;
-&lt;div class="form-field error"&gt;
-    &lt;label&gt;Email&lt;/label&gt;
-    &lt;input type="email" xis:binding="user.email"/&gt;
-    &lt;div class="form-error"&gt;${errors['user.email']}&lt;/div&gt;
-&lt;/div&gt;
+    <p>
+        Result will look like this:
+    </p>
 
-&lt;!-- Global form error --&gt;
-&lt;div class="form-error-global" xis:if="${hasErrors}"&gt;
-    Please correct the errors above.
-&lt;/div&gt;</code></pre>
-    </xis:raw>
+    <p>
+        <img alt="XIS-Theme Example" src="/img/xis-theme-example.png"/>
+    </p>
 
-    <h5>Toast Notifications</h5>
-    <p>Fixed-position toast notifications for user feedback:</p>
-    <xis:raw>
-    <pre><code>&lt;div class="toast-container"&gt;
-    &lt;div class="toast error"&gt;An error occurred&lt;/div&gt;
-    &lt;div class="toast success"&gt;Changes saved successfully&lt;/div&gt;
-    &lt;div class="toast warning"&gt;Warning message&lt;/div&gt;
-&lt;/div&gt;</code></pre>
-    </xis:raw>
-
-    <h5>Panels</h5>
-    <p>Styled panels for warnings, tips, and messages:</p>
-    <xis:raw>
-    <pre><code>&lt;div class="warning"&gt;
-    &lt;strong&gt;Warning:&lt;/strong&gt; This action cannot be undone.
-&lt;/div&gt;
-
-&lt;div class="tipp"&gt;
-    &lt;strong&gt;Tip:&lt;/strong&gt; Use keyboard shortcuts for faster navigation.
-&lt;/div&gt;
-
-&lt;div class="message"&gt;
-    &lt;strong&gt;Note:&lt;/strong&gt; System maintenance scheduled for tonight.
-&lt;/div&gt;</code></pre>
-    </xis:raw>
-
-    <h5>Customization</h5>
-    <p>Customize the theme by overriding CSS variables in your own stylesheet:</p>
-    <xis:raw>
-    <pre><code>:root {
-    --accent: #007bff;        /* Primary brand color */
-    --base-font: 16px;        /* Base font size */
-    --grid-gap: 20px;         /* Grid spacing */
-    --radius: 6px;            /* Border radius */
-    --ctrl-h: 44px;           /* Form control height */
-}</code></pre>
-    </xis:raw>
-
-    <h5>Responsive Design</h5>
-    <p>All components are mobile-responsive out of the box:</p>
-    <ul>
-        <li>Navigation collapses on mobile devices</li>
-        <li>Grid columns stack on smaller screens</li>
-        <li>Form controls adapt to screen width</li>
-        <li>Touch-friendly target sizes</li>
-    </ul>
-
-    <h5>Complete Page Example</h5>
-    <xis:raw>
-    <pre><code>&lt;!DOCTYPE html&gt;
-&lt;html xmlns:xis="https://xis.one/xsd"&gt;
-&lt;head&gt;
-    &lt;meta charset="UTF-8"&gt;
-    &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
-    &lt;link rel="stylesheet" href="xis.css"&gt;
-    &lt;link rel="icon" type="image/x-icon" href="Xis1.svg"&gt;
-    &lt;title&gt;My XIS Application&lt;/title&gt;
-&lt;/head&gt;
-&lt;body&gt;
-
-&lt;nav class="nav"&gt;
-    &lt;div class="logo"&gt;
-        &lt;img src="Xis1.svg" alt="Logo"&gt;
-    &lt;/div&gt;
-    &lt;ul&gt;
-        &lt;li&gt;&lt;a href="/home" class="active"&gt;Home&lt;/a&gt;&lt;/li&gt;
-        &lt;li&gt;&lt;a href="/products"&gt;Products&lt;/a&gt;&lt;/li&gt;
-        &lt;li&gt;&lt;a href="/about"&gt;About&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-&lt;/nav&gt;
-
-&lt;div class="wrapper"&gt;
-    &lt;div class="maincontent"&gt;
-        &lt;h1&gt;Welcome to XIS&lt;/h1&gt;
-        &lt;p&gt;Build professional web applications rapidly with XIS Framework.&lt;/p&gt;
-        
-        &lt;div class="tipp"&gt;
-            &lt;strong&gt;Getting Started:&lt;/strong&gt; Check out the documentation for examples.
-        &lt;/div&gt;
-        
-        &lt;form&gt;
-            &lt;div class="col2"&gt;
-                &lt;div class="span2"&gt;
-                    &lt;h5&gt;Contact Form&lt;/h5&gt;
-                &lt;/div&gt;
-                
-                &lt;div class="span1"&gt;
-                    &lt;label&gt;Name&lt;/label&gt;
-                    &lt;input type="text" name="name"/&gt;
-                &lt;/div&gt;
-                
-                &lt;div class="span1"&gt;
-                    &lt;label&gt;Email&lt;/label&gt;
-                    &lt;input type="email" name="email"/&gt;
-                &lt;/div&gt;
-                
-                &lt;div class="span2"&gt;
-                    &lt;label&gt;Message&lt;/label&gt;
-                    &lt;textarea name="message"&gt;&lt;/textarea&gt;
-                &lt;/div&gt;
-                
-                &lt;div class="span2"&gt;
-                    &lt;input type="submit" value="Send Message"/&gt;
-                &lt;/div&gt;
-            &lt;/div&gt;
-        &lt;/form&gt;
-    &lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/body&gt;
-&lt;/html&gt;</code></pre>
-    </xis:raw>
+    <div class="warn">
+        This feature is under active development. It will be usable in future XIS versions.
+    </div>
 
     <h5>When to Use XIS-Theme</h5>
     <ul>

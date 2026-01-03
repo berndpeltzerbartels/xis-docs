@@ -4,7 +4,7 @@ plugins {
     //   id 'org.springframework.boot' version '3.3.0'
     // Dieses Plugin wird für den `dependencyManagement`-Block benötigt.
     //  id 'io.spring.dependency-management' version '1.1.5'
-    id 'one.xis.plugin' version '0.1.20-SNAPSHOT'
+    id 'one.xis.plugin' version '0.2.0'
 }
 
 group = 'insurance'

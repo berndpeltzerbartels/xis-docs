@@ -1,58 +1,62 @@
-<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+<xis:template>
     <h3>${chapterHeadline}</h3>
-    <p>
-        XIS provides a rich set of built-in Expression Language functions, but you can also add your own custom
-        functions to extend template capabilities. Custom functions are added by providing JavaScript files through
-        the classpath extension mechanism. This approach allows you to create modular, reusable libraries and
-        integrate seamlessly with themes.
-    </p>
 
-    <h5>Creating Custom EL Functions</h5>
-    <p>
-        Custom EL functions are added by providing JavaScript files that register functions using
-        <code>elFunctions.addFunction()</code>. See
-        <a href="/docs/customjavascript.html">Adding JavaScript</a> for
-        details on how to include JavaScript files in your XIS application.
-    </p>
+    <p>XIS allows you to extend the Expression Language with custom functions by providing JavaScript files.</p>
 
-    <h6>Step 1: Create Your JavaScript File</h6>
-    <p>Create a JavaScript file with your custom functions using <code>elFunctions.addFunction()</code>:</p>
+    <h5>Overview</h5>
+    <p>Custom EL functions are registered using <code>elFunctions.addFunction()</code> in JavaScript files
+        placed in your project's resources. See the <a href="/docs/customjavascript.html">Adding JavaScript</a>
+        documentation for details on how to include JavaScript files.</p>
 
-    <pre><code class="language-javascript">// src/main/resources/js/custom-el-functions.js
-
-// Add custom EL functions
-elFunctions.addFunction('formatCurrency', (value, currency) => {
-    return new Intl.NumberFormat('en-US', { 
-        style: 'currency', 
-        currency: currency || 'USD' 
-    }).format(value);
-});
-
-elFunctions.addFunction('capitalize', (str) => {
-    if (!str || typeof str !== 'string') return str;
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-});
-
-elFunctions.addFunction('pluralize', (count, singular, plural) => {
-    return count === 1 ? singular : (plural || singular + 's');
-});
-
-elFunctions.addFunction('truncate', (str, maxLength) => {
-    if (!str || typeof str !== 'string') return str;
-    if (str.length <= maxLength) return str;
-    return str.substring(0, maxLength) + '...';
+    <h5>Example</h5>
+    <p>Create a file <code>js/custom-functions.js</code> in your resources:</p>
+    <pre><code>elFunctions.addFunction('formatCurrency', function(value) {
+    return '$' + value.toFixed(2);
 });</code></pre>
+
+    <p>Use it in templates:</p>
+    <pre><code>&lt;p&gt;Price: ${formatCurrency(product.price)}&lt;/p&gt;</code></pre>
+
+    <h5>Best Practices</h5>
+    <ul>
+        <li>Keep functions pure and performant</li>
+        <li>Handle edge cases and validate inputs</li>
+        <li>Package as JAR for reusability across projects</li>
+    </ul>
+    <pre><code><xis:raw>
+        // Add custom EL functions
+        elFunctions.addFunction('formatCurrency', (value, currency) => {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: currency || 'USD'
+            }).format(value);
+        });
+
+        elFunctions.addFunction('capitalize', (str) => {
+            if (!str || typeof str !== 'string') return str;
+            return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+        });
+
+        elFunctions.addFunction('pluralize', (count, singular, plural) => {
+            return count === 1 ? singular : (plural || singular + 's');
+        });
+
+        elFunctions.addFunction('truncate', (str, maxLength) => {
+            if (!str || typeof str !== 'string') return str;
+            if (str.length <= maxLength) return str;
+            return str.substring(0, maxLength) + '...';
+                });</xis:raw></code></pre>
 
     <h6>Step 2: Register via META-INF/xis/js/extensions</h6>
     <p>
         List your JavaScript file in <code>src/main/resources/META-INF/xis/js/extensions</code>:
     </p>
-    <pre><code class="language-plaintext">js/custom-el-functions.js</code></pre>
+    <pre><code>js/custom-el-functions.js</code></pre>
 
     <h6>Step 3: Use in Templates</h6>
     <p>Once registered, custom functions work exactly like built-in functions:</p>
 
-    <pre><code class="language-html">&lt;div&gt;Price: $​{formatCurrency(product.price, 'USD')}&lt;/div&gt;
+    <pre><code>&lt;div&gt;Price: $​{formatCurrency(product.price, 'USD')}&lt;/div&gt;
 &lt;div&gt;Name: $​{capitalize(user.firstName)}&lt;/div&gt;
 &lt;div&gt;Description: $​{truncate(product.description, 50)}&lt;/div&gt;
 &lt;p&gt;$​{items.size()} $​{pluralize(items.size(), 'item')}&lt;/p&gt;</code></pre>
@@ -83,18 +87,18 @@ elFunctions.addFunction('truncate', (str, maxLength) => {
 │       └── string-functions.js           # String utilities</code></pre>
 
     <p><strong>Registry file (META-INF/xis/js/extensions):</strong></p>
-    <pre><code class="language-plaintext"># List all JavaScript extension files
+    <pre><code># List all JavaScript extension files
 js/date-functions.js
 js/currency-functions.js
 js/string-functions.js</code></pre>
 
     <p><strong>Example: date-functions.js</strong></p>
-    <pre><code class="language-javascript">// Relative time formatting
+    <pre><code>// Relative time formatting
 elFunctions.addFunction('relativeTime', (date) => {
     const d = new Date(date);
     const now = new Date();
     const seconds = Math.floor((now - d) / 1000);
-    
+
     if (seconds < 60) return 'just now';
     if (seconds < 3600) return Math.floor(seconds / 60) + ' minutes ago';
     if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
@@ -111,7 +115,7 @@ elFunctions.addFunction('weekOfYear', (date) => {
 });</code></pre>
 
     <p><strong>Example: string-functions.js</strong></p>
-    <pre><code class="language-javascript">// Initials from name
+    <pre><code>// Initials from name
 elFunctions.addFunction('initials', (name) => {
     if (!name || typeof name !== 'string') return '';
     return name.split(' ')
@@ -137,7 +141,7 @@ elFunctions.addFunction('slugify', (str) => {
     <h6>Domain-Specific Functions</h6>
     <p>Create functions tailored to your application's business logic:</p>
 
-    <pre><code class="language-javascript">// src/main/resources/js/business-functions.js
+    <pre><code>// src/main/resources/js/business-functions.js
 
 // Product rating display
 elFunctions.addFunction('starRating', (rating) => {
@@ -178,7 +182,7 @@ elFunctions.addFunction('formatAddress', (address) => {
 });</code></pre>
 
     <h6>Using Domain Functions in Templates</h6>
-    <pre><code class="language-html">&lt;div class="product-rating"&gt;$​{starRating(product.rating)}&lt;/div&gt;
+    <pre><code>&lt;div class="product-rating"&gt;$​{starRating(product.rating)}&lt;/div&gt;
 &lt;span class="badge" style="background: $​{statusColor(user.status)}"&gt;
     $​{capitalize(user.status)}
 &lt;/span&gt;
@@ -217,13 +221,13 @@ elFunctions.addFunction('formatAddress', (address) => {
 │       └── product-functions.js</code></pre>
 
     <p><strong>META-INF/xis/js/extensions:</strong></p>
-    <pre><code class="language-plaintext"># Shop-specific EL functions
+    <pre><code># Shop-specific EL functions
 js/currency-functions.js
 js/text-functions.js
 js/product-functions.js</code></pre>
 
     <p><strong>js/currency-functions.js:</strong></p>
-    <pre><code class="language-javascript">// Currency formatting
+    <pre><code>// Currency formatting
 elFunctions.addFunction('currency', (value, code) => {
     return new Intl.NumberFormat('en-US', { 
         style: 'currency', 
@@ -237,14 +241,14 @@ elFunctions.addFunction('percent', (value) => {
 });</code></pre>
 
     <p><strong>js/text-functions.js:</strong></p>
-    <pre><code class="language-javascript">// Text truncation with ellipsis
+    <pre><code>// Text truncation with ellipsis
 elFunctions.addFunction('truncate', (str, len) => {
     if (!str || str.length <= len) return str;
     return str.substring(0, len) + '...';
 });</code></pre>
 
     <p><strong>Template usage:</strong></p>
-    <pre><code class="language-html">&lt;div class="product-card" xis:foreach="product:$​{products}"&gt;
+    <pre><code>&lt;div class="product-card" xis:foreach="product:$​{products}"&gt;
     &lt;h3&gt;$​{truncate(product.name, 30)}&lt;/h3&gt;
     &lt;div class="rating"&gt;$​{starRating(product.rating)}&lt;/div&gt;
     &lt;div class="price"&gt;
@@ -293,8 +297,7 @@ elFunctions.addFunction('truncate', (str, len) => {
         <li>Package as JAR and share across projects</li>
         <li>Always validate inputs and handle edge cases gracefully in your functions</li>
         <li>Keep functions pure and performant - they may be called frequently during template rendering</li>
-        <li>Custom functions work exactly like built-in functions in templates: <code>$​{myFunction(value)}</code></li>
+        <li>Custom functions work exactly like built-in functions in templates: <code>${myFunction(value)}</code></li>
         <li>Multiple JARs can provide their own extensions - they all load automatically and are merged</li>
     </ul>
-
 </xis:template>

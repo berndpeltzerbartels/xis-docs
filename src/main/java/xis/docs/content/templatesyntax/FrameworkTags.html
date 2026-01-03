@@ -16,7 +16,7 @@
         <h5>Core Control Flow Tags</h5>
 
         <h6>&lt;xis:foreach&gt;</h6>
-        <p>Iterates over collections to repeat content for each item.<br>
+        <p>Iterates over collections to repeat content for each item.<br/>
             <strong>Note:</strong> For <code>array</code> and <code>xis:foreach</code>, the expression can also be
             written
             without <code>&#36;{</code><code>...}</code>, e.g. <code>array="users"</code> or
@@ -60,7 +60,7 @@
 &lt;/div&gt;</code></pre>
 
         <h6>&lt;xis:if&gt;</h6>
-        <p>Conditionally renders content based on expressions.<br>
+        <p>Conditionally renders content based on expressions.<br/>
             <strong>Note:</strong> Here too, the expression can be written with or without
             <code>$​{...}</code>, e.g.
             <code>condition="user.isActive"</code> or <code>xis:if="user.isActive"</code>.</p>
@@ -82,11 +82,11 @@
 &lt;/div&gt;</code></pre>
 
         <h6>&lt;xis:widget-container&gt;</h6>
-        <p>Creates a container for dynamic widget loading.<br>
+        <p>Creates a container for dynamic widget loading.<br/>
             <strong>Note:</strong> <code>default-widget</code> is optional, the container can also be initially
-            empty.<br>
+            empty.<br/>
             <strong>container-id</strong> (or <code>xis:widget-container</code> as attribute) is the ID that e.g. <code>target-container</code>
-            refers to.<br>
+            refers to.<br/>
             <strong>target-container</strong> can be used on links, actions, buttons etc. to update a specific widget
             container. The value must match the <code>container-id</code> of an existing widget container.</p>
 
@@ -127,7 +127,7 @@
         <pre><code class="language-html">&lt;xis:widget name="MyWidget"&gt;&lt/xis:widget></code></pre>
 
         <h6>&lt;xis:message&gt;</h6>
-        <p>Displays validation messages for form fields.<br>
+        <p>Displays validation messages for form fields.<br/>
             <strong>Note:</strong> <code>message-for</code> can be used as attribute or as tag.</p>
 
         <p><strong>Element syntax:</strong></p>
@@ -240,7 +240,7 @@
 
         <h6>&lt;xis:a&gt;</h6>
         <p>XIS link element that gets normalized to standard HTML anchor. Can navigate to pages or load widgets into
-            containers.<br>
+            containers.<br/>
             <strong>Note:</strong> The <code>widget</code> attribute loads a widget - either into the surrounding widget
             container
             or into a specific <code>target-container</code>.</p>

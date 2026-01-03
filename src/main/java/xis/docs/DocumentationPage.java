@@ -28,7 +28,7 @@ class DocumentationPage {
 
     @ModelData
     String xisVersion() {
-        return "0.1.20-SNAPSHOT";
+        return "0.2.0";
     }
 
     @ModelData

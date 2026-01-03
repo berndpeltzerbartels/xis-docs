@@ -350,7 +350,7 @@ class ProductEditPage {
     
     @Action("assignCategories")
     void assignCategories(@PathVariable("productId") String productId,
-                    @ActionParameter("categories") @AllElementsMandatory List<String> categories,
+                    @ActionParameter("categories") @AllElementsMandatory List&lt;String&gt; categories,
                     @UserId String currentUserId) {
         
         // Check admin permissions

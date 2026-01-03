@@ -1,11 +1,12 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
-   <h3>${chapterHeadline}</h3>
-   
+    <h3>${chapterHeadline}</h3>
+
     <p>
-        The XIS Gradle plugin simplifies the integration of XIS into your Gradle-based projects by automating 
-        essential build tasks and providing development tooling. This chapter describes all features provided by the plugin.
+        The XIS Gradle plugin simplifies the integration of XIS into your Gradle-based projects by automating
+        essential build tasks and providing development tooling. This chapter describes all features provided by the
+        plugin.
     </p>
-    
+
     <h5>Installation</h5>
     <p>
         To enable the XIS plugin in your project, add it to your <code>build.gradle</code> plugins block:
@@ -13,28 +14,28 @@
     <pre><code>plugins {
     id 'one.xis.plugin' version '${xisVersion}'
 }</code></pre>
-    
+
     <h5>Dependency Management</h5>
     <p>
-        The plugin automatically manages version configuration for all XIS dependencies, ensuring consistency across 
+        The plugin automatically manages version configuration for all XIS dependencies, ensuring consistency across
         your project. This eliminates the need to specify version numbers for individual XIS modules.
     </p>
-    
+
     <h5>Template File Management</h5>
     <p>
-        One of the core features is enabling HTML template files to be placed alongside Java source files in the 
-        same directory structure. The plugin automatically copies these template files to the resources folder 
-        during build. This allows for a transparent one-to-one binding between controllers and their templates, 
-        making the relationship between code and markup immediately clear.
+        One of the core features is enabling HTML template files to be placed alongside Java source files in the
+        same directory structure. This allows for a transparent one-to-one binding between controllers and their
+        templates, making the relationship between code and markup immediately clear.
     </p>
     <p>
-        For further details on template placement and organization, see the <a href="/docs/templatelocation.html">Template Location</a> chapter.
+        For further details on template placement and organization, see the <a href="/docs/templatelocation.html">Template
+        Location</a> chapter.
     </p>
-    
+
     <h5>Template Generation Task</h5>
     <p>
-        The plugin registers a Gradle task under <code>xis/templates</code> that generates simple HTML skeleton 
-        templates for all annotated controllers (<code>@Page</code> or <code>@Widget</code>). This task helps 
+        The plugin registers a Gradle task under <code>xis/templates</code> that generates simple HTML skeleton
+        templates for all annotated controllers (<code>@Page</code> or <code>@Widget</code>). This task helps
         bootstrap new controllers by creating the corresponding HTML template files automatically.
     </p>
     <p>
@@ -42,19 +43,12 @@
     </p>
     <pre><code>./gradlew xis:templates</code></pre>
     <p>
-        Future enhancements will include generating templates with details from the controller, such as forms 
+        Future enhancements will include generating templates with details from the controller, such as forms
         with proper field bindings and model data placeholders.
     </p>
-    
-    <h5>Annotation Processing</h5>
-    <p>
-        The plugin registers an annotation processor to handle validation tasks for XIS annotations and conventions. 
-        This provides compile-time checks to ensure your controllers and templates follow XIS best practices.
-    </p>
-    
     <h5>Runnable JAR Creation</h5>
     <p>
-        When using xis-boot, the plugin provides a task under <code>xis/runnableJar</code> that creates a standalone 
+        When using xis-boot, the plugin provides a task under <code>xis/runnableJar</code> that creates a standalone
         executable JAR file. This JAR includes all dependencies and can be run directly with <code>java -jar</code>.
     </p>
     <p>
@@ -62,10 +56,14 @@
     </p>
     <pre><code>./gradlew xis:runnableJar</code></pre>
     <p>
-        The generated JAR will be located in the <code>build/libs</code> directory and can be deployed and executed 
+        The generated JAR will be located in the <code>build/libs</code> directory and can be deployed and executed
         on any system with a compatible Java runtime.
     </p>
-    
+    <h5>Annotation Processing</h5>
+    <p>
+        The plugin registers an annotation processor to handle validation tasks for XIS annotations and conventions.
+        This provides compile-time checks to ensure your controllers and templates follow XIS best practices.
+    </p>
     <h5>Summary</h5>
     <p>
         The XIS Gradle plugin provides essential automation for XIS-based projects:

@@ -1,4 +1,12 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h2>Xis-Boot</h2>
+    <p>XIS Boot is a lightweight alternative to full-fledged dependency injection frameworks like Spring.
+        It provides essential features such as component management, dependency injection, lifecycle methods,
+        factory methods, and event handling, all tailored specifically for XIS applications.
+    </p>
+    <p>
+        XIS Boot is under development. A library for database access will be available in the future.
+    </p>
     <h3>${chapterHeadline}</h3>
 
     <p>Add the dependency to your project:</p>
@@ -15,7 +23,8 @@ dependencies {
     <h5>Component Annotations</h5>
 
     <h6>@Component</h6>
-    <p>Mark a class as a managed component. XIS will create a single instance (singleton) and make it available for injection:</p>
+    <p>Mark a class as a managed component. XIS will create a single instance (singleton) and make it available for
+        injection:</p>
 
     <pre><code class="language-java">@Component
 public class EmailServerClient {
@@ -68,13 +77,14 @@ public class UsersPage {
     }
 }</code></pre>
 
-    <p><strong>Note:</strong> Constructor injection is generally preferred over field injection for better testability.</p>
+    <p><strong>Note:</strong> Constructor injection is generally preferred over field injection for better testability.
+    </p>
 
     <h5>Lifecycle Methods</h5>
 
     <h6>@Init</h6>
-    <p>Methods annotated with <code>@Init</code> are called after the component is constructed and all dependencies 
-       are injected. This is useful for initialization logic that requires dependencies:</p>
+    <p>Methods annotated with <code>@Init</code> are called after the component is constructed and all dependencies
+        are injected. This is useful for initialization logic that requires dependencies:</p>
 
     <pre><code class="language-java">@Component
 public class DatabaseService {
@@ -95,8 +105,8 @@ public class DatabaseService {
     <h5>Bean Factory Methods</h5>
 
     <h6>@Bean</h6>
-    <p>Methods annotated with <code>@Bean</code> act as factory methods that create and register components. 
-       This is useful when you need programmatic control over component creation:</p>
+    <p>Methods annotated with <code>@Bean</code> act as factory methods that create and register components.
+        This is useful when you need programmatic control over component creation:</p>
 
     <pre><code class="language-java">@Component
 public class AppConfiguration {
@@ -112,14 +122,14 @@ public class AppConfiguration {
     }
 }</code></pre>
 
-    <p>The returned instances from <code>@Bean</code> methods are registered as singletons in the context and 
-       can be injected into other components.</p>
+    <p>The returned instances from <code>@Bean</code> methods are registered as singletons in the context and
+        can be injected into other components.</p>
 
     <h5>Event Handling</h5>
 
     <h6>@EventListener</h6>
-    <p>Methods annotated with <code>@EventListener</code> are invoked when application events are emitted. 
-       The method parameter type determines which events it receives:</p>
+    <p>Methods annotated with <code>@EventListener</code> are invoked when application events are emitted.
+        The method parameter type determines which events it receives:</p>
 
     <pre><code class="language-java">@Component
 public class UserActivityLogger {
@@ -153,8 +163,8 @@ public class AuthService {
 
     <h5>Component Scope</h5>
     <p>All components in XIS Boot are singletons (one instance per application). This is the only supported scope.
-       There is no special annotation required - all components annotated with <code>@Component</code> or 
-       <code>@Service</code> are automatically application-scoped singletons.</p>
+        There is no special annotation required - all components annotated with <code>@Component</code> or
+        <code>@Service</code> are automatically application-scoped singletons.</p>
 
     <h5>Component Scanning</h5>
     <p>XIS Boot automatically scans for components in the same package as your main class and all sub-packages.</p>
@@ -218,10 +228,5 @@ public class AuthService {
         misunderstandings about which features are actually supported by XIS Boot, as the framework is intentionally
         much simpler than Spring. <strong>For new code, always use the native XIS context annotations</strong>
         (<code>@XISComponent</code>, <code>@XISService</code>, etc.) to avoid confusion and ensure clear expectations.
-    </div>
-</xis:template>
-        misunderstandings about which features are actually supported by XIS Boot, as the framework is intentionally
-        much simpler than Spring. <strong>For new code, always use the native XIS context annotations</strong>
-        to avoid confusion and ensure clear expectations.
     </div>
 </xis:template>
