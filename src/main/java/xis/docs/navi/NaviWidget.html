@@ -2,7 +2,7 @@
     <div class="sidebar">
         <div class="contenttable">
             <h5>Table of Content</h5>
-            <ul xis:selection-group>
+            <ul>
                 <li xis:repeat="item:naviItems">
                     <strong><a
                             class="${contains(item.url, pathname) || contains(item.subUrls, pathname) ? 'highlight': ''}"

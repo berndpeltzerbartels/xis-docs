@@ -1,12 +1,6 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
 
-    <div class="alert alert-info" role="alert">
-        <strong>ℹ️ Annotation Changes Coming</strong><br/>
-        Currently, XIS uses prefixed annotations like <code>@Component</code>, <code>@XISService</code>, etc.
-        In a future version, these will be simplified to <code>@Component</code>, <code>@Service</code>, etc.
-        This documentation shows the future naming convention.
-    </div>
 
     <p>XIS Boot provides a lightweight dependency injection and component scanning system. Components are
         registered and managed by the XIS context, similar to Spring or Micronaut but without the framework
@@ -124,9 +118,10 @@ public class AppConfiguration {
     <p>The returned instances from <code>@Bean</code> methods are registered as singletons in the context and
         can be injected into other components.</p>
 
-    <div class="info">
-        Every singleton can be used as a method parameter in a <code>@Bean</code> or <code>@BInit</code>method as long
-        the dependency graph has no cycles.
+    <div class="tipp" role="alert">
+        Every singleton can be used as a method parameter in a <code>@Bean</code>, <code>@Init</code> or any other
+        method with a XIS context annotation. The context will automatically resolve and inject the required
+        dependencies as long the dependency graph has no cycles.
     </div>
 
     <h5>Event Handling</h5>
@@ -173,30 +168,6 @@ public class AuthService {
     <h5>Component Scanning</h5>
     <p>XIS Boot automatically scans for components in the same package as your main class and all sub-packages.</p>
 
-    <h5>Current vs Future Annotations</h5>
-    <p>Mapping of current to future annotation names:</p>
-    <table class="table table-sm">
-        <thead>
-        <tr>
-            <th>Current</th>
-            <th>Future</th>
-            <th>Purpose</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td><code>@Component</code></td>
-            <td><code>@Component</code></td>
-            <td>Generic managed component</td>
-        </tr>
-        <tr>
-            <td><code>@XISService</code></td>
-            <td><code>@Service</code></td>
-            <td>Service layer component</td>
-        </tr>
-        </tbody>
-    </table>
-    
     <h5>Spring Framework Compatibility</h5>
     <p>XIS Boot is designed to be significantly simpler and more lightweight than the Spring Framework application
         context.
@@ -228,6 +199,6 @@ public class AuthService {
         the recommended approach</strong> for new XIS Boot applications. Using Spring annotations can lead to
         misunderstandings about which features are actually supported by XIS Boot, as the framework is intentionally
         much simpler than Spring. <strong>For new code, always use the native XIS context annotations</strong>
-        (<code>@Component</code>, <code>@XISService</code>, etc.) to avoid confusion and ensure clear expectations.
+        (<code>@Component</code>, <code>@Service</code>, etc.) to avoid confusion and ensure clear expectations.
     </div>
 </xis:template>

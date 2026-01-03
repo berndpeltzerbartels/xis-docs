@@ -7,7 +7,8 @@
     </p>
 
     <div class="info-box">
-        <strong>Scope:</strong> <code>@Roles</code> can be applied to controller classes, methods, and parameter classes (DTOs).
+        <strong>Scope:</strong> <code>@Roles</code> can be applied to controller classes, methods, and parameter classes
+        (DTOs).
         The annotation supports <code>ElementType.TYPE</code> and <code>ElementType.METHOD</code>.
     </div>
 
@@ -16,9 +17,15 @@
         Understanding how roles are combined:
     </p>
     <ul>
-        <li><strong>Within one annotation</strong> (<code>@Roles({"ADMIN", "MODERATOR"})</code>): <strong>OR</strong> logic - user needs at least one of these roles</li>
-        <li><strong>Between levels</strong> (Controller + Method + Parameter): <strong>AND</strong> logic - all non-empty levels must be satisfied</li>
-        <li><strong>Empty levels are ignored</strong>: If a level has no <code>@Roles</code>, no check is performed at that level</li>
+        <li><strong>Within one annotation</strong> (<code>@Roles({"ADMIN", "MODERATOR"})</code>): <strong>OR</strong>
+            logic - user needs at least one of these roles
+        </li>
+        <li><strong>Between levels</strong> (Controller + Method + Parameter): <strong>AND</strong> logic - all
+            non-empty levels must be satisfied
+        </li>
+        <li><strong>Empty levels are ignored</strong>: If a level has no <code>@Roles</code>, no check is performed at
+            that level
+        </li>
     </ul>
 
     <h4>Annotation Scenarios</h4>
@@ -41,13 +48,14 @@
 public class UserManagementPage {
     
     @Action
-    void deleteUser(@Parameter("userId") String userId) {
+    void deleteUser(@QueryParameter("userId") String userId) {
         // Accessible for ADMIN OR USER_MANAGER
     }
 }</code></pre>
 
     <h5>Method-Level Roles</h5>
-    <p>Methods can have their own <code>@Roles</code> annotation. The behavior depends on whether the class is also annotated:
+    <p>Methods can have their own <code>@Roles</code> annotation. The behavior depends on whether the class is also
+        annotated:
     </p>
 
     <pre><code>// Class WITH roles - methods inherit or add requirements
@@ -63,7 +71,7 @@ public class ProductPage {
     
     @Action
     @Roles("ADMIN")
-    void deleteProduct(@Parameter("productId") String productId) {
+    void deleteProduct(@QueryParameter("productId") String productId) {
         // Has method-level @Roles - requires: USER (class) AND ADMIN (method)
         productService.delete(productId);
     }
@@ -81,7 +89,7 @@ public class PublicBlogPage {
     
     @Action
     @Roles("ADMIN")
-    void deletePost(@Parameter("postId") String postId) {
+    void deletePost(@QueryParameter("postId") String postId) {
         // Only method-level @Roles - requires: ADMIN only
         blogService.delete(pos
         // Accessible for all users with USER role
@@ -90,7 +98,7 @@ public class PublicBlogPage {
     
     @Action
     @Roles("ADMIN")
-    void deleteProduct(@Parameter("productId") String productId) {
+    void deleteProduct(@QueryParameter("productId") String productId) {
         // Requires: USER (from class) AND ADMIN (from method)
         // User must have BOTH roles
         productService.delete(productId);
@@ -99,7 +107,7 @@ public class PublicBlogPage {
 
     <h4>Combining Class and Method Roles</h4>
     <p>
-        When both class and method have <code>@Roles</code>, different levels are combined with AND, 
+        When both class and method have <code>@Roles</code>, different levels are combined with AND,
         while roles within one level use OR:
     </p>
 
@@ -115,7 +123,7 @@ public class ContentPage {
     
     @Action
     @Roles("ADMIN")
-    void deleteArticle(@Parameter("id") String id) {
+    void deleteArticle(@QueryParameter("id") String id) {
         // Requires: (EDITOR OR AUTHOR) AND ADMIN
         // User must have ADMIN + at least one of (EDITOR or AUTHOR)
         articleService.delete(id);
@@ -123,7 +131,7 @@ public class ContentPage {
     
     @Action
     @Roles({"MODERATOR", "SUPERVISOR"})
-    void approveArticle(@Parameter("id") String id) {
+    void approveArticle(@QueryParameter("id") String id) {
         // Requires: (EDITOR OR AUTHOR) AND (MODERATOR OR SUPERVISOR)
         // User needs at least one from each level
         articleService.approve(id);
@@ -132,7 +140,7 @@ public class ContentPage {
 
     <h4>Usage on Parameter Classes (DTOs)</h4>
     <p>
-        Parameter classes (DTOs) can also be annotated with <code>@Roles</code>. These roles are added as a third level 
+        Parameter classes (DTOs) can also be annotated with <code>@Roles</code>. These roles are added as a third level
         using AND logic between levels:
     </p>
 
@@ -182,12 +190,19 @@ public class ProductPage {
     <h4>Best Practices</h4>
     <ul>
         <li><strong>Descriptive names:</strong> Use <code>PRODUCT_EDITOR</code> instead of <code>ROLE_3</code></li>
-        <li><strong>Multiple alternatives:</strong> Use <code>@Roles({"ADMIN", "MODERATOR"})</code> for OR logic within one level</li>
-        <li><strong>Class-level base access:</strong> Define general access roles at controller level (e.g., <code>USER</code>)</li>
-        <li><strong>Method-level restrictions:</strong> Add additional requirements for sensitive operations (e.g., <code>ADMIN</code>)</li>
+        <li><strong>Multiple alternatives:</strong> Use <code>@Roles({"ADMIN", "MODERATOR"})</code> for OR logic within
+            one level
+        </li>
+        <li><strong>Class-level base access:</strong> Define general access roles at controller level (e.g.,
+            <code>USER</code>)
+        </li>
+        <li><strong>Method-level restrictions:</strong> Add additional requirements for sensitive operations (e.g.,
+            <code>ADMIN</code>)
+        </li>
         <li><strong>DTO-level permissions:</strong> Protect sensitive data structures regardless of context</li>
         <li><strong>Remember the logic:</strong> Within annotation = OR, between levels = AND</li>
-        <li><strong>Full security:</strong> Combine with <code>xis-authentication</code> for login/logout functionality</li>
+        <li><strong>Full security:</strong> Combine with <code>xis-authentication</code> for login/logout functionality
+        </li>
     </ul>
 
     <div class="info-box">
