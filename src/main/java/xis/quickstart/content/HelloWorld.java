@@ -6,7 +6,7 @@ import one.xis.Widget;
 import xis.navi.Navigation;
 
 @Widget(id = "quickstart-helloworld", url = "/quickstart/helloworld.html", containerId = "main")
-@Navigation(title = "Hello World", section = "quickstart", nextItem = RunningTheApp.class)
+@Navigation(title = "Hello World", section = "quickstart", nextItem = Testing.class)
 class HelloWorld {
 
     @Title

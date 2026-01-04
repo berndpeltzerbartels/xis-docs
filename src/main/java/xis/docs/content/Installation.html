@@ -1,44 +1,107 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
-    <h6>Using XIS with Spring</h6>
+    
+    <h5>Prerequisites</h5>
+    <ul>
+        <li>Java 17 or higher</li>
+        <li>Gradle 8.0 or higher</li>
+    </ul>
+    
+    <h5>Framework Options</h5>
     <p>
-        XIS currently uses Gradle for build configuration with Spring Boot. Maven support is planned for future
-        releases.
-        Alternatively, a standalone deployment option using xis-boot is available, and Micronaut integration is under
-        consideration.
+        XIS can be used with different web frameworks. You need to choose one of the following options:
+    </p>
+    <ul>
+        <li><strong>Spring Boot</strong> - Use XIS with the popular Spring Boot framework (recommended for existing Spring projects)</li>
+        <li><strong>XIS Boot</strong> - A lightweight standalone alternative to Spring Boot, specifically designed for XIS</li>
+        <li><strong>Micronaut</strong> - Integration is under consideration for future releases</li>
+    </ul>
+    
+    <h6>Option 1: Using XIS with Spring Boot</h6>
+    <p>
+        When using Spring Boot, you need both the Spring Boot plugin and the XIS plugin. 
+        The Spring Boot dependency management automatically handles version management for Spring dependencies.
+        Maven support is planned for future releases.
     </p>
     <pre><code>plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.0'
+    id 'io.spring.dependency-management' version '1.1.5'
     id 'one.xis.plugin' version '${xisVersion}'
 }
 
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
 dependencies {
+    // XIS libraries
+    implementation 'one.xis:xis-spring'
+    testImplementation 'one.xis:xis-test'
 
-    // xis-libraries
-    implementation project(':xis-spring')
-    implementation project(':xis-test')
+    // Lombok (optional, but recommended)
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
-    // Lombok (optional, but recommended, frequently used in examples)
-    compileOnly "org.projectlombok:lombok:${lombokVersion}"
-    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    // Spring Boot (versions managed by Spring Boot plugin)
+    implementation 'org.springframework.boot:spring-boot-starter-web'
 
-    // Spring Boot
-    implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
-
-    // JUnit 5 for testing
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+    // JUnit 5 for testing (versions managed by Spring Boot plugin)
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 test {
     useJUnitPlatform()
 }
+</code></pre>
 
+    <p>
+        The <code>io.spring.dependency-management</code> plugin provides automatic version management 
+        for all Spring dependencies, so you don't need to specify versions for Spring Boot libraries.
+    </p>
 
+    <h6>Option 2: Using XIS Boot (Standalone Alternative)</h6>
+    <p>
+        XIS Boot is a lightweight alternative to Spring Boot that provides the same functionality without Spring dependencies.
+        It has its own dependency injection context that is intentionally designed to be similar to Spring.
+        This option is ideal if you want a minimal footprint and don't need Spring-specific features.
+    </p>
+    <pre><code>plugins {
+    id 'java'
+    id 'one.xis.plugin' version '${xisVersion}'
+}
 
-    </code></pre>
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
 
-    <div class="warning">Do not forget to add the xis plugin <code>one.xis.plugin</code> to your build.gradle file.
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // XIS Boot - replaces Spring Boot
+    implementation 'one.xis:xis-boot'
+    testImplementation 'one.xis:xis-test'
+
+    // Lombok (optional, but recommended)
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    // JUnit 5 for testing
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+</code></pre>
+
+    <div class="warning">
+        <strong>Important:</strong> Do not forget to add the XIS plugin <code>one.xis.plugin</code> to your build.gradle file.
     </div>
-
 
 </xis:template>
