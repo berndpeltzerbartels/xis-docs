@@ -1,4 +1,4 @@
-package xis.docs.navi;
+package xis.navi;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,6 +10,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Navigation {
     String title();
+
+    String section() default "docs";
 
     Class<?> firstSubItem() default Void.class;
 

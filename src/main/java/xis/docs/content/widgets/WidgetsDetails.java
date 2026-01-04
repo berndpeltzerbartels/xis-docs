@@ -4,7 +4,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.content.Lifecycle;
-import xis.docs.navi.Navigation;
+import xis.navi.Navigation;
 
 @Widget(url = "/docs/widgetsdetails.html", containerId = "main")
 @Navigation(title = "Widget Details", nextItem = Lifecycle.class, firstSubItem = WidgetContainers.class)

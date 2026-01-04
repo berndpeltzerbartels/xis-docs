@@ -1,0 +1,40 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>${chapterHeadline}</h3>
+    
+    <p>
+        Now let's create the entry point for your Spring Boot application.
+    </p>
+    
+    <h5>Create the package structure</h5>
+    <p>Create the following directory structure:</p>
+    <pre><code>src/main/java/quickstart/</code></pre>
+    
+    <h5>Create the Application class</h5>
+    <p>
+        Create a file <code>Application.java</code> in the <code>quickstart</code> package:
+    </p>
+    
+    <pre><code>package quickstart;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class Application {
+    
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+</code></pre>
+
+    <p class="mt-3">
+        This is a standard Spring Boot application class. The <code>@SpringBootApplication</code> annotation 
+        enables auto-configuration and component scanning.
+    </p>
+    
+    <p>
+        XIS integrates seamlessly with Spring Boot - no additional configuration is needed.
+        The XIS components will be automatically discovered and configured.
+    </p>
+</xis:template>

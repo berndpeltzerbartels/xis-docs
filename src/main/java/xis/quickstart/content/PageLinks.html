@@ -1,0 +1,65 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>${chapterHeadline}</h3>
+    
+    <p>
+        XIS provides multiple ways to create links between pages. Let's explore them by adding 
+        links to your Dashboard page.
+    </p>
+    
+    <h5>Edit the Dashboard template</h5>
+    <p>
+        Open <code>Dashboard.html</code> and update it with the following content:
+    </p>
+    
+    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"/&gt;
+    &lt;title&gt;Dashboard&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h1&gt;Dashboard&lt;/h1&gt;
+&lt;h2&gt;XIS Examples&lt;/h2&gt;
+&lt;p&gt;
+    &lt;a href="/hello-world.html"&gt;Hello World Example (1)&lt;/a&gt;&lt;br/&gt;
+    &lt;a xis:page="/hello-world.html"&gt;Hello World Example (2)&lt;/a&gt;&lt;br/&gt;
+    &lt;xis:a page="/hello-world.html"&gt;Hello World Example (3)&lt;/xis:a&gt;
+    &lt;br/&gt;
+&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+    <h5>Restart and test</h5>
+    <p>Restart your application and open the Dashboard in your browser. All three links work!</p>
+    
+    <h5>Understanding the link types</h5>
+    <p>
+        Options 2 and 3 are just different syntax for the same thing - both are XIS-specific page links:
+    </p>
+    <ul>
+        <li><code>&lt;a xis:page="/hello-world.html"&gt;</code> - XIS attribute syntax</li>
+        <li><code>&lt;xis:a page="/hello-world.html"&gt;</code> - XIS element syntax</li>
+    </ul>
+    
+    <p>
+        These XIS links use the DOM API to replace content without a full page reload, 
+        providing a smoother user experience.
+    </p>
+    
+    <p>
+        The standard HTML link (<code>&lt;a href="..."&gt;</code>) also works in modern browsers 
+        with the same behavior. However, in older browsers, it will trigger a full page reload.
+    </p>
+    
+    <h5>Recommended approach</h5>
+    <p>
+        We'll use the attribute syntax (<code>xis:page</code>) going forward. 
+        Update your Dashboard to keep only this version:
+    </p>
+    
+    <pre><code>&lt;p&gt;
+    &lt;a xis:page="/hello-world.html"&gt;Hello World Example&lt;/a&gt;
+&lt;/p&gt;
+</code></pre>
+</xis:template>

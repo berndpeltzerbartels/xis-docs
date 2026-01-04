@@ -1,9 +1,9 @@
-package xis.docs.navi;
+package xis.navi;
 
 import java.util.List;
 
 public interface NaviService {
-    List<NaviItemDto> getNaviItems();
+    List<NaviItemDto> getNaviItems(String section);
 
     /**
      * Finds a widget class by key (case-insensitive).

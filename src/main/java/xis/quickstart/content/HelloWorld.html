@@ -1,0 +1,86 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>${chapterHeadline}</h3>
+    
+    <p>
+        Let's create your first XIS page - a simple "Hello World" application.
+    </p>
+    
+    <h5>Create the Page controller</h5>
+    <p>
+        Create a subpackage <code>helloworld</code> inside <code>quickstart</code> and add a file 
+        <code>HelloWorld.java</code>:
+    </p>
+    
+    <pre><code>package quickstart.helloworld;
+
+import one.xis.ModelData;
+import one.xis.Page;
+
+@Page("/hello-world.html")
+class HelloWorld {
+
+    @ModelData
+    String greeting() {
+        return "Hello, World!";
+    }
+}
+</code></pre>
+
+    <h5>Generate the HTML template</h5>
+    <p>
+        XIS can automatically generate missing HTML templates for your pages and widgets.
+        You have two options:
+    </p>
+
+    <h6>Option 1: IDE</h6>
+    <p>
+        Reload/refresh your Gradle project in your IDE, then execute the <code>xis/templates</code> task 
+        from the Gradle tool window.
+    </p>
+    
+    <h6>Option 2: Command Line</h6>
+    <p>First, create a Gradle wrapper if you don't have one yet:</p>
+    <pre><code>gradle wrapper --gradle-version 8.12</code></pre>
+    
+    <p>Then run the templates task:</p>
+    <pre><code>./gradlew templates</code></pre>
+    
+    <p class="mt-3">
+        This will generate a file <code>HelloWorld.html</code> in the same package as your Java class.
+    </p>
+
+    <h5>Edit the HTML template</h5>
+    <p>
+        Open the generated <code>HelloWorld.html</code> file and replace its content with:
+    </p>
+    
+    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"/&gt;
+    &lt;title&gt;${greeting}&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h1&gt;${greeting}&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+    <p class="mt-3">
+        The <code>${greeting}</code> expression will be replaced with the value from the 
+        <code>greeting()</code> method in your controller at runtime.
+    </p>
+
+    <h5>Your project structure</h5>
+    <p>After these steps, your project should look like this:</p>
+    <pre><code>src/
+└── main/
+    └── java/
+        └── quickstart/
+            ├── Application.java
+            └── helloworld/
+                ├── HelloWorld.java
+                └── HelloWorld.html
+</code></pre>
+
+</xis:template>

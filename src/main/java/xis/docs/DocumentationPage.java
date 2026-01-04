@@ -4,8 +4,8 @@ package xis.docs;
 import lombok.RequiredArgsConstructor;
 import one.xis.ModelData;
 import one.xis.Page;
-import xis.docs.navi.NaviItemDto;
-import xis.docs.navi.NaviService;
+import xis.navi.NaviItemDto;
+import xis.navi.NaviService;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ class DocumentationPage {
 
     @ModelData
     List<NaviItemDto> naviItems() {
-        return naviService.getNaviItems();
+        return naviService.getNaviItems("docs");
     }
 
     @ModelData

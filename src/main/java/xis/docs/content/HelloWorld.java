@@ -4,7 +4,7 @@ package xis.docs.content;
 import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
-import xis.docs.navi.Navigation;
+import xis.navi.Navigation;
 
 // @ModelData nur kurz erlären und Verweis
 @Widget(url = "/docs/helloworld.html", containerId = "main")

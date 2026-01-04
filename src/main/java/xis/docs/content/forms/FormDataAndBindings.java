@@ -3,7 +3,7 @@ package xis.docs.content.forms;
 import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
-import xis.docs.navi.Navigation;
+import xis.navi.Navigation;
 
 @Widget(url = "/docs/formdataandbindings.html", containerId = "main")
 @Navigation(title = "Form Data and Bindings", nextItem = FormActions.class)

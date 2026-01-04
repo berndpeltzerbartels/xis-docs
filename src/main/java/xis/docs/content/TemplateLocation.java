@@ -3,7 +3,7 @@ package xis.docs.content;
 import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
-import xis.docs.navi.Navigation;
+import xis.navi.Navigation;
 
 @Widget(url = "/docs/templatelocation.html", containerId = "main")
 @Navigation(title = "Template Location", nextItem = ClassAnnotations.class)

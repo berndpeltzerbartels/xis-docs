@@ -4,7 +4,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.content.widgets.WidgetsDetails;
-import xis.docs.navi.Navigation;
+import xis.navi.Navigation;
 
 @Widget(url = "/docs/parameterannotations.html", containerId = "main")
 @Navigation(title = "Parameter Annotations", nextItem = WidgetsDetails.class)

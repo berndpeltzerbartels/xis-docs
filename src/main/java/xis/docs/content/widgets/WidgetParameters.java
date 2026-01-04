@@ -3,7 +3,7 @@ package xis.docs.content.widgets;
 import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
-import xis.docs.navi.Navigation;
+import xis.navi.Navigation;
 
 @Widget(url = "/docs/widgetparameters.html", containerId = "main")
 @Navigation(title = "Widget Parameters", nextItem = WidgetNavigation.class)

@@ -3,7 +3,7 @@ package xis.docs.content.forms;
 import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
-import xis.docs.navi.Navigation;
+import xis.navi.Navigation;
 
 @Widget(url = "/docs/validation.html", containerId = "main")
 @Navigation(title = "Validation")

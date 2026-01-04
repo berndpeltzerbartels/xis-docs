@@ -3,7 +3,7 @@ package xis.docs.content.security;
 import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
-import xis.docs.navi.Navigation;
+import xis.navi.Navigation;
 
 @Widget(url = "/docs/sso.html", containerId = "main")
 @Navigation(title = "XIS as IDP", nextItem = ExternalIdp.class)

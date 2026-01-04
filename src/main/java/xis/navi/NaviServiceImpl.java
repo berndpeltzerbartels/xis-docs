@@ -1,9 +1,7 @@
-package xis.docs.navi;
+package xis.navi;
 
-import lombok.Getter;
 import one.xis.Widget;
 import one.xis.context.Component;
-import one.xis.context.Init;
 import one.xis.context.Inject;
 
 import java.util.ArrayList;
@@ -14,9 +12,6 @@ import java.util.Optional;
 @Component
 class NaviServiceImpl implements NaviService {
 
-    @Getter
-    private List<NaviItemDto> naviItems;
-
     @Inject(annotatedWith = Navigation.class)
     private List<Object> contentWidgets;
 
@@ -26,17 +21,24 @@ class NaviServiceImpl implements NaviService {
     @Inject
     private NaviItemMapper naviItemMapper;
 
+    @Override
+    public List<NaviItemDto> getNaviItems(String section) {
+        var filteredWidgets = contentWidgets.stream()
+                .filter(widget -> {
+                    Navigation nav = widget.getClass().getAnnotation(Navigation.class);
+                    return nav != null && section.equals(nav.section());
+                })
+                .toList();
 
-    @Init
-    void buildNavi() {
-        Navi navi = new Navi(getFirstNaviItem());
-        naviValidator.validate(navi, new ArrayList<>(contentWidgets));
-        this.naviItems = naviItemMapper.toDtos(navi.getRoot());
+
+        Navi navi = new Navi(getFirstNaviItem(filteredWidgets));
+        naviValidator.validate(navi, new ArrayList<>(filteredWidgets));
+        return naviItemMapper.toDtos(navi.getRoot());
     }
 
 
-    private NaviItem getFirstNaviItem() {
-        return createNaviItem(getFirstNaviClass(), 1, null);
+    private NaviItem getFirstNaviItem(List<Object> widgets) {
+        return createNaviItem(getFirstNaviClass(widgets), 1, null);
     }
 
     /**
@@ -45,8 +47,8 @@ class NaviServiceImpl implements NaviService {
      *
      * @return the first navi item class
      */
-    private Class<?> getFirstNaviClass() {
-        var itemClasses = new HashSet<Class<?>>(contentWidgets.stream().map(Object::getClass).toList());
+    private Class<?> getFirstNaviClass(List<Object> widgets) {
+        var itemClasses = new HashSet<Class<?>>(widgets.stream().map(Object::getClass).toList());
         var toRemove = new HashSet<Class<?>>();
         for (Class<?> clazz : itemClasses) {
             if (!clazz.isAnnotationPresent(Navigation.class)) {

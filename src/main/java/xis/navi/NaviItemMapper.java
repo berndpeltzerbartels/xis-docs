@@ -1,4 +1,4 @@
-package xis.docs.navi;
+package xis.navi;
 
 
 import one.xis.Widget;

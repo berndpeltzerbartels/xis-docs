@@ -3,7 +3,7 @@ package xis.docs.content.pagesandwidgets;
 import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
-import xis.docs.navi.Navigation;
+import xis.navi.Navigation;
 
 @Widget(url = "/docs/includes.html", containerId = "main")
 @Navigation(title = "Includes")

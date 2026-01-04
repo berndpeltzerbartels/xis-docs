@@ -1,0 +1,66 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>${chapterHeadline}</h3>
+    
+    <p>
+        This is the quickstart guide for <strong>XIS with Spring Boot</strong>. 
+        It will help you set up your first XIS project and build a simple web application.
+    </p>
+    
+    <h5>Prerequisites</h5>
+    <ul>
+        <li>Java 17 or higher</li>
+        <li>Gradle 8.0 or higher</li>
+        <li>Your favorite IDE (IntelliJ IDEA, Eclipse, VS Code)</li>
+    </ul>
+    
+    <h5>Create a new project</h5>
+    <p>Create a new directory for your project and add the following files:</p>
+    
+    <h6>build.gradle</h6>
+    <pre><code>plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.0'
+    id 'io.spring.dependency-management' version '1.1.5'
+    id 'one.xis.plugin' version '0.2.0'
+}
+
+group = 'quickstart'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // XIS libraries
+    implementation('one.xis:xis-spring')
+    testImplementation('one.xis:xis-test')
+
+    // Lombok (optional, but recommended)
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // JUnit 5 for testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+test {
+    useJUnitPlatform()
+}
+</code></pre>
+
+    <h6>settings.gradle</h6>
+    <pre><code>rootProject.name = 'my-xis-app'
+</code></pre>
+
+    <p class="mt-3">
+        That's it! Your project is now ready. Continue to the next section to create your first page.
+    </p>
+</xis:template>

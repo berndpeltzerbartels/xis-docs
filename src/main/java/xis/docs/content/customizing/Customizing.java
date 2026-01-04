@@ -4,7 +4,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.context.Component;
 import xis.docs.content.DistributedApplications;
-import xis.docs.navi.Navigation;
+import xis.navi.Navigation;
 
 @Component
 @Navigation(title = "Customizing", firstSubItem = CustomJavaScript.class, nextItem = DistributedApplications.class)

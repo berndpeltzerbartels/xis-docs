@@ -4,7 +4,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.context.Component;
 import xis.docs.content.ParameterAnnotations;
-import xis.docs.navi.Navigation;
+import xis.navi.Navigation;
 
 @Component
 @Navigation(title = "Template Syntax", nextItem = ParameterAnnotations.class, firstSubItem = Variables.class)

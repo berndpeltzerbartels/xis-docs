@@ -4,7 +4,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 import xis.docs.content.forms.Forms;
-import xis.docs.navi.Navigation;
+import xis.navi.Navigation;
 
 @Widget(url = "/docs/deeplinking.html", containerId = "main")
 @Navigation(title = "Deep Linking", nextItem = Forms.class)

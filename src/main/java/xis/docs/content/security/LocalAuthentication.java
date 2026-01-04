@@ -3,7 +3,7 @@ package xis.docs.content.security;
 import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
-import xis.docs.navi.Navigation;
+import xis.navi.Navigation;
 
 @Widget(url = "/docs/localauthentication.html", containerId = "main")
 @Navigation(title = "XIS Authentication", nextItem = Sso.class)

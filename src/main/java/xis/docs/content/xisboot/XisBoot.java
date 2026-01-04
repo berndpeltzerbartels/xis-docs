@@ -4,7 +4,7 @@ import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.context.Component;
 import xis.docs.content.pagesandwidgets.PagesAndWidgets;
-import xis.docs.navi.Navigation;
+import xis.navi.Navigation;
 
 @Component
 @Navigation(title = "XIS Boot", nextItem = PagesAndWidgets.class, firstSubItem = XisBootInstallation.class)
