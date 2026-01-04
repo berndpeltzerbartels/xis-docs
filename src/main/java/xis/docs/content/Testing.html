@@ -100,6 +100,57 @@ assertThat(document.getElementById("total").getInnerText()).isEqualTo("$19.99");
             <strong>⚠️ Warning</strong><br/>
             `openPage` can only be called once per test. For further navigation, use element interactions like `click()`.
         </div>
+
+        <h5>Package Scanning</h5>
+        <p>
+            Instead of explicitly specifying every component, you can use package scanning to automatically 
+            discover and load components. This works with both Spring and XIS Boot annotations:
+        </p>
+        <pre><code>context = IntegrationTestContext.builder()
+    .withPackage("com.example.services")
+    .withPackage("com.example.repositories")
+    .build();
+</code></pre>
+
+        <p>You can also use a class to determine the base package:</p>
+        <pre><code>context = IntegrationTestContext.builder()
+    .withBasePackageClass(MyApplication.class)
+    .build();
+</code></pre>
+
+        <p>To exclude specific packages from scanning:</p>
+        <pre><code>context = IntegrationTestContext.builder()
+    .withPackage("com.example")
+    .withoutPackage("com.example.external")
+    .withoutBasePackageClass(ThirdPartyIntegration.class)
+    .build();
+</code></pre>
+
+        <h5>Testing with Authentication</h5>
+        <p>
+            When testing pages that require authentication (e.g., using <code>@UserId</code> parameters or 
+            <code>@Roles</code> annotations), you can provide a logged-in user to the test context:
+        </p>
+        <pre><code>@BeforeEach
+void setUp() {
+    UserInfo user = new UserInfoImpl("john.doe", "John Doe", List.of("ADMIN", "USER"));
+    
+    context = IntegrationTestContext.builder()
+        .withSingleton(SecurePagePage.class)
+        .withLoggedInUser(user)
+        .build();
+}
+
+@Test
+void accessSecurePage() {
+    var result = context.openPage("/secure.html");
+    
+    // The page receives the authenticated user via @UserId or @Roles
+    assertThat(result.getDocument().getElementById("username").getInnerText())
+        .isEqualTo("John Doe");
+}
+</code></pre>
+
         <p>
             How to design integration tests is a matter of taste. With XIS integration tests you can either test only
             the frontend by mocking the service layer, or test the full stack by using real services and databases. Both

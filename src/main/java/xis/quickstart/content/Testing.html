@@ -1,24 +1,24 @@
 <xis:template xmlns:xis="http://xis.one/schema">
     <h3>${chapterHeadline}</h3>
-    
+
     <p>
-        XIS makes it easy to write fast integration tests for both Spring Boot and XIS Boot applications. 
-        The dependency injection is performed even for Spring components, but it's important to know that this 
-        is not a real Spring context. Instead, XIS creates a lightweight testing context that supports Spring 
+        XIS makes it easy to write fast integration tests for both Spring Boot and XIS Boot applications.
+        The dependency injection is performed even for Spring components, but it's important to know that this
+        is not a real Spring context. Instead, XIS creates a lightweight testing context that supports Spring
         annotations but doesn't provide all Spring features.
     </p>
-    
+
     <p>
-        When creating the context, you can pass both classes (which will be instantiated) and objects (such as mocks). 
+        When creating the context, you can pass both classes (which will be instantiated) and objects (such as mocks).
         This flexibility makes testing with mocked dependencies very straightforward.
     </p>
 
     <h5>Testing Hello World</h5>
     <p>
-        Let's write a test for our Hello World page. Create a test file 
+        Let's write a test for our Hello World page. Create a test file
         <code>src/test/java/quickstart/helloworld/HelloWorldTest.java</code>:
     </p>
-    
+
     <pre><code>package quickstart.helloworld;
 
 import one.xis.context.IntegrationTestContext;
@@ -42,24 +42,30 @@ class HelloWorldTest {
     void showGreeting() {
         var result = context.openPage("/hello-world.html");
 
-        assertThat(result.getDocument().getElementByTagName("title").getInnerText())
-            .isEqualTo("Hello, World!");
-        assertThat(result.getDocument().getElementByTagName("h1").getInnerText())
-            .isEqualTo("Hello, World!");
+        var document = result.getDocument();
+        assertThat(document.getElementByTagName("title")).isNotNull();
+        assertThat(document.getElementByTagName("h1")).isNotNull();
+
+        var titleElement = document.getElementByTagName("title");
+        var h1Element = document.getElementByTagName("h1");
+
+        assertThat(titleElement.getInnerText()).isEqualTo("Hello, World!");
+        assertThat(h1Element.getInnerText()).isEqualTo("Hello, World!");
+
     }
 }
 </code></pre>
 
     <p>
-        The result object contains the Document and various framework-specific utilities. The DOM API provides 
-        many methods for verifying the result and triggering events (like clicks). 
+        The result object contains the Document and various framework-specific utilities. The DOM API provides
+        many methods for verifying the result and triggering events (like clicks).
     </p>
 
     <div class="warning">
         <strong>⚠️ Important</strong><br/>
-        <code>openPage</code> can only be called once per context. If you need to navigate further, you must 
-        use element interactions from the document, for example clicking on elements to navigate to other pages 
-        or submit forms. However, it is recommended not to put too much into a single test, but rather to write 
+        <code>openPage</code> can only be called once per context. If you need to navigate further, you must
+        use element interactions from the document, for example clicking on elements to navigate to other pages
+        or submit forms. However, it is recommended not to put too much into a single test, but rather to write
         multiple focused tests.
     </div>
 </xis:template>

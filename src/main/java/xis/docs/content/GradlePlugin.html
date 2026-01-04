@@ -1,5 +1,5 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
-    <h3>${chapterHeadline}</h3>
+    <h2>${chapterHeadline}</h2>
 
     <p>
         The XIS Gradle plugin simplifies the integration of XIS into your Gradle-based projects by automating
@@ -46,6 +46,62 @@
         Future enhancements will include generating templates with details from the controller, such as forms
         with proper field bindings and model data placeholders.
     </p>
+
+    <h5>Test Generation Task</h5>
+    <p>
+        The plugin provides a Gradle task under <code>xis/tests</code> that generates integration test files
+        for all <code>@Page</code> controllers. These tests use the <code>IntegrationTestContext</code> and
+        provide a basic skeleton to help you get started with testing.
+    </p>
+    <p>
+        <strong>Usage:</strong>
+    </p>
+    <pre><code>./gradlew tests</code></pre>
+    <p>
+        The generated test files are placed in <code>src/test/java</code> in the same package as the controller.
+        Each test includes a basic assertion that the page loads successfully. You can then add more specific
+        assertions to verify the page's behavior and content.
+    </p>
+    <p>
+        <strong>Generated Test Example:</strong>
+    </p>
+    <pre><code>package quickstart.dashboard;
+
+import one.xis.context.IntegrationTestContext;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+/**
+ * Integration test for Dashboard
+ * @generated
+ */
+class DashboardTest {
+
+    private IntegrationTestContext context;
+
+    @BeforeEach
+    void setUp() {
+        context = IntegrationTestContext.builder()
+            .withSingleton(Dashboard.class)
+            .build();
+    }
+
+    @Test
+    void testPageLoads() {
+        var result = context.openPage(Dashboard.class);
+        var document = result.getDocument();
+
+        assertThat(document).isNotNull();
+        // TODO: Add more assertions
+    }
+}</code></pre>
+    <p>
+        <strong>Note:</strong> Tests are only generated for <code>@Page</code> controllers, not for widgets.
+        Widgets should be tested through the pages that use them, or by creating dedicated test pages if needed.
+    </p>
+
     <h5>Runnable JAR Creation</h5>
     <p>
         When using xis-boot, the plugin provides a task under <code>xis/runnableJar</code> that creates a standalone
@@ -77,6 +133,7 @@
         <li>Automatic dependency version management</li>
         <li>Co-location of templates with Java sources</li>
         <li>Template skeleton generation for controllers</li>
+        <li>Integration test generation for pages</li>
         <li>Annotation-based compile-time validation (in development)</li>
         <li>Standalone executable JAR creation for xis-boot applications</li>
     </ul>
