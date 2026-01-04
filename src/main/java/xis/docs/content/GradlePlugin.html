@@ -54,11 +54,16 @@
     <p>
         <strong>Usage:</strong>
     </p>
-    <pre><code>./gradlew xis:runnableJar</code></pre>
+    <pre><code>./gradlew runnableJar</code></pre>
     <p>
-        The generated JAR will be located in the <code>build/libs</code> directory and can be deployed and executed
-        on any system with a compatible Java runtime.
+        The generated JAR will be named <code>yourapp-version-runnable.jar</code> and located in the 
+        <code>build/libs</code> directory. This naming convention makes it immediately clear that the JAR is 
+        executable and contains all dependencies, preventing confusion with non-executable JARs.
     </p>
+    <p>
+        The runnable JAR can be deployed and executed on any system with a compatible Java runtime:
+    </p>
+    <pre><code>java -jar build/libs/yourapp-0.0.1-SNAPSHOT-runnable.jar</code></pre>
     <h5>Annotation Processing</h5>
     <p>
         The plugin registers an annotation processor to handle validation tasks for XIS annotations and conventions.

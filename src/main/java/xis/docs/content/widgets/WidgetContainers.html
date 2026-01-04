@@ -1,10 +1,10 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
-    <p>Widget containers define regions on a page where widgets can be dynamically loaded and replaced. They provide 
+    <p>Widget containers define regions on a page where widgets can be dynamically loaded and replaced. They provide
         the foundation for building modular, component-based UIs.</p>
 
     <h5>Basic Widget Container</h5>
-    <p>Use the <code>&lt;xis:widget-container&gt;</code> tag with a <code>container-id</code> to create a widget 
+    <p>Use the <code>&lt;xis:widget-container&gt;</code> tag with a <code>container-id</code> to create a widget
         placeholder. The container ID uniquely identifies the container within the page.</p>
     <pre><code class="language-html">&lt;xis:widget-container container-id="main"&gt;
 &lt;/xis:widget-container&gt;</code></pre>
@@ -13,10 +13,11 @@
     <p>Specify a default widget to load when the page opens using the <code>default-widget</code> attribute:</p>
     <pre><code class="language-html">&lt;xis:widget-container container-id="main" default-widget="DashboardWidget"&gt;
 &lt;/xis:widget-container&gt;</code></pre>
-    <p><strong>Note:</strong> Older API versions use <code>xis:default-widget</code> instead of <code>default-widget</code>. 
-        Both formats are supported.</p>
+    <p><strong>Note:</strong> When using HTML tags (like <code>&lt;div&gt;</code>), the attribute requires the 
+        namespace: <code>xis:default-widget</code>. When using the XIS tag <code>&lt;xis:widget-container&gt;</code>, 
+        the attribute does not need the namespace: <code>default-widget</code>.</p>
 
-    <p><strong>Passing Parameters:</strong> For details on how to pass parameters to widgets via containers, 
+    <p><strong>Passing Parameters:</strong> For details on how to pass parameters to widgets via containers,
         see the <a href="#" xis:widget="xis.docs.content.widgets.WidgetParameters">Widget Parameters</a> chapter.</p>
 
     <h5>Container ID with EL Expressions</h5>
@@ -40,7 +41,7 @@
 &lt;/div&gt;</code></pre>
 
     <h5>Scroll to Top on Widget Navigation</h5>
-    <p>Use the <code>scroll-to-top="true"</code> attribute to automatically scroll to the top of the page when 
+    <p>Use the <code>scroll-to-top="true"</code> attribute to automatically scroll to the top of the page when
         navigating to a different widget. This improves user experience by ensuring new content is visible:</p>
     <pre><code class="language-html">&lt;xis:widget-container container-id="main" 
                      default-widget="ArticleWidget" 
@@ -52,21 +53,21 @@
         <li>Does <em>not</em> scroll when the page initially loads with the default widget</li>
         <li>Does <em>not</em> scroll when the same widget is reloaded</li>
     </ul>
-    <p><strong>Note:</strong> The attribute can also be written as <code>xis:scroll-to-top="true"</code> when using 
+    <p><strong>Note:</strong> The attribute can also be written as <code>xis:scroll-to-top="true"</code> when using
         attribute syntax: <code>&lt;div xis:widget-container="main" xis:scroll-to-top="true"&gt;&lt;/div&gt;</code></p>
 
     <h5>Widget Annotation with Container ID</h5>
-    <p>Widgets can declare their target container directly in the <code>@Widget</code> annotation. This overrides 
+    <p>Widgets can declare their target container directly in the <code>@Widget</code> annotation. This overrides
         the <code>default-widget</code> attribute in the HTML template:</p>
     <pre><code class="language-java">@Widget(url = "/docs/widgetcontainers.html", containerId = "main")
-public class WidgetContainers {
+public class MyWidget {
     // Widget code
 }</code></pre>
-    <p>The <code>url</code> parameter supports path patterns with variables (e.g., <code>/products/{id}.html</code>), 
+    <p>The <code>url</code> parameter supports path patterns with variables (e.g., <code>/products/{id}.html</code>),
         enabling deep linking to specific widget states.</p>
 
     <h5>Target Container in Actions</h5>
-    <p>Actions can update specific containers using <code>targetContainer</code>. This is covered in detail in the 
+    <p>Actions can update specific containers using <code>targetContainer</code>. This is covered in detail in the
         <a href="#" xis:page="WidgetNavigation">Widget Navigation</a> chapter.</p>
 
 </xis:template>
