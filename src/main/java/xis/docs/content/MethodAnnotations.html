@@ -1,18 +1,20 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
     <p>
-        XIS provides a set of annotations for controller methods that define how methods interact with the 
-        framework, handle user actions, and manage data. These annotations are the building blocks for creating 
+        XIS provides a set of annotations for controller methods that define how methods interact with the
+        framework, handle user actions, and manage data. These annotations are the building blocks for creating
         interactive web applications with clear separation of concerns.
     </p>
     <p>
-        <strong>Note:</strong> For class-level annotations like <code>@WelcomePage</code>, <code>@RefreshOnUpdateEvents</code>, 
-        and <code>@Roles</code> applied to classes, see the <a href="#" xis:page="ClassAnnotations">Class Annotations</a> section.
+        <strong>Note:</strong> For class-level annotations like <code>@WelcomePage</code>,
+        <code>@RefreshOnUpdateEvents</code>,
+        and <code>@Roles</code> applied to classes, see the <a href="#" xis:page="ClassAnnotations">Class
+        Annotations</a> section.
     </p>
 
     <h5>@ModelData</h5>
     <p>
-        Provides data to templates. The method's return value becomes available in the template using the method 
+        Provides data to templates. The method's return value becomes available in the template using the method
         name as the key, or an explicitly specified key via the annotation parameter.
     </p>
     <pre><code>@ModelData
@@ -32,23 +34,27 @@ User getLoggedInUser() $​{
 
     <h5>@SharedValue</h5>
     <p>
-        Shares values between controller methods within a single request. When a method annotated with 
-        <code>@SharedValue</code> executes, its return value is cached and made available to other methods 
+        Shares values between controller methods within a single request. When a method annotated with
+        <code>@SharedValue</code> executes, its return value is cached and made available to other methods
         that request it via the <code>@SharedValue</code> parameter annotation.
     </p>
     <p>
-        <strong>Use Case:</strong> Avoid redundant database queries or expensive computations when multiple 
-        methods need the same data. For example, if both a <code>@ModelData</code> method and a 
-        <code>@PageTitle</code> method need to load the same product from the database, using 
+        <strong>Use Case:</strong> Avoid redundant database queries or expensive computations when multiple
+        methods need the same data. For example, if both a <code>@ModelData</code> method and a
+        <code>@PageTitle</code> method need to load the same product from the database, using
         <code>@SharedValue</code> ensures the database is queried only once.
     </p>
     <p>
         <strong>Behavior:</strong>
     </p>
     <ul>
-        <li><strong>On methods:</strong> The return value is <strong>cached</strong> in the request context under the specified key</li>
+        <li><strong>On methods:</strong> The return value is <strong>cached</strong> in the request context under the
+            specified key
+        </li>
         <li><strong>As parameter:</strong> The cached value is <strong>injected</strong> from the request context</li>
-        <li><strong>Scope:</strong> Values are only available within the current request - they do not persist across requests</li>
+        <li><strong>Scope:</strong> Values are only available within the current request - they do not persist across
+            requests
+        </li>
     </ul>
     <pre><code class="language-java">// Without @SharedValue: Database queried twice (inefficient)
 @ModelData("product")
@@ -78,14 +84,14 @@ String getTitle(@SharedValue("product") Product product) $​{
     return product.getName(); // Reuses cached value
 }</code></pre>
     <p>
-        See <a href="#" xis:page="ParameterAnnotations">Parameter Annotations</a> for details on using 
+        See <a href="#" xis:page="ParameterAnnotations">Parameter Annotations</a> for details on using
         <code>@SharedValue</code> as a parameter.
     </p>
 
     <h5>@Action</h5>
     <p>
-        Handles user interactions such as button clicks, link navigation, or form submissions. Actions can return 
-        different types to control navigation: <code>PageResponse</code>, <code>WidgetResponse</code>, 
+        Handles user interactions such as button clicks, link navigation, or form submissions. Actions can return
+        different types to control navigation: <code>PageResponse</code>, <code>WidgetResponse</code>,
         <code>Class&lt;?&gt;</code> for navigation, or <code>void</code> to stay on the current page.
     </p>
     <pre><code>@Action("delete")
@@ -103,7 +109,7 @@ Class&lt;?&gt; viewProductDetails(@ActionParameter("productId") String productId
 WidgetResponse refreshContent() $​{
     return new WidgetResponse(UpdatedContentWidget.class);
 }</code></pre>
-    <p><strong>Trigger Actions via Links:</strong> Use <code>xis:action</code> on <code>&lt;a&gt;</code> tags 
+    <p><strong>Trigger Actions via Links:</strong> Use <code>xis:action</code> on <code>&lt;a&gt;</code> tags
         to execute controller methods when users click links:</p>
     <pre><code>@Action
 void markAsRead() $​{
@@ -122,7 +128,7 @@ void markAsRead() $​{
 
     <h5>@FormData</h5>
     <p>
-        Binds form input data to method parameters with automatic type conversion and validation support. 
+        Binds form input data to method parameters with automatic type conversion and validation support.
         Can be used both as a method annotation and as a parameter annotation.
     </p>
     <pre><code>@Action("save")
@@ -138,8 +144,8 @@ void saveUser(@FormData("user") User user) $​{
 
     <h5>@SharedValue</h5>
     <p>
-        Injects request-scoped data that is available throughout the current request lifecycle. XIS automatically 
-        makes return values of <code>@ModelData</code> methods available in the request scope, allowing other 
+        Injects request-scoped data that is available throughout the current request lifecycle. XIS automatically
+        makes return values of <code>@ModelData</code> methods available in the request scope, allowing other
         methods to access this data without recomputing it.
     </p>
     <pre><code>@ModelData("user")
@@ -163,43 +169,43 @@ void updateProfile(@FormData("profile") UserProfile profile,
 
     <h5>Client-Side Storage: @LocalStorage, @SessionStorage, @ClientStorage</h5>
     <p>
-        XIS provides three storage mechanisms for managing client-side state. All work similarly but differ in 
+        XIS provides three storage mechanisms for managing client-side state. All work similarly but differ in
         persistence and location:
     </p>
     <table>
         <thead>
-            <tr>
-                <th>Annotation</th>
-                <th>Storage Location</th>
-                <th>Persistence</th>
-                <th>Use Cases</th>
-            </tr>
+        <tr>
+            <th>Annotation</th>
+            <th>Storage Location</th>
+            <th>Persistence</th>
+            <th>Use Cases</th>
+        </tr>
         </thead>
         <tbody>
-            <tr>
-                <td><code>@LocalStorage</code></td>
-                <td>Browser (localStorage)</td>
-                <td>Permanent (until cleared)</td>
-                <td>User preferences, theme, language</td>
-            </tr>
-            <tr>
-                <td><code>@SessionStorage</code></td>
-                <td>Browser (sessionStorage)</td>
-                <td>Tab session only</td>
-                <td>Current tab state, filters, pagination</td>
-            </tr>
-            <tr>
-                <td><code>@ClientStorage</code></td>
-                <td>Server-side</td>
-                <td>Client session</td>
-                <td>Sensitive data, large datasets</td>
-            </tr>
+        <tr>
+            <td><code>@LocalStorage</code></td>
+            <td>Browser (localStorage)</td>
+            <td>Permanent (until cleared)</td>
+            <td>User preferences, theme, language</td>
+        </tr>
+        <tr>
+            <td><code>@SessionStorage</code></td>
+            <td>Browser (sessionStorage)</td>
+            <td>Tab session only</td>
+            <td>Current tab state, filters, pagination</td>
+        </tr>
+        <tr>
+            <td><code>@ClientStorage</code></td>
+            <td>Server-side</td>
+            <td>Client session</td>
+            <td>Sensitive data, large datasets</td>
+        </tr>
         </tbody>
     </table>
 
     <h6>@LocalStorage</h6>
     <p>
-        Persistent browser storage that survives page reloads and browser restarts. Perfect for user preferences 
+        Persistent browser storage that survives page reloads and browser restarts. Perfect for user preferences
         and long-term settings.
     </p>
     <p>
@@ -209,8 +215,9 @@ void updateProfile(@FormData("profile") UserProfile profile,
         <li><strong>On methods:</strong> The return value is <strong>always written</strong> to localStorage</li>
         <li><strong>As parameter:</strong> The value is <strong>read from</strong> localStorage</li>
         <li><strong>In templates:</strong> Access with <code>localStorage.key</code></li>
-        <li><strong>Updates:</strong> Changes do not automatically trigger updates in other components. Use 
-            <code>@Action(updateEventKeys = {...})</code> to notify other widgets via <code>@RefreshOnUpdateEvents</code></li>
+        <li><strong>Updates:</strong> Changes do not automatically trigger updates in other components. Use
+            <code>@Action(updateEventKeys = {...})</code> to notify other widgets via
+            <code>@RefreshOnUpdateEvents</code></li>
     </ul>
     <pre><code>// Method: Writes return value to localStorage
 @LocalStorage("userTheme")
@@ -240,7 +247,7 @@ String changeTheme(@ActionParameter("newTheme") String newTheme) {
 
     <h6>@SessionStorage</h6>
     <p>
-        Tab-specific storage that persists only within the current browser tab/window. Cleared when tab closes. 
+        Tab-specific storage that persists only within the current browser tab/window. Cleared when tab closes.
         Ideal for tab-specific UI state.
     </p>
     <pre><code>// Initialize default value
@@ -259,7 +266,7 @@ String selectTab(@ActionParameter("tab") String tab) $​{
 
     <h6>@ClientStorage</h6>
     <p>
-        Server-side storage associated with the client session. Use for sensitive data or large datasets that 
+        Server-side storage associated with the client session. Use for sensitive data or large datasets that
         shouldn't be sent to the browser.
     </p>
     <pre><code>@ClientStorage("userCart")
@@ -280,7 +287,7 @@ class TabContentWidget $​{
 
     <h5>@Roles</h5>
     <p>
-        Provides role-based access control for methods and classes. Works with security frameworks to enforce 
+        Provides role-based access control for methods and classes. Works with security frameworks to enforce
         authorization. Can be applied at class level (affects all methods) or method level (specific actions).
     </p>
     <pre><code>@Page("/admin-panel.html")
@@ -305,10 +312,14 @@ class AdminPanelPage $​{
     }
 }</code></pre>
 
-    <p>XIS automatically makes the return values of @ModelData methods available in the request scope using the same key. You can then inject this data into other methods using @SharedValue. This creates a clean data flow where expensive operations (like database queries) only happen once per request, and the results are shared across all methods that need them.</p>
+    <p>XIS automatically makes the return values of @ModelData methods available in the request scope using the same
+        key. You can then inject this data into other methods using @SharedValue. This creates a clean data flow where
+        expensive operations (like database queries) only happen once per request, and the results are shared across all
+        methods that need them.</p>
 
     <h6>@Roles</h6>
-    <p>Provides role-based access control for methods and classes. Used in conjunction with security frameworks to enforce authorization.</p>
+    <p>Provides role-based access control for methods and classes. Used in conjunction with security frameworks to
+        enforce authorization.</p>
     <pre><code class="language-java"><xis:raw>@Page("/admin-panel.html")
 @Roles(&#123;"ADMIN", "MODERATOR"}) // Class-level: entire page requires these roles
 class AdminPanelPage &#123;
@@ -332,7 +343,8 @@ class AdminPanelPage &#123;
 }</xis:raw></code></pre>
 
     <h6>@Refresh</h6>
-    <p>Triggers a refresh of specified controllers after method execution. Useful for updating related components when data changes.</p>
+    <p>Triggers a refresh of specified controllers after method execution. Useful for updating related components when
+        data changes.</p>
     <pre><code class="language-java"><xis:raw>@Widget
 class UserListWidget &#123;
     @ModelData
@@ -357,7 +369,8 @@ class UserFormWidget &#123;
 }</xis:raw></code></pre>
 
     <h6>@LocalDatabase</h6>
-    <p>Accesses the browser's IndexedDB for client-side structured data storage. Perfect for offline functionality and large datasets that exceed localStorage limits.</p>
+    <p>Accesses the browser's IndexedDB for client-side structured data storage. Perfect for offline functionality and
+        large datasets that exceed localStorage limits.</p>
     <pre><code class="language-java"><xis:raw>@Widget
 class OfflineDataWidget &#123;
     @LocalDatabase("userData")
@@ -450,7 +463,8 @@ class UserProfileWidget &#123;
         // Global variable will automatically update in UserHeaderWidget
     }
 }</xis:raw></code></pre>
-    <p>In templates, global variables are accessed with the <code>global.&lt;property&gt;</code> prefix and update reactively across all
+    <p>In templates, global variables are accessed with the <code>global.&lt;property&gt;</code> prefix and update
+        reactively across all
         components:</p>
     <pre><code class="language-html"><xis:raw>&lt;!-- UserHeaderWidget.html --&gt;
 &lt;header&gt;
@@ -464,23 +478,28 @@ class UserProfileWidget &#123;
 &lt;div class="profile"&gt;
     &lt;h2&gt;Profile for &#036;&#123;global.currentUserName}&lt;/h2&gt;
     &lt;form xis:binding="profile"&gt;
-        &lt;input xis:binding="displayName" value="&#036;&#123;global.currentUserName}"&gt;
+        &lt;input xis:binding="displayName""&gt;
         &lt;button xis:action="updateProfile"&gt;Update&lt;/button&gt;
     &lt;/form&gt;
 &lt;/div&gt;</xis:raw></code></pre>
 
     <h6>@ClientStorage</h6>
-    <p>Manages server-side state per client/session. Unlike LocalStorage and SessionStorage which store data in the browser, 
-        ClientStorage keeps data on the server, making it suitable for sensitive data, larger datasets, or data that should 
+    <p>Manages server-side state per client/session. Unlike LocalStorage and SessionStorage which store data in the
+        browser,
+        ClientStorage keeps data on the server, making it suitable for sensitive data, larger datasets, or data that
+        should
         not be accessible via browser DevTools. Data persists for the duration of the client session.</p>
     <p>
         <strong>Behavior:</strong>
     </p>
     <ul>
-        <li><strong>On methods:</strong> The return value is <strong>always written</strong> to server-side client storage</li>
+        <li><strong>On methods:</strong> The return value is <strong>always written</strong> to server-side client
+            storage
+        </li>
         <li><strong>As parameter:</strong> The value is <strong>read from</strong> server-side client storage</li>
-        <li><strong>Updates:</strong> Changes do not automatically trigger updates in other components. Use 
-            <code>@Action(updateEventKeys = {...})</code> to notify other widgets via <code>@RefreshOnUpdateEvents</code></li>
+        <li><strong>Updates:</strong> Changes do not automatically trigger updates in other components. Use
+            <code>@Action(updateEventKeys = {...})</code> to notify other widgets via
+            <code>@RefreshOnUpdateEvents</code></li>
     </ul>
     <pre><code class="language-java"><xis:raw>// Method: Writes return value to server-side client storage
 @ClientStorage("selectedTab")
@@ -546,7 +565,8 @@ class LayoutWidget &#123;
         return "layout-" + theme;
     }
 }</xis:raw></code></pre>
-    <p>In templates, localStorage values are accessed with the <code>localStorage.&lt;property&gt;</code> prefix and update reactively
+    <p>In templates, localStorage values are accessed with the <code>localStorage.&lt;property&gt;</code> prefix and
+        update reactively
         across all components:</p>
     <pre><code class="language-html"><xis:raw>&lt;!DOCTYPE html&gt;
 &lt;html xmlns:xis="https://xis.one/xsd"&gt;

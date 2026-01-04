@@ -78,7 +78,7 @@ public class ProductForm {
     private BigDecimal price;
 }</code></pre>
         <p><strong>Template (Form):</strong></p>
-        <pre><code>&lt;input type="text" name="product.price" value="${product.price}"/&gt;
+        <pre><code>&lt;input type="text" xis:binding="product.price"/&gt;
 &lt;!-- Displays: "1.234,56 €", User can edit, parses back to BigDecimal --&gt;</code></pre>
         <p><strong>Template (Display):</strong></p>
         <pre><code>&lt;span&gt;Price: ${product.price}&lt;/span&gt;
@@ -182,7 +182,7 @@ class ProductFormWidget {
 
 // Template
 &lt;form xis:action="saveProduct"&gt;
-    &lt;input type="text" name="product.price" value="${product.price}"/&gt;
+    &lt;input type="text" xis:binding="product.price"/&gt;
     &lt;!-- User types "1.234,56 €", gets parsed to BigDecimal(1234.56) --&gt;
     &lt;button type="submit"&gt;Save&lt;/button&gt;
 &lt;/form&gt;</code></pre>
@@ -282,9 +282,9 @@ public class EventForm {
     <p>For date and time values, prefer HTML5 input types with built-in pickers:</p>
     <xis:raw>
         <pre><code>&lt;!-- Use native date picker instead of custom formatting --&gt;
-&lt;input type="date" name="event.date" value="${event.date}"/&gt;
-&lt;input type="time" name="event.time" value="${event.time}"/&gt;
-&lt;input type="datetime-local" name="event.timestamp" value="${event.timestamp}"/&gt;</code></pre>
+&lt;input type="date" xis:binding="event.date"/&gt;
+&lt;input type="time" xis:binding="event.time"/&gt;
+&lt;input type="datetime-local" name="event.timestamp" xis:binding="event.timestamp"/&gt;</code></pre>
         <p>These work with standard Java temporal types (LocalDate, LocalTime, LocalDateTime) without custom
             formatters.</p>
     </xis:raw>
@@ -295,7 +295,9 @@ public class EventForm {
             <li><strong>Thread Safety:</strong> Formatters must be stateless and thread-safe (reused across requests)
             </li>
             <li><strong>Null Handling:</strong> Handle null values gracefully - return null or empty string</li>
-            <li><strong>Error Handling:</strong> Let exceptions propagate naturally - XIS automatically catches and displays them</li>
+            <li><strong>Error Handling:</strong> Let exceptions propagate naturally - XIS automatically catches and
+                displays them
+            </li>
             <li><strong>Locale Awareness:</strong> Consider user locale for money, percentages, decimal separators</li>
             <li><strong>Immutable Objects:</strong> Parse to immutable types when possible for thread safety</li>
             <li><strong>Validation:</strong> Formatters handle conversion, not validation - use @Validated for business

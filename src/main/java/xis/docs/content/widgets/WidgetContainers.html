@@ -55,6 +55,16 @@
     <p><strong>Note:</strong> The attribute can also be written as <code>xis:scroll-to-top="true"</code> when using 
         attribute syntax: <code>&lt;div xis:widget-container="main" xis:scroll-to-top="true"&gt;&lt;/div&gt;</code></p>
 
+    <h5>Widget Annotation with Container ID</h5>
+    <p>Widgets can declare their target container directly in the <code>@Widget</code> annotation. This overrides 
+        the <code>default-widget</code> attribute in the HTML template:</p>
+    <pre><code class="language-java">@Widget(url = "/docs/widgetcontainers.html", containerId = "main")
+public class WidgetContainers {
+    // Widget code
+}</code></pre>
+    <p>The <code>url</code> parameter supports path patterns with variables (e.g., <code>/products/{id}.html</code>), 
+        enabling deep linking to specific widget states.</p>
+
     <h5>Target Container in Actions</h5>
     <p>Actions can update specific containers using <code>targetContainer</code>. This is covered in detail in the 
         <a href="#" xis:page="WidgetNavigation">Widget Navigation</a> chapter.</p>
