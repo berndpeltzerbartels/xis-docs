@@ -1,16 +1,16 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
-    
+
     <p>
-        XIS provides multiple ways to create links between pages. Let's explore them by adding 
+        XIS provides multiple ways to create links between pages. Let's explore them by adding
         links to your Dashboard page.
     </p>
-    
+
     <h5>Edit the Dashboard template</h5>
     <p>
         Open <code>Dashboard.html</code> and update it with the following content:
     </p>
-    
+
     <pre><code>&lt;!DOCTYPE html&gt;
 &lt;html lang="en"&gt;
 &lt;head&gt;
@@ -29,10 +29,15 @@
 &lt;/body&gt;
 &lt;/html&gt;
 </code></pre>
+    <div class="tipp">
+        Linking from page to page may look like this breaks the idea of single-page applications.
+        However, XIS uses the DOM API to replace only the content area of the page,
+        without reloading the entire page. This provides a smooth user experience similar to traditional SPAs
+    </div>
 
     <h5>Restart and test</h5>
     <p>Restart your application and open the Dashboard in your browser. All three links work!</p>
-    
+
     <h5>Understanding the link types</h5>
     <p>
         Options 2 and 3 are just different syntax for the same thing - both are XIS-specific page links:
@@ -41,23 +46,24 @@
         <li><code>&lt;a xis:page="/hello-world.html"&gt;</code> - XIS attribute syntax</li>
         <li><code>&lt;xis:a page="/hello-world.html"&gt;</code> - XIS element syntax</li>
     </ul>
-    
+
     <p>
-        These XIS links use the DOM API to replace content without a full page reload, 
+        These XIS links use the DOM API to replace content without a full page reload,
         providing a smoother user experience.
     </p>
-    
+
     <p>
-        The standard HTML link (<code>&lt;a href="..."&gt;</code>) also works in modern browsers 
-        with the same behavior. However, in older browsers, it will trigger a full page reload.
+        The standard HTML link (<code>&lt;a href="..."&gt;</code>) works in any browser, because XIS
+        fully supports deep linking. However, in older browsers, it will trigger a full page reload.
     </p>
-    
+
     <h5>Recommended approach</h5>
     <p>
-        We'll use the attribute syntax (<code>xis:page</code>) going forward. 
+        We'll use the attribute syntax (<code>xis:page</code>) going forward. On modern browser, it replaces
+        browsers address and history just like standard links, but without the full page reload.
         Update your Dashboard to keep only this version:
     </p>
-    
+
     <pre><code>&lt;p&gt;
     &lt;a xis:page="/hello-world.html"&gt;Hello World Example&lt;/a&gt;
 &lt;/p&gt;
