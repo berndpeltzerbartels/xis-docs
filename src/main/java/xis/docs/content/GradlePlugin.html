@@ -42,6 +42,10 @@
         <strong>Usage:</strong>
     </p>
     <pre><code>./gradlew templates</code></pre>
+    <div class="tipp">
+        <strong>Note:</strong> The task will only create template files that don't exist yet. Existing templates
+        are never overwritten, so you can safely run this task multiple times.
+    </div>
     <p>
         Future enhancements will include generating templates with details from the controller, such as forms
         with proper field bindings and model data placeholders.
@@ -90,17 +94,19 @@ class DashboardTest {
 
     @Test
     void testPageLoads() {
-        var result = context.openPage(Dashboard.class);
+        var result = context.openPage("/dashboard.html");
         var document = result.getDocument();
 
         assertThat(document).isNotNull();
         // TODO: Add more assertions
     }
 }</code></pre>
-    <p>
-        <strong>Note:</strong> Tests are only generated for <code>@Page</code> controllers, not for widgets.
-        Widgets should be tested through the pages that use them, or by creating dedicated test pages if needed.
-    </p>
+    <div class="tipp">
+        <strong>Note:</strong> The task will only create test files that don't exist yet. Existing tests
+        are never overwritten, so you can safely run this task multiple times. Tests are only generated
+        for <code>@Page</code> controllers, not for widgets. Widgets should be tested through the pages
+        that use them, or by creating dedicated test pages if needed.
+    </div>
 
     <h5>Runnable JAR Creation</h5>
     <p>
