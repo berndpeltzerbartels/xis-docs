@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:xis="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>XIS1</title>
+    <link href="/xis.css" rel="stylesheet"/>
+</head>
+
+<body>
+
+
+<!-- ------------------------------ HEADER ------------------------------ -->
+<nav class="nav">
+    <div class="logo">
+        <img alt="Logo" src="/Xis1.svg">
+    </div>
+    <ul>
+        <li><a xis:page="/docs/introduction.html">Documentation</a></li>
+        <li><a xis:page="/quickstart/installation.html">Quickstart</a></li>
+        <li><a disabled href="#">Create Project</a></li>
+        <li><a disabled href="#">Javadoc</a></li>
+    </ul>
+</nav>
+
+<div>
+    <h3>Create your Project Template</h3>
+    <form xis:binding="project">
+    <div class="col2">
+        <div class="span1">
+            <input type="text"  xis:binding="group" placeholder="Group ID"><br>
+            <label xis:binding="group" xis:error-class="error">Group</label><br>
+            <xis:message xis:binding="group" class="error"/>
+        </div>
+        <div class="span1">
+            <input type="text"  xis:binding="artifact" placeholder="Artifact ID" required/><br>
+            <label xis:binding="artifact" xis:error-class="error">Artifact</label><br>
+            <xis:message xis:binding="artifact" class="error"/>
+        </div>
+
+        <div class="span1">
+            <button xis:action="createProject">Create Project</button>
+        </div>
+
+        <div class="span1">
+            <button xis:action="cancel">Cancel</button>
+        </div>
+    </div>
+    </form>
+</div>
+
+
+</body>
+
+</html>
+

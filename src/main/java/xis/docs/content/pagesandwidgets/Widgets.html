@@ -34,6 +34,18 @@ public class UserCard {
     }
 }</code></pre>
 
+    <h5>Widget IDs</h5>
+    <div class="alert alert-info" role="alert">
+        <strong>ℹ️ Widget ID Resolution</strong><br/>
+        The widget ID is by default the simple class name (without package). When referencing widgets in templates
+        (e.g., <code>default-widget="UserCard"</code>), only the simple name is used, not the fully qualified name.
+        <br/><br/>
+        If you have multiple widgets with the same simple name in different packages, you must explicitly provide
+        a unique ID in the <code>@Widget</code> annotation:
+        <br/><br/>
+        <code>@Widget("AdminUserCard")</code> or <code>@Widget(value = "AdminUserCard")</code>
+    </div>
+
     <h5>Embedding Widgets</h5>
     <p>
         Widgets are embedded in pages or other widgets using widget containers. There are several ways

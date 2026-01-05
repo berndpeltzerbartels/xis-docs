@@ -520,3 +520,20 @@ pre > code {
 @keyframes fadeout {
   to { opacity: 0; transform: translateY(-10px); }
 }
+
+
+    width: 100%;
+    float: none;
+    padding-right: 0;
+    box-sizing: border-box;
+  }
+
+  /* Wrapper / Body-Padding an Mobilansicht anpassen */
+  body {
+    padding-inline: 12px;
+  }
+  .wrapper {
+    padding: 0 12px;
+    max-width: 100%;
+  }
+}
