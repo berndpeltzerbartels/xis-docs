@@ -199,10 +199,10 @@ void updateProfile(@FormData("profile") UserProfile profile,
         </tr>
         <tr>
             <td><code>@GlobalVariable</code></td>
-            <td>Server memory</td>
-            <td>Application lifetime</td>
-            <td>All users (global)</td>
-            <td>Application-wide counters, shared status</td>
+            <td>Client (JavaScript runtime)</td>
+            <td>Until page reload</td>
+            <td>Per user/browser</td>
+            <td>Temporary state not visible in browser tools</td>
         </tr>
         <tr>
             <td><code>@ClientStorage</code></td>
@@ -277,8 +277,8 @@ String selectTab(@ActionParameter("tab") String tab) $​{
 
     <h6>@GlobalVariable</h6>
     <p>
-        Application-wide storage shared across all users and sessions. Use for truly global application state 
-        that should be accessible to everyone.
+        Client-side storage in JavaScript runtime. Similar to sessionStorage in usage, but data is <strong>not persistent</strong> 
+        across page reloads and <strong>not visible</strong> in browser developer tools.
     </p>
     <p>
         <strong>Behavior:</strong>
@@ -287,12 +287,12 @@ String selectTab(@ActionParameter("tab") String tab) $​{
         <li><strong>On methods:</strong> The return value is <strong>written</strong> to global variables</li>
         <li><strong>As parameter:</strong> The value is <strong>read from</strong> global variables</li>
         <li><strong>In templates:</strong> Access with <code>global.key</code></li>
-        <li><strong>Scope:</strong> Shared across all users and all sessions - truly application-wide</li>
+        <li><strong>Scope:</strong> Per user/browser (like localStorage), but not persistent</li>
         <li><strong>Combination:</strong> Can be used alone, with <code>@ModelData</code>, or with <code>@Action</code></li>
     </ul>
     <p>
-        <strong>Warning:</strong> Since global variables are shared across all users, be careful with 
-        concurrent access and avoid storing sensitive user-specific data.
+        <strong>Use case:</strong> Temporary state that should not be visible in browser tools or persisted across reloads. 
+        Data is lost when user refreshes the page.
     </p>
     <pre><code>// Write to global variable (method annotation)
 @GlobalVariable("sharedCounter")
