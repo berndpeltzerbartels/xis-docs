@@ -9,6 +9,46 @@
             page and widget template.
         </p>
 
+        <h5>Overview</h5>
+        <table class="reference-table">
+            <thead>
+            <tr>
+                <th style="width: 20%">Variable</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><code>localStorage</code></td>
+                <td>Browser's persistent storage (survives browser restarts)</td>
+            </tr>
+            <tr>
+                <td><code>sessionStorage</code></td>
+                <td>Browser's tab-specific storage (cleared when tab closes)</td>
+            </tr>
+            <tr>
+                <td><code>global</code></td>
+                <td>Client-side variables in JavaScript runtime (not persistent across reloads)</td>
+            </tr>
+            <tr>
+                <td><code>validation</code></td>
+                <td>Object with validation messages (globalMessages, messages)</td>
+            </tr>
+            <tr>
+                <td><code>url</code></td>
+                <td>Complete URL including protocol, host, path, and query parameters</td>
+            </tr>
+            <tr>
+                <td><code>pathname</code></td>
+                <td>Path portion of URL without protocol, host, or query parameters</td>
+            </tr>
+            <tr>
+                <td><code>queryParams</code></td>
+                <td>Object containing all URL query parameters as key-value pairs</td>
+            </tr>
+            </tbody>
+        </table>
+
         <h5>Storage Variables</h5>
         <p>Access browser storage directly from templates:</p>
 
