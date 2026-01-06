@@ -1,17 +1,18 @@
-package xis.docs.content;
+package xis.docs.content.reference;
 
 import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
 import xis.navi.Navigation;
 
-@Widget(url = "/docs/reference.html", containerId = "main")
-@Navigation(title = "Reference")
-public class Reference {
+@Widget(value = "ReferenceFrameworkTags", url = "/docs/reference/frameworktags.html", containerId = "main")
+@Navigation(title = "Framework Tags")
+class FrameworkTagsReference {
 
     @Title
     @ModelData
     String chapterHeadline() {
         return getClass().getAnnotation(Navigation.class).title();
     }
+
 }

@@ -1,0 +1,92 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>${chapterHeadline}</h3>
+    <p>
+        Quick reference of available annotations from the xis-context package used in XIS Boot applications.
+        For detailed information see <a href="#" xis:page="xis.docs.content.xisboot.ContextAnnotations">Context Documentation</a>.
+    </p>
+
+    <h5>Class-Level Annotations</h5>
+    <table class="reference-table">
+        <thead>
+        <tr>
+            <th class="col-qualified">Qualified Name</th>
+            <th class="col-simple">Simple Name</th>
+            <th class="col-description">Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><code>one.xis.context.Component</code></td>
+            <td><code>@Component</code></td>
+            <td>Marks a class as a component for dependency injection</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.context.DefaultComponent</code></td>
+            <td><code>@DefaultComponent</code></td>
+            <td>Marks a default implementation that can be overridden</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.context.Bean</code></td>
+            <td><code>@Bean</code></td>
+            <td>Marks a method that produces a bean instance for dependency injection</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.context.Service</code></td>
+            <td><code>@Service</code></td>
+            <td>Specialized component annotation for service layer classes</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.context.EventListener</code></td>
+            <td><code>@EventListener</code></td>
+            <td>Marks a method as an event listener for application events emitted by EventEmitter</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h5>Field-Level Annotations</h5>
+    <table class="reference-table">
+        <thead>
+        <tr>
+            <th class="col-qualified">Qualified Name</th>
+            <th class="col-simple">Simple Name</th>
+            <th class="col-description">Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><code>one.xis.context.Inject</code></td>
+            <td><code>@Inject</code></td>
+            <td>Injects a dependency into a field or constructor parameter</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h5>Method-Level Annotations</h5>
+    <table class="reference-table">
+        <thead>
+        <tr>
+            <th class="col-qualified">Qualified Name</th>
+            <th class="col-simple">Simple Name</th>
+            <th class="col-description">Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><code>one.xis.context.Init</code></td>
+            <td><code>@Init</code></td>
+            <td>Marks a method to be executed after dependency injection is complete</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.context.Bean</code></td>
+            <td><code>@Bean</code></td>
+            <td>Marks a method that produces a bean instance for dependency injection</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.context.EventListener</code></td>
+            <td><code>@EventListener</code></td>
+            <td>Marks a method as an event listener for application events emitted by EventEmitter</td>
+        </tr>
+        </tbody>
+    </table>
+
+</xis:template>

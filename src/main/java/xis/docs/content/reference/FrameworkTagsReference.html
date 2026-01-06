@@ -1,0 +1,145 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>${chapterHeadline}</h3>
+    <p>
+        Quick reference of available XIS framework tags for building dynamic templates.
+        For detailed information see <a href="#" xis:page="xis.docs.content.templatesyntax.FrameworkTags">Framework Tags Documentation</a>.
+    </p>
+
+    <h5>Core Control Flow Tags</h5>
+    <table class="reference-table">
+        <thead>
+        <tr>
+            <th class="col-simple">Tag</th>
+            <th style="width: 30%">Attributes</th>
+            <th class="col-description">Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><code>&lt;xis:foreach&gt;</code></td>
+            <td><code>var</code>, <code>array</code><br/>or <code>xis:foreach="var:array"</code></td>
+            <td>Iterates over collections to repeat content for each item</td>
+        </tr>
+        <tr>
+            <td><code>&lt;xis:if&gt;</code></td>
+            <td><code>condition</code><br/>or <code>xis:if="expression"</code></td>
+            <td>Conditionally renders content based on expressions</td>
+        </tr>
+        <tr>
+            <td><code>&lt;xis:widget-container&gt;</code></td>
+            <td><code>container-id</code> (required), <code>default-widget</code>, <code>scroll-to-top</code></td>
+            <td>Creates a container for dynamic widget loading</td>
+        </tr>
+        <tr>
+            <td><code>&lt;xis:widget&gt;</code></td>
+            <td><code>name</code> (required)</td>
+            <td>Short form of widget container when no container-id is needed</td>
+        </tr>
+        <tr>
+            <td><code>&lt;xis:message&gt;</code></td>
+            <td><code>message-for</code> (required)</td>
+            <td>Displays validation messages for form fields</td>
+        </tr>
+        <tr>
+            <td><code>&lt;xis:parameter&gt;</code></td>
+            <td><code>name</code> (required), <code>value</code> (required)</td>
+            <td>Passes parameters to actions and widgets</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h5>Form Elements</h5>
+    <table class="reference-table">
+        <thead>
+        <tr>
+            <th class="col-simple">Tag</th>
+            <th style="width: 30%">Attributes</th>
+            <th class="col-description">Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><code>&lt;xis:form&gt;</code></td>
+            <td><code>binding</code> (required), <code>action</code></td>
+            <td>XIS form element normalized to standard HTML form</td>
+        </tr>
+        <tr>
+            <td><code>&lt;xis:input&gt;</code></td>
+            <td><code>binding</code> (required), <code>type</code>, standard HTML input attributes</td>
+            <td>XIS input element normalized to HTML input</td>
+        </tr>
+        <tr>
+            <td><code>&lt;xis:select&gt;</code></td>
+            <td><code>binding</code> (required), standard HTML select attributes</td>
+            <td>XIS select element normalized to HTML select</td>
+        </tr>
+        <tr>
+            <td><code>&lt;xis:checkbox&gt;</code></td>
+            <td><code>binding</code> (required), <code>value</code>, standard HTML input attributes</td>
+            <td>XIS checkbox element normalized to HTML input type="checkbox"</td>
+        </tr>
+        <tr>
+            <td><code>&lt;xis:radio&gt;</code></td>
+            <td><code>binding</code> (required), <code>value</code> (required), <code>name</code></td>
+            <td>XIS radio button element normalized to HTML input type="radio"</td>
+        </tr>
+        <tr>
+            <td><code>&lt;xis:button&gt;</code></td>
+            <td><code>action</code>, <code>type</code>, standard HTML button attributes</td>
+            <td>XIS button element normalized to HTML button</td>
+        </tr>
+        <tr>
+            <td><code>&lt;xis:submit&gt;</code></td>
+            <td>standard HTML input attributes</td>
+            <td>XIS submit button element normalized to HTML submit input</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h5>Navigation Elements</h5>
+    <table class="reference-table">
+        <thead>
+        <tr>
+            <th class="col-simple">Tag</th>
+            <th style="width: 30%">Attributes</th>
+            <th class="col-description">Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><code>&lt;xis:a&gt;</code></td>
+            <td><code>page</code> OR <code>widget</code> (required), <code>target-container</code>, <code>parameters</code>, <code>refresh</code></td>
+            <td>XIS link element for page navigation or widget loading</td>
+        </tr>
+        <tr>
+            <td><code>&lt;xis:action&gt;</code></td>
+            <td><code>action</code> (required), <code>target-container</code></td>
+            <td>XIS action link element for triggering controller actions</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h5>Special Purpose Tags</h5>
+    <table class="reference-table">
+        <thead>
+        <tr>
+            <th class="col-simple">Tag</th>
+            <th style="width: 30%">Attributes</th>
+            <th class="col-description">Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><code>&lt;xis:template&gt;</code></td>
+            <td><code>xmlns:xis</code> (required)</td>
+            <td>Wrapper tag for widget templates with multiple root elements</td>
+        </tr>
+        <tr>
+            <td><code>&lt;xis:raw&gt;</code></td>
+            <td><code>text</code> (optional, default: false)</td>
+            <td>Outputs content without XIS processing (HTML or text mode)</td>
+        </tr>
+        </tbody>
+    </table>
+
+</xis:template>

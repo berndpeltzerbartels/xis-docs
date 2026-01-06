@@ -521,6 +521,52 @@ pre > code {
   to { opacity: 0; transform: translateY(-10px); }
 }
 
+/* =========================================
+   Reference Tables
+========================================= */
+.reference-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.reference-table thead {
+  background-color: #f8f9fa;
+}
+
+.reference-table th,
+.reference-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border: 1px solid var(--border);
+  font-size: var(--form-font);
+}
+
+.reference-table th {
+  font-weight: 600;
+}
+
+.reference-table tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.reference-table tbody tr:hover {
+  background-color: var(--hover);
+}
+
+/* Column widths */
+.reference-table .col-qualified {
+  width: 35%;
+}
+
+.reference-table .col-simple {
+  width: 20%;
+}
+
+.reference-table .col-description {
+  width: 45%;
+}
+
 
     width: 100%;
     float: none;

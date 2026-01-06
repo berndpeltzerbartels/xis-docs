@@ -1,0 +1,75 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>${chapterHeadline}</h3>
+    <p>
+        Quick reference of available parameter annotations from the xis-controller-api package.
+        For detailed information see <a href="#" xis:page="xis.docs.content.ParameterAnnotations">Parameter Annotations Documentation</a>.
+    </p>
+
+    <table class="reference-table">
+        <thead>
+        <tr>
+            <th class="col-qualified">Qualified Name</th>
+            <th class="col-simple">Simple Name</th>
+            <th class="col-description">Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><code>one.xis.QueryParameter</code></td>
+            <td><code>@QueryParameter</code></td>
+            <td>Injects URL query parameters from requests</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.PathVariable</code></td>
+            <td><code>@PathVariable</code></td>
+            <td>Injects URL path variables from route patterns</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.ActionParameter</code></td>
+            <td><code>@ActionParameter</code></td>
+            <td>Injects parameters passed from template actions</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.WidgetParameter</code></td>
+            <td><code>@WidgetParameter</code></td>
+            <td>Injects parameters passed to widgets (widget-only)</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.FormData</code></td>
+            <td><code>@FormData</code></td>
+            <td>Injects form data bound from HTML forms</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.LocalStorage</code></td>
+            <td><code>@LocalStorage</code></td>
+            <td>Injects data from browser's localStorage (persistent)</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.SessionStorage</code></td>
+            <td><code>@SessionStorage</code></td>
+            <td>Injects data from browser's sessionStorage (tab-specific)</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.SharedValue</code></td>
+            <td><code>@SharedValue</code></td>
+            <td>Injects cached values from methods within the same request</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.ClientId</code></td>
+            <td><code>@ClientId</code></td>
+            <td>Injects unique client identifier (stored in localStorage)</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.ClientStorage</code></td>
+            <td><code>@ClientStorage</code></td>
+            <td>Injects data from server-side client storage</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.auth.UserId</code></td>
+            <td><code>@UserId</code></td>
+            <td>Injects user identifier of logged-in user (requires xis-authentication)</td>
+        </tr>
+        </tbody>
+    </table>
+
+</xis:template>

@@ -1,0 +1,65 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>${chapterHeadline}</h3>
+    <p>
+        Quick reference of available method-level annotations from the xis-controller-api package.
+        For detailed information see <a href="#" xis:page="xis.docs.content.MethodAnnotations">Method Annotations Documentation</a>.
+    </p>
+
+    <table class="reference-table">
+        <thead>
+        <tr>
+            <th class="col-qualified">Qualified Name</th>
+            <th class="col-simple">Simple Name</th>
+            <th class="col-description">Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><code>one.xis.ModelData</code></td>
+            <td><code>@ModelData</code></td>
+            <td>Provides data to templates, making return value available under method name or custom key</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.Action</code></td>
+            <td><code>@Action</code></td>
+            <td>Handles user interactions like button clicks, link navigation, or form submissions</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.FormData</code></td>
+            <td><code>@FormData</code></td>
+            <td>Binds form data to method for automatic type conversion and validation</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.SharedValue</code></td>
+            <td><code>@SharedValue</code></td>
+            <td>Caches method return value in request scope for reuse by other methods</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.Title</code></td>
+            <td><code>@Title</code></td>
+            <td>Sets the page or widget title from method return value</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.LocalStorage</code></td>
+            <td><code>@LocalStorage</code></td>
+            <td>Provides data from browser's localStorage</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.SessionStorage</code></td>
+            <td><code>@SessionStorage</code></td>
+            <td>Provides data from browser's sessionStorage</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.HtmlFile</code></td>
+            <td><code>@HtmlFile</code></td>
+            <td>Specifies custom location for the HTML template file</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.auth.Roles</code></td>
+            <td><code>@Roles</code></td>
+            <td>Defines required roles for accessing the method</td>
+        </tr>
+        </tbody>
+    </table>
+
+</xis:template>

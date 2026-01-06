@@ -1,0 +1,45 @@
+<xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
+    <h3>${chapterHeadline}</h3>
+    <p>
+        Quick reference of available class-level annotations from the xis-controller-api package.
+        For detailed information see <a href="#" xis:page="xis.docs.content.ClassAnnotations">Class Annotations Documentation</a>.
+    </p>
+
+    <table class="reference-table">
+        <thead>
+        <tr>
+            <th class="col-qualified">Qualified Name</th>
+            <th class="col-simple">Simple Name</th>
+            <th class="col-description">Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><code>one.xis.Page</code></td>
+            <td><code>@Page</code></td>
+            <td>Marks a class as a page controller with a specific URL path</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.Widget</code></td>
+            <td><code>@Widget</code></td>
+            <td>Marks a class as a reusable widget component</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.WelcomePage</code></td>
+            <td><code>@WelcomePage</code></td>
+            <td>Designates a page as the default landing page of the application</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.RefreshOnUpdateEvents</code></td>
+            <td><code>@RefreshOnUpdateEvents</code></td>
+            <td>Widget automatically reloads when specific events are emitted</td>
+        </tr>
+        <tr>
+            <td><code>one.xis.auth.Roles</code></td>
+            <td><code>@Roles</code></td>
+            <td>Defines required roles for accessing the class</td>
+        </tr>
+        </tbody>
+    </table>
+
+</xis:template>

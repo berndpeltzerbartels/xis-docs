@@ -5,9 +5,9 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.navi.Navigation;
 
-@Widget(value = "ReferenceClassAnnotations", url = "/docs/reference/classannotations.html", containerId = "main")
-@Navigation(title = "Class Annotations", nextItem = MethodAnnotations.class)
-class ClassAnnotations {
+@Widget(url = "/docs/reference/xisbootannotations.html", containerId = "main")
+@Navigation(title = "Xis-Boot Annotations", nextItem = FrameworkTagsReference.class)
+class XisBootAnnotationReference {
 
     @Title
     @ModelData
