@@ -5,9 +5,9 @@ import one.xis.Title;
 import one.xis.Widget;
 import xis.navi.Navigation;
 
-@Widget(value = "ReferenceFrameworkTags", url = "/docs/reference/frameworktags.html", containerId = "main")
-@Navigation(title = "Framework Tags", nextItem = FrameworkAttributesReference.class)
-class FrameworkTagsReference {
+@Widget(value = "ReferenceFrameworkAttributes", url = "/docs/reference/frameworkattributes.html", containerId = "main")
+@Navigation(title = "Framework Attributes")
+class FrameworkAttributesReference {
 
     @Title
     @ModelData

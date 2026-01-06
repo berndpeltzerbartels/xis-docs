@@ -167,10 +167,10 @@ void updateProfile(@FormData("profile") UserProfile profile,
     }
 }</code></pre>
 
-    <h5>Client-Side Storage: @LocalStorage, @SessionStorage, @ClientStorage</h5>
+    <h5>Client-Side Storage: @LocalStorage, @SessionStorage, @GlobalVariable, @ClientStorage</h5>
     <p>
-        XIS provides three storage mechanisms for managing client-side state. All work similarly but differ in
-        persistence and location:
+        XIS provides four storage mechanisms for managing application state. All work similarly but differ in
+        persistence, scope, and location:
     </p>
     <table>
         <thead>
@@ -178,6 +178,7 @@ void updateProfile(@FormData("profile") UserProfile profile,
             <th>Annotation</th>
             <th>Storage Location</th>
             <th>Persistence</th>
+            <th>Scope</th>
             <th>Use Cases</th>
         </tr>
         </thead>
@@ -186,18 +187,28 @@ void updateProfile(@FormData("profile") UserProfile profile,
             <td><code>@LocalStorage</code></td>
             <td>Browser (localStorage)</td>
             <td>Permanent (until cleared)</td>
+            <td>Per user/browser</td>
             <td>User preferences, theme, language</td>
         </tr>
         <tr>
             <td><code>@SessionStorage</code></td>
             <td>Browser (sessionStorage)</td>
             <td>Tab session only</td>
+            <td>Per tab</td>
             <td>Current tab state, filters, pagination</td>
+        </tr>
+        <tr>
+            <td><code>@GlobalVariable</code></td>
+            <td>Server memory</td>
+            <td>Application lifetime</td>
+            <td>All users (global)</td>
+            <td>Application-wide counters, shared status</td>
         </tr>
         <tr>
             <td><code>@ClientStorage</code></td>
             <td>Server-side</td>
             <td>Client session</td>
+            <td>Per session</td>
             <td>Sensitive data, large datasets</td>
         </tr>
         </tbody>
@@ -263,6 +274,49 @@ String selectTab(@ActionParameter("tab") String tab) $​{
     return tab;
 }</code></pre>
     <p>Template access: <code>${sessionStorage.selectedTab}</code></p>
+
+    <h6>@GlobalVariable</h6>
+    <p>
+        Application-wide storage shared across all users and sessions. Use for truly global application state 
+        that should be accessible to everyone.
+    </p>
+    <p>
+        <strong>Behavior:</strong>
+    </p>
+    <ul>
+        <li><strong>On methods:</strong> The return value is <strong>written</strong> to global variables</li>
+        <li><strong>As parameter:</strong> The value is <strong>read from</strong> global variables</li>
+        <li><strong>In templates:</strong> Access with <code>global.key</code></li>
+        <li><strong>Scope:</strong> Shared across all users and all sessions - truly application-wide</li>
+        <li><strong>Combination:</strong> Can be used alone, with <code>@ModelData</code>, or with <code>@Action</code></li>
+    </ul>
+    <p>
+        <strong>Warning:</strong> Since global variables are shared across all users, be careful with 
+        concurrent access and avoid storing sensitive user-specific data.
+    </p>
+    <pre><code>// Write to global variable (method annotation)
+@GlobalVariable("sharedCounter")
+String getCounter() $​{
+    return "42";
+}
+
+// Read from global variable (parameter annotation)
+@Action("incrementCounter")
+@GlobalVariable("sharedCounter")
+String increment(@GlobalVariable("sharedCounter") String current) $​{
+    int value = Integer.parseInt(current != null ? current : "0");
+    return String.valueOf(value + 1);
+}
+
+// Combined with @ModelData
+@ModelData
+@GlobalVariable("appStatus")
+String getStatus() $​{
+    return "running";
+}</code></pre>
+    <p>In templates, access with the <code>global.</code> prefix:</p>
+    <pre><code>&lt;div&gt;Shared counter: ${global.sharedCounter}&lt;/div&gt;
+&lt;div&gt;App status: ${global.appStatus}&lt;/div&gt;</code></pre>
 
     <h6>@ClientStorage</h6>
     <p>

@@ -41,6 +41,19 @@
         <p><strong>Scope:</strong> Stored on the server, synchronized with client. Persists across browser restarts and
             different devices for the same user session.</p>
 
+        <h6>global</h6>
+        <p>Application-wide global variables shared across all users and sessions. Stored on the server.</p>
+        <pre><code>&lt;!-- Access global variables --&gt;
+&lt;div&gt;Shared Counter: ${global.sharedCounter}&lt;/div&gt;
+&lt;div&gt;App Status: ${global.appStatus}&lt;/div&gt;
+
+&lt;!-- Use in conditions --&gt;
+&lt;div xis:if="global.maintenanceMode == 'true'"&gt;System is under maintenance&lt;/div&gt;</code></pre>
+        <p><strong>Scope:</strong> Application-wide - shared across all users and all sessions. Changes are visible to 
+            everyone. Use for truly global application state.</p>
+        <p><strong>Warning:</strong> Since global variables are shared across all users, be careful with concurrent 
+            access and avoid storing sensitive user-specific data.</p>
+
         <h5>Request Information</h5>
         <p>Access information about the current URL and request:</p>
 

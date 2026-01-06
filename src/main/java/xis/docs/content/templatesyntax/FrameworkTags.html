@@ -151,6 +151,78 @@
     Delete User
 &lt;/button&gt;</code></pre>
 
+        <h6>&lt;xis:include&gt;</h6>
+        <p>Includes reusable template fragments from <code>@Include</code> annotated beans. This tag enables 
+            embedding shared HTML components across multiple templates. The included fragment is rendered with 
+            its own model data provided by the annotated bean's methods.</p>
+
+        <p><strong>Important:</strong> The <code>key</code> attribute must match the value specified in the 
+            <code>@Include</code> annotation on a bean class. The bean must have a corresponding HTML template 
+            file with the same name as the class.</p>
+
+        <p><strong>Allowed attributes:</strong></p>
+        <ul>
+            <li><code>key</code> (element syntax) - Required. The key from the <code>@Include</code> annotation</li>
+            <li><code>xis:include="key"</code> (attribute syntax) - Alternative syntax using attribute</li>
+        </ul>
+
+        <p><strong>Element syntax:</strong></p>
+        <pre><code class="language-html">&lt;!-- Include a header component --&gt;
+&lt;xis:include key="header"/&gt;
+
+&lt;!-- Include navigation menu --&gt;
+&lt;xis:include key="navigation"/&gt;
+
+&lt;!-- Main content --&gt;
+&lt;div class="content"&gt;
+    ...
+&lt;/div&gt;
+
+&lt;!-- Include footer --&gt;
+&lt;xis:include key="footer"/&gt;</code></pre>
+
+        <p><strong>Attribute syntax:</strong></p>
+        <pre><code class="language-html">&lt;div xis:include="header"&gt;&lt;/div&gt;
+&lt;nav xis:include="navigation"&gt;&lt;/nav&gt;
+&lt;footer xis:include="footer"&gt;&lt;/footer&gt;</code></pre>
+
+        <p><strong>Complete example with bean definition:</strong></p>
+        <pre><code class="language-java">// Define the include component
+@Component
+@Include("header")
+class HeaderInclude $​{
+    @ModelData
+    String getLogoUrl() $​{
+        return "/images/logo.png";
+    }
+    
+    @ModelData
+    String getUserName() $​{
+        return userService.getCurrentUser().getName();
+    }
+}
+
+// HeaderInclude.html template
+&lt;header&gt;
+    &lt;img src="$​{logoUrl}" alt="Logo"/&gt;
+    &lt;span&gt;Welcome, $​{userName}&lt;/span&gt;
+&lt;/header&gt;
+
+// Use in any page or widget template
+&lt;xis:include key="header"/&gt;</code></pre>
+
+        <p><strong>Use Cases:</strong></p>
+        <ul>
+            <li>Shared header/footer components across pages</li>
+            <li>Reusable navigation menus with dynamic content</li>
+            <li>Common UI elements (breadcrumbs, alerts, notifications)</li>
+            <li>Template fragments that need their own model data</li>
+        </ul>
+
+        <p>
+            See also: <a href="#" xis:page="ClassAnnotations">@Include annotation</a> for bean configuration details.
+        </p>
+
         <h5>Form Elements</h5>
         <p>XIS provides framework alternatives to standard HTML form elements:</p>
 
