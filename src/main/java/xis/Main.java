@@ -3,8 +3,11 @@ package xis;
 import one.xis.boot.XISBootApplication;
 import one.xis.boot.XISBootRunner;
 
+
 @XISBootApplication
 public class Main {
+    public static final String XIS_VERSION = "0.3.0";
+
     public static void main(String[] args) throws InterruptedException {
         XISBootRunner.run(Main.class, args);
     }

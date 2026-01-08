@@ -4,6 +4,7 @@ package xis.quickstart;
 import lombok.RequiredArgsConstructor;
 import one.xis.ModelData;
 import one.xis.Page;
+import xis.Main;
 import xis.navi.NaviItemDto;
 import xis.navi.NaviService;
 
@@ -27,7 +28,7 @@ class QuickstartPage {
 
     @ModelData
     String xisVersion() {
-        return "0.3.0";
+        return Main.XIS_VERSION;
     }
 
     @ModelData

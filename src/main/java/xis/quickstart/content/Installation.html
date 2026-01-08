@@ -1,27 +1,27 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
-    
+
     <p>
-        This is the quickstart guide for <strong>XIS with Spring Boot</strong>. 
+        This is the quickstart guide for <strong>XIS with Spring Boot</strong>.
         It will help you set up your first XIS project and build a simple web application.
     </p>
-    
+
     <h5>Prerequisites</h5>
     <ul>
         <li>Java 17 or higher</li>
         <li>Gradle 8.0 or higher</li>
         <li>Your favorite IDE (IntelliJ IDEA, Eclipse, VS Code)</li>
     </ul>
-    
+
     <h5>Create a new project</h5>
     <p>Create a new directory for your project and add the following files:</p>
-    
+
     <h6>build.gradle</h6>
     <pre><code>plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.0'
     id 'io.spring.dependency-management' version '1.1.5'
-    id 'one.xis.plugin' version '0.2.0'
+    id 'one.xis.plugin' version '${xisVersion}'
 }
 
 group = 'quickstart'
