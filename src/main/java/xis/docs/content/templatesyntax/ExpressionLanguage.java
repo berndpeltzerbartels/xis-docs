@@ -6,7 +6,7 @@ import one.xis.Widget;
 import xis.navi.Navigation;
 
 @Widget(url = "/docs/expressionlanguage.html", containerId = "main")
-@Navigation(title = "Expression Language", nextItem = FrameworkVariables.class)
+@Navigation(title = "Expression Language", nextItem = CustomElFunctions.class)
 class ExpressionLanguage {
 
     @Title

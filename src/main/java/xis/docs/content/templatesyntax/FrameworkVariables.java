@@ -6,7 +6,7 @@ import one.xis.Widget;
 import xis.navi.Navigation;
 
 @Widget(url = "/docs/framework-variables.html", containerId = "main")
-@Navigation(title = "Framework Variables", nextItem = CustomElFunctions.class)
+@Navigation(title = "Framework Variables", nextItem = ExpressionLanguage.class)
 class FrameworkVariables {
 
     @Title
