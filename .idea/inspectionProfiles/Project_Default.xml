@@ -8,6 +8,7 @@
           <option value="jakarta.*" />
           <option value="javax.*" />
           <option value="one.xis.Page" />
+          <option value="one.xis.http.Controller" />
           <option value="org.springframework.*" />
         </list>
       </option>
