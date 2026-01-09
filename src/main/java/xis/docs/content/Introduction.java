@@ -3,10 +3,11 @@ package xis.docs.content;
 import one.xis.ModelData;
 import one.xis.Title;
 import one.xis.Widget;
+import xis.docs.content.installation.Installation;
 import xis.navi.Navigation;
 
 @Widget(url = "/docs/introduction.html", containerId = "main")
-@Navigation(title = "Introduction", nextItem = WhyXis.class)
+@Navigation(title = "Introduction", nextItem = Installation.class)
 class Introduction {
 
     @Title

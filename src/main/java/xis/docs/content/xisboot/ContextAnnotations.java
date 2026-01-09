@@ -6,7 +6,7 @@ import one.xis.Widget;
 import xis.navi.Navigation;
 
 @Widget(url = "/docs/contextannotations.html", containerId = "main")
-@Navigation(title = "Context")
+@Navigation(title = "Context", nextItem = ProxyAnnotation.class)
 public class ContextAnnotations {
 
     @Title
