@@ -1,9 +1,37 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <div class="sidebar">
         <div class="contenttable">
-            <h5>Table of Content</h5>
+            <h5>Documentation</h5>
             <ul>
-                <li xis:repeat="item:naviItems">
+                <li xis:repeat="item:docsNaviItems">
+                    <strong><a
+                            class="${contains(item.url, pathname) || contains(item.subUrls, pathname) ? 'highlight': ''}"
+                            href="${item.url}">${item.label}</a></strong>
+                    <ul>
+                        <li xis:repeat="subItem:item.subItems">
+                            <a class="${pathname == subItem.url ? 'highlight': ''}"
+                               href="${subItem.url}">${subItem.label}</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <h5>Advanced Topics</h5>
+            <ul>
+                <li xis:repeat="item:advancedNaviItems">
+                    <strong><a
+                            class="${contains(item.url, pathname) || contains(item.subUrls, pathname) ? 'highlight': ''}"
+                            href="${item.url}">${item.label}</a></strong>
+                    <ul>
+                        <li xis:repeat="subItem:item.subItems">
+                            <a class="${pathname == subItem.url ? 'highlight': ''}"
+                               href="${subItem.url}">${subItem.label}</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <h5>Reference</h5>
+            <ul>
+                <li xis:repeat="item:referenceNaviItems">
                     <strong><a
                             class="${contains(item.url, pathname) || contains(item.subUrls, pathname) ? 'highlight': ''}"
                             href="${item.url}">${item.label}</a></strong>

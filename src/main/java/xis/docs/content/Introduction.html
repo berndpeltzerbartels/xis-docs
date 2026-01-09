@@ -35,4 +35,77 @@
         and enables clear, scalable frontend-backend structures—without sacrificing control or performance.
     </p>
 
+
+    <h4>The Problem</h4>
+    <p>
+        Modern web development often requires massive amounts of boilerplate code. Consider adding a simple "Product"
+        entity to your application:
+    </p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 2rem 0;">
+        <div>
+            <h5>Traditional Stack (React + Spring)</h5>
+            <ul style="color: #666; font-size: 0.9em;">
+                <li>REST Controller (~50 lines)</li>
+                <li>Service Layer (~40 lines)</li>
+                <li>DTO + Assembler (~60 lines)</li>
+                <li>React Component (~80 lines)</li>
+                <li>Redux Actions (~30 lines)</li>
+                <li>Redux Reducer (~50 lines)</li>
+                <li>API Client (~40 lines)</li>
+                <li>TypeScript Types (~20 lines)</li>
+            </ul>
+            <p><strong>Total: ~370 lines of code</strong></p>
+        </div>
+
+        <div>
+            <h5>With XIS</h5>
+            <ul style="color: #2c5282; font-size: 0.9em;">
+                <li>@Page class (~15 lines)</li>
+                <li>HTML Template (~25 lines)</li>
+            </ul>
+            <p><strong>Total: ~40 lines of code</strong></p>
+            <p style="color: #38a169; font-weight: bold;">90% less boilerplate</p>
+        </div>
+    </div>
+
+    <h4>The Root Cause</h4>
+    <p>
+        The traditional separation between frontend and backend creates constant friction:
+    </p>
+    <ul>
+        <li>APIs must be discussed, designed, documented, and versioned</li>
+        <li>Changes require coordination between teams and propagate through all layers</li>
+        <li>Data transformations happen multiple times (Entity → DTO → JSON → Type → State)</li>
+        <li>State management adds complexity even for simple CRUD operations</li>
+        <li>Every layer requires its own tests—unit tests, integration tests, E2E tests</li>
+        <li>A single feature change touches 6-8 files plus their corresponding test files</li>
+    </ul>
+
+    <h4>The XIS Approach</h4>
+    <p>
+        &#036;&#123;frameworkName} eliminates the artificial frontend-backend boundary for feature development.
+        Instead of splitting your application horizontally (frontend team vs. backend team), XIS enables
+        <strong>vertical feature slices</strong>:
+    </p>
+    <ul>
+        <li><strong>Single Page Application</strong> with automatic UI updates</li>
+        <li><strong>Annotation-driven development</strong> for clean, declarative code</li>
+        <li><strong>Automatic state synchronization</strong> without Redux or MobX</li>
+        <li><strong>Easy test-driven development</strong> with minimal mocking</li>
+        <li><strong>Type-safe data binding</strong> between HTML and Java</li>
+        <li><strong>Component-based architecture</strong> with true microfrontend capabilities</li>
+        <li><strong>Fast and lightweight</strong> with minimal dependencies</li>
+    </ul>
+
+    <p>
+        Write your UI in HTML templates, add behavior with Java annotations, and let XIS handle the plumbing.
+        No REST API design. No state management boilerplate. No frontend-backend coordination overhead.
+    </p>
+
+    <p>
+        <strong>Focus on your features, not on infrastructure.</strong>
+    </p>
+
+
 </xis:template>

@@ -18,27 +18,27 @@
        <code>&lt;xis:foreach&gt;</code> tag as a child of the element.</p>
     
     <p><strong>Attribute Syntax:</strong></p>
-    <xis:raw text="true">
-&lt;ul xis:foreach="user:$​{users}"&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;ul xis:foreach="user:$​{users}"&gt;
     &lt;li&gt;$​{user.name} - $​{user.email}&lt;/li&gt;
-&lt;/ul&gt;
+&lt;/ul&gt;</code></pre>
     </xis:raw>
 
     <p><strong>Normalized To:</strong></p>
-    <xis:raw text="true">
-&lt;ul&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;ul&gt;
     &lt;xis:foreach var="user" array="$​{users}"&gt;
         &lt;li&gt;$​{user.name} - $​{user.email}&lt;/li&gt;
     &lt;/xis:foreach&gt;
-&lt;/ul&gt;
+&lt;/ul&gt;</code></pre>
     </xis:raw>
 
     <p><strong>Rendered HTML:</strong></p>
-    <xis:raw text="true">
-&lt;ul&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;ul&gt;
     &lt;li&gt;John Doe - john@example.com&lt;/li&gt;
     &lt;li&gt;Jane Smith - jane@example.com&lt;/li&gt;
-&lt;/ul&gt;
+&lt;/ul&gt;</code></pre>
     </xis:raw>
 
     <h6>xis:repeat</h6>
@@ -47,25 +47,25 @@
        itself rather than just its content.</p>
     
     <p><strong>Attribute Syntax:</strong></p>
-    <xis:raw text="true">
-&lt;li class="user-item" xis:repeat="user:$​{users}"&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;li class="user-item" xis:repeat="user:$​{users}"&gt;
     $​{user.name}
-&lt;/li&gt;
+&lt;/li&gt;</code></pre>
     </xis:raw>
 
     <p><strong>Normalized To:</strong></p>
-    <xis:raw text="true">
-&lt;xis:foreach var="user" array="$​{users}"&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;xis:foreach var="user" array="$​{users}"&gt;
     &lt;li class="user-item"&gt;
         $​{user.name}
     &lt;/li&gt;
-&lt;/xis:foreach&gt;
+&lt;/xis:foreach&gt;</code></pre>
     </xis:raw>
 
     <p><strong>Rendered HTML:</strong></p>
-    <xis:raw text="true">
-&lt;li class="user-item"&gt;John Doe&lt;/li&gt;
-&lt;li class="user-item"&gt;Jane Smith&lt;/li&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;li class="user-item"&gt;John Doe&lt;/li&gt;
+&lt;li class="user-item"&gt;Jane Smith&lt;/li&gt;</code></pre>
     </xis:raw>
 
     <h5>Conditional Attributes</h5>
@@ -75,22 +75,68 @@
        <code>&lt;xis:if&gt;</code> tag, so the element only appears when the condition is true.</p>
     
     <p><strong>Attribute Syntax:</strong></p>
-    <xis:raw text="true">
-&lt;div class="status-container" xis:if="$​{user.isActive}"&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;div class="status-container" xis:if="$​{user.isActive}"&gt;
     &lt;span class="badge"&gt;Active&lt;/span&gt;
-&lt;/div&gt;
+&lt;/div&gt;</code></pre>
     </xis:raw>
 
     <p><strong>Normalized To:</strong></p>
-    <xis:raw text="true">
-&lt;xis:if condition="$​{user.isActive}"&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;xis:if condition="$​{user.isActive}"&gt;
     &lt;div class="status-container"&gt;
         &lt;span class="badge"&gt;Active&lt;/span&gt;
     &lt;/div&gt;
-&lt;/xis:if&gt;
+&lt;/xis:if&gt;</code></pre>
     </xis:raw>
 
     <p><strong>Result:</strong> The <code>&lt;div&gt;</code> and its content only render when the condition is true.</p>
+
+    <h5>Reactive Attributes</h5>
+
+    <h6>xis:storage-binding</h6>
+    <p>Automatically updates DOM content when client-side storage (localStorage, sessionStorage, or clientStorage) changes.
+       Wraps the element in a <code>&lt;xis:storage-binding&gt;</code> tag for reactive updates.</p>
+    
+    <p><strong>Attribute Syntax:</strong></p>
+    <xis:raw>
+        <pre><code class="language-html">&lt;span xis:storage-binding="localStorage"&gt;
+    Items: $​{count(localStorage.cart.items)}
+&lt;/span&gt;</code></pre>
+    </xis:raw>
+
+    <p><strong>Normalized To:</strong></p>
+    <xis:raw>
+        <pre><code class="language-html">&lt;xis:storage-binding store="localStorage"&gt;
+    &lt;span&gt;
+        Items: $​{count(localStorage.cart.items)}
+    &lt;/span&gt;
+&lt;/xis:storage-binding&gt;</code></pre>
+    </xis:raw>
+
+    <p><strong>Allowed Values:</strong></p>
+    <ul>
+        <li><code>"localStorage"</code> - Browser localStorage (persistent across sessions)</li>
+        <li><code>"sessionStorage"</code> - Browser sessionStorage (tab-scoped, survives reload)</li>
+        <li><code>"clientStorage"</code> - JavaScript field storage (short-lived)</li>
+    </ul>
+
+    <p><strong>Complex Example:</strong></p>
+    <xis:raw>
+        <pre><code class="language-html">&lt;div xis:storage-binding="localStorage"&gt;
+    &lt;p&gt;Total items: $​{count(localStorage.shoppingCard.products)}&lt;/p&gt;
+    &lt;p&gt;Total price: €$​{sum(flatMap(localStorage.shoppingCard, 'products.price'))}&lt;/p&gt;
+&lt;/div&gt;</code></pre>
+    </xis:raw>
+
+    <p><strong>Result:</strong> The content updates automatically whenever the specified storage changes, 
+       without requiring manual refresh calls.</p>
+
+    <div class="warning">
+        <strong>⚠️ Important Restrictions</strong><br/>
+        Widget containers (<code>&lt;xis:widget-container&gt;</code>) are <strong>not allowed</strong> inside storage-binding blocks.
+        Keep storage-binding blocks small and focused for optimal performance and maintainability.
+    </div>
 
     <h6>xis:repeat</h6>
     <xis:raw text="true">        Active User
@@ -107,28 +153,28 @@
        <code>&lt;xis:widget-container&gt;</code> element as a child.</p>
     
     <p><strong>Attribute Syntax (without default widget):</strong></p>
-    <xis:raw text="true">
-&lt;div xis:widget-container="mainContent"&gt;&lt;/div&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;div xis:widget-container="mainContent"&gt;&lt;/div&gt;</code></pre>
     </xis:raw>
 
     <p><strong>Normalized To:</strong></p>
-    <xis:raw text="true">
-&lt;div&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;div&gt;
     &lt;xis:widget-container container-id="mainContent"&gt;&lt;/xis:widget-container&gt;
-&lt;/div&gt;
+&lt;/div&gt;</code></pre>
     </xis:raw>
 
     <p><strong>Attribute Syntax (with default widget):</strong></p>
-    <xis:raw text="true">
-&lt;div xis:widget-container="mainContent" xis:default-widget="DashboardWidget"&gt;&lt;/div&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;div xis:widget-container="mainContent" xis:default-widget="DashboardWidget"&gt;&lt;/div&gt;</code></pre>
     </xis:raw>
 
     <p><strong>Normalized To:</strong></p>
-    <xis:raw text="true">
-&lt;div&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;div&gt;
     &lt;xis:widget-container container-id="mainContent" default-widget="DashboardWidget"&gt;
     &lt;/xis:widget-container&gt;
-&lt;/div&gt;
+&lt;/div&gt;</code></pre>
     </xis:raw>
 
     <p>
@@ -142,39 +188,41 @@
     <p>Binds a form or input element to a data model for automatic data binding and validation.</p>
     
     <p><strong>Form Binding:</strong></p>
-    <xis:raw text="true">&lt;form xis:binding="user"&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;form xis:binding="user"&gt;
     &lt;input xis:binding="name" type="text"/&gt;
     &lt;input xis:binding="email" type="email"/&gt;
-&lt;/form&gt;</xis:raw>
+&lt;/form&gt;</code></pre>
+    </xis:raw>
 
     <h6>xis:message-for</h6>
     <p>Displays validation messages for a specific form field. Creates a <code>&lt;xis:message&gt;</code> 
        element as a child.</p>
     
     <p><strong>Attribute Syntax:</strong></p>
-    <xis:raw text="true">
-&lt;div xis:message-for="email"&gt;&lt;/div&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;div xis:message-for="email"&gt;&lt;/div&gt;</code></pre>
     </xis:raw>
 
     <p><strong>Normalized To:</strong></p>
-    <xis:raw text="true">
-&lt;div&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;div&gt;
     &lt;xis:message message-for="email"&gt;&lt;/xis:message&gt;
-&lt;/div&gt;
+&lt;/div&gt;</code></pre>
     </xis:raw>
 
     <h6>xis:global-messages</h6>
     <p>Automatically displays all global validation messages (not tied to specific fields). 
        Typically used on a <code>&lt;ul&gt;</code> element to create a list of error messages.</p>
     
-    <xis:raw text="true">
-&lt;form xis:binding="user"&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;form xis:binding="user"&gt;
     &lt;!-- Global validation errors rendered here --&gt;
     &lt;ul xis:global-messages="true" class="form-error-global"&gt;&lt;/ul&gt;
     
     &lt;input xis:binding="email" type="email"/&gt;
     &lt;button xis:action="save"&gt;Save&lt;/button&gt;
-&lt;/form&gt;
+&lt;/form&gt;</code></pre>
     </xis:raw>
     
     <p>XIS automatically creates <code>&lt;li&gt;</code> elements with class <code>error</code> 
@@ -185,8 +233,8 @@
        <code>xis:binding</code>.</p>
     
     <p><strong>Example:</strong></p>
-    <xis:raw text="true">
-&lt;input xis:binding="email" xis:error-class="input-error" type="email"/&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;input xis:binding="email" xis:error-class="input-error" type="email"/&gt;</code></pre>
     </xis:raw>
 
     <p><strong>Result:</strong> When the email field has validation errors, the class <code>input-error</code> 
@@ -198,17 +246,17 @@
     <p>Triggers a controller action when clicked. Can be used on buttons, links, and other clickable elements.</p>
     
     <p><strong>Example:</strong></p>
-    <xis:raw text="true">
-&lt;button xis:action="deleteUser"&gt;Delete&lt;/button&gt;
-&lt;a href="#" xis:action="viewDetails"&gt;View Details&lt;/a&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;button xis:action="deleteUser"&gt;Delete&lt;/button&gt;
+&lt;a href="#" xis:action="viewDetails"&gt;View Details&lt;/a&gt;</code></pre>
     </xis:raw>
 
     <h6>xis:page</h6>
     <p>Navigates to a specific page URL when clicked.</p>
     
     <p><strong>Example:</strong></p>
-    <xis:raw text="true">
-&lt;a xis:page="/user-profile.html"&gt;View Profile&lt;/a&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;a xis:page="/user-profile.html"&gt;View Profile&lt;/a&gt;</code></pre>
     </xis:raw>
 
     <h6>xis:widget</h6>
@@ -220,8 +268,18 @@
     </p>
     
     <p><strong>Example:</strong></p>
-    <xis:raw text="true">
-&lt;a xis:widget="UserProfileWidget"&gt;View Profile&lt;/a&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;a xis:widget="UserProfileWidget"&gt;View Profile&lt;/a&gt;</code></pre>
+    </xis:raw>
+
+    <h6>xis:target-container</h6>
+    <p>Specifies which widget container should be targeted for widget loading or action results. 
+       Used together with <code>xis:widget</code> or <code>xis:action</code>.</p>
+    
+    <p><strong>Example:</strong></p>
+    <xis:raw>
+        <pre><code class="language-html">&lt;button xis:widget="SettingsWidget" xis:target-container="main"&gt;Settings&lt;/button&gt;
+&lt;button xis:action="refresh" xis:target-container="sidebar"&gt;Refresh Sidebar&lt;/button&gt;</code></pre>
     </xis:raw>
 
     <h5>Understanding Normalization</h5>
@@ -241,8 +299,8 @@
     <h5>Complete Example</h5>
     <p>Attributes can be combined to create complex, dynamic interfaces:</p>
 
-    <xis:raw text="true">
-&lt;div class="user-list" xis:if="$​{users.size() > 0}"&gt;
+    <xis:raw>
+        <pre><code class="language-html">&lt;div class="user-list" xis:if="$​{users.size() > 0}"&gt;
     &lt;div class="user-card" xis:repeat="user:$​{users}"&gt;
         &lt;h3&gt;$​{user.name}&lt;/h3&gt;
         &lt;p&gt;$​{user.email}&lt;/p&gt;
@@ -251,7 +309,7 @@
             Edit
         &lt;/button&gt;
     &lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;</code></pre>
     </xis:raw>
 
     <p>

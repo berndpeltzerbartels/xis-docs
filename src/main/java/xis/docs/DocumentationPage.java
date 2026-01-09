@@ -17,9 +17,23 @@ class DocumentationPage {
 
 
     @ModelData
-    List<NaviItemDto> naviItems() {
+    List<NaviItemDto> docsNaviItems() {
         return naviService.getNaviItems("docs");
     }
+
+/*
+    @ModelData
+    List<NaviItemDto> advancedNaviItems() {
+        return naviService.getNaviItems("advanced");
+    }
+
+
+    @ModelData
+    List<NaviItemDto> referenceNaviItems() {
+        return naviService.getNaviItems("reference");
+    }
+
+ */
 
     @ModelData
     String frameworkName() {

@@ -1,20 +1,20 @@
 <xis:template xmlns:xis="http://www.w3.org/1999/XSL/Transform">
     <h3>${chapterHeadline}</h3>
     <p>
-        XIS provides several annotations that are applied at the class level to configure controllers, define 
-        application structure, and control component behavior. These annotations work on any class, not just 
+        XIS provides several annotations that are applied at the class level to configure controllers, define
+        application structure, and control component behavior. These annotations work on any class, not just
         controllers, and provide framework-wide functionality.
     </p>
 
     <h5>@DefaultComponent</h5>
     <p>
-        Marks a class as a default component implementation that can be overridden by user-defined components. 
-        This annotation is particularly useful for library authors who want to provide default implementations 
+        Marks a class as a default component implementation that can be overridden by user-defined components.
+        This annotation is particularly useful for library authors who want to provide default implementations
         that applications can optionally replace.
     </p>
     <p>
-        When multiple implementations of the same interface exist, the XIS context will prefer components annotated 
-        with <code>@Component</code> over those with <code>@DefaultComponent</code>. This allows libraries to 
+        When multiple implementations of the same interface exist, the XIS context will prefer components annotated
+        with <code>@Component</code> over those with <code>@DefaultComponent</code>. This allows libraries to
         ship with sensible defaults while giving applications full control to override them when needed.
     </p>
     <pre><code>// In a library: default implementation
@@ -41,18 +41,18 @@ class CustomUserSecurityService implements UserSecurityService $​{
         <li>Providing sensible defaults while allowing customization</li>
     </ul>
     <p>
-        <strong>Note:</strong> If no <code>@Component</code> implementation exists, the <code>@DefaultComponent</code> 
-        will be used. If multiple <code>@DefaultComponent</code> implementations exist for the same interface, 
+        <strong>Note:</strong> If no <code>@Component</code> implementation exists, the <code>@DefaultComponent</code>
+        will be used. If multiple <code>@DefaultComponent</code> implementations exist for the same interface,
         the behavior is undefined.
     </p>
 
     <h5>@Page and @Widget</h5>
     <p>
-        The fundamental annotations that define your application structure. <code>@Page</code> marks a controller 
+        The fundamental annotations that define your application structure. <code>@Page</code> marks a controller
         as a page with a specific URL path, while <code>@Widget</code> marks a controller as a reusable component.
     </p>
     <p>
-        These annotations are covered in detail in the <a href="#" xis:page="PagesAndWidgets">Pages and Widgets</a> 
+        These annotations are covered in detail in the <a href="#" xis:page="PagesAndWidgets">Pages and Widgets</a>
         section. Quick reference:
     </p>
     <pre><code>@Page("/users/list.html")
@@ -66,12 +66,12 @@ class CustomWidget $​{ /* ... */ }</code></pre>
 
     <h5>@WelcomePage</h5>
     <p>
-        Designates a page as the default welcome page (landing page) of your application. Exactly one page in 
-        your application must be annotated with <code>@WelcomePage</code>. This page is displayed when users 
+        Designates a page as the default welcome page (landing page) of your application. Exactly one page in
+        your application must be annotated with <code>@WelcomePage</code>. This page is displayed when users
         access the root URL or when no other URL mapping matches.
     </p>
     <p>
-        <strong>Important:</strong> The framework will throw an <code>IllegalStateException</code> if zero or 
+        <strong>Important:</strong> The framework will throw an <code>IllegalStateException</code> if zero or
         multiple pages are annotated with <code>@WelcomePage</code>. There must be exactly one.
     </p>
     <pre><code>@WelcomePage
@@ -93,13 +93,13 @@ class HomePage $​{
 
     <h5>@RefreshOnUpdateEvents</h5>
     <p>
-        Registers a widget to automatically reload when specific update events are emitted by actions. This 
-        annotation enables a clean publish-subscribe pattern for communication between widgets without tight 
+        Registers a widget to automatically reload when specific update events are emitted by actions. This
+        annotation enables a clean publish-subscribe pattern for communication between widgets without tight
         coupling.
     </p>
     <p>
-        <strong>How it works:</strong> When an action method includes <code>@Action(updateEventKeys = $​{...})</code>, 
-        XIS automatically reloads all widgets that are listening to those event keys via 
+        <strong>How it works:</strong> When an action method includes <code>@Action(updateEventKeys = $​{...})</code>,
+        XIS automatically reloads all widgets that are listening to those event keys via
         <code>@RefreshOnUpdateEvents</code>.
     </p>
     <pre><code>// Widget that listens for events
@@ -138,18 +138,18 @@ class DashboardWidget $​{
         <li>Clean separation of concerns and maintainable code</li>
     </ul>
     <p>
-        See also: <a href="#" xis:page="MethodAnnotations">@Action annotation</a> for details on emitting 
+        See also: <a href="#" xis:page="MethodAnnotations">@Action annotation</a> for details on emitting
         update events.
     </p>
 
     <h5>@Roles</h5>
     <p>
-        When applied at the class level, <code>@Roles</code> enforces role-based access control for all methods 
-        in the controller. Users must have one of the specified roles to access any method in the class, unless 
+        When applied at the class level, <code>@Roles</code> enforces role-based access control for all methods
+        in the controller. Users must have one of the specified roles to access any method in the class, unless
         overridden by method-level <code>@Roles</code> annotations.
     </p>
     <p>
-        <strong>Note:</strong> Requires the <code>xis-authentication</code> dependency. See the 
+        <strong>Note:</strong> Requires the <code>xis-authentication</code> dependency. See the
         <a href="#" xis:page="Security">Security</a> section for authentication setup.
     </p>
     <pre><code>// All methods require ADMIN role
@@ -186,8 +186,8 @@ class ModerationWidget $​{
     }
 }</code></pre>
     <p>
-        <strong>Inheritance:</strong> Method-level <code>@Roles</code> annotations do not inherit from the class 
-        level. If a method has its own <code>@Roles</code>, it completely overrides the class-level roles for 
+        <strong>Inheritance:</strong> Method-level <code>@Roles</code> annotations do not inherit from the class
+        level. If a method has its own <code>@Roles</code>, it completely overrides the class-level roles for
         that specific method.
     </p>
     <p>
@@ -196,9 +196,9 @@ class ModerationWidget $​{
 
     <h5>@Include</h5>
     <p>
-        Marks a bean for inclusion in templates using the <code>&lt;xis:include&gt;</code> tag. This annotation 
-        enables reusable HTML fragments that can be embedded in multiple templates. The annotated class must be 
-        a bean (annotated with <code>@Component</code>, <code>@Service</code>, <code>@Bean</code>, etc.) and must 
+        Marks a bean for inclusion in templates using the <code>&lt;xis:include&gt;</code> tag. This annotation
+        enables reusable HTML fragments that can be embedded in multiple templates. The annotated class must be
+        a bean (annotated with <code>@Component</code>, <code>@Service</code>, <code>@Bean</code>, etc.) and must
         have a corresponding HTML template file with the same name.
     </p>
     <p>
@@ -212,7 +212,7 @@ class ModerationWidget $​{
         <li>The annotation value becomes the key used in <code>&lt;xis:include&gt;</code> tags</li>
     </ul>
     <p>
-        The content of the class itself is not important - you can add this annotation to any existing bean. 
+        The content of the class itself is not important - you can add this annotation to any existing bean.
         The class acts as a controller for the included template fragment.
     </p>
     <pre><code>// Define the include component
@@ -237,7 +237,7 @@ class HeaderInclude $​{
 &lt;/header&gt;
 
 // Use in any template
-&lt;xis:include key="header"/&gt;
+&lt;xis:include name="header"/&gt;
 &lt;!-- or as attribute --&gt;
 &lt;div xis:include="header"&gt;&lt;/div&gt;</code></pre>
     <p>
@@ -250,7 +250,7 @@ class HeaderInclude $​{
         <li>Template fragments with dynamic data</li>
     </ul>
     <p>
-        See also: <a href="#" xis:page="xis.docs.content.templatesyntax.FrameworkTags">&lt;xis:include&gt; tag</a> 
+        See also: <a href="#" xis:page="xis.docs.content.templatesyntax.FrameworkTags">&lt;xis:include&gt; tag</a>
         for template usage details.
     </p>
 

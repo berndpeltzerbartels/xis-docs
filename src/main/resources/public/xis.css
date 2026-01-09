@@ -45,6 +45,13 @@ html,body{
 
 body{ padding-inline: 15px; }
 
+h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 1.3rem 0 1rem;
+  /* text-transform: uppercase; */
+}
+
 h4 {
   font-size: 1.4rem;
   font-weight: 700;
@@ -64,18 +71,25 @@ h6 {
   color: var(--accent);
   /* text-transform: uppercase; */
 }
+
  
 h5 {
   font-size: 1rem;
   font-weight: 700;
   margin: 1.2rem 0 1rem;
 }
-å
+
 h6 {
   font-size: 1rem;
   font-weight: 700;
   margin: 1.2rem 0 1rem;
   color: var(--accent);
+}
+
+h7 {
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin: 1.2rem 0 1rem;
 }
 
 .highlight, code .highlight, pre .highlight {

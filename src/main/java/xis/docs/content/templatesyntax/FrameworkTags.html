@@ -152,26 +152,26 @@
 &lt;/button&gt;</code></pre>
 
         <h6>&lt;xis:include&gt;</h6>
-        <p>Includes reusable template fragments from <code>@Include</code> annotated beans. This tag enables 
-            embedding shared HTML components across multiple templates. The included fragment is rendered with 
+        <p>Includes reusable template fragments from <code>@Include</code> annotated beans. This tag enables
+            embedding shared HTML components across multiple templates. The included fragment is rendered with
             its own model data provided by the annotated bean's methods.</p>
 
-        <p><strong>Important:</strong> The <code>key</code> attribute must match the value specified in the 
-            <code>@Include</code> annotation on a bean class. The bean must have a corresponding HTML template 
+        <p><strong>Important:</strong> The <code>key</code> attribute must match the value specified in the
+            <code>@Include</code> annotation on a bean class. The bean must have a corresponding HTML template
             file with the same name as the class.</p>
 
         <p><strong>Allowed attributes:</strong></p>
         <ul>
             <li><code>key</code> (element syntax) - Required. The key from the <code>@Include</code> annotation</li>
-            <li><code>xis:include="key"</code> (attribute syntax) - Alternative syntax using attribute</li>
+            <li><code>xis:include="name"</code> (attribute syntax) - Alternative syntax using attribute</li>
         </ul>
 
         <p><strong>Element syntax:</strong></p>
         <pre><code class="language-html">&lt;!-- Include a header component --&gt;
-&lt;xis:include key="header"/&gt;
+&lt;xis:include name="header"/&gt;
 
 &lt;!-- Include navigation menu --&gt;
-&lt;xis:include key="navigation"/&gt;
+&lt;xis:include name="navigation"/&gt;
 
 &lt;!-- Main content --&gt;
 &lt;div class="content"&gt;
@@ -179,7 +179,7 @@
 &lt;/div&gt;
 
 &lt;!-- Include footer --&gt;
-&lt;xis:include key="footer"/&gt;</code></pre>
+&lt;xis:include name="footer"/&gt;</code></pre>
 
         <p><strong>Attribute syntax:</strong></p>
         <pre><code class="language-html">&lt;div xis:include="header"&gt;&lt;/div&gt;
@@ -209,7 +209,7 @@ class HeaderInclude $​{
 &lt;/header&gt;
 
 // Use in any page or widget template
-&lt;xis:include key="header"/&gt;</code></pre>
+&lt;xis:include name="header"/&gt;</code></pre>
 
         <p><strong>Use Cases:</strong></p>
         <ul>
@@ -327,6 +327,7 @@ class HeaderInclude $​{
             <li><code>parameters</code> or <code>xis:parameters</code> - Optional. Query string parameters</li>
         </ul>
         <p><strong>Note:</strong> Use either <code>page</code> OR <code>widget</code>, not both.</p>
+        <p><strong>Button support:</strong> The <code>xis:page</code> and <code>xis:widget</code> attributes can also be used on <code>&lt;button&gt;</code> elements for the same navigation functionality:</p>
 
         <p><strong>Page navigation:</strong></p>
         <pre><code class="language-html">&lt;xis:a page="/user-profile.html" parameters="userId=&#036;{user.id}"&gt;
@@ -340,13 +341,28 @@ class HeaderInclude $​{
 &lt;!-- Or using attribute syntax: --&gt;
 &lt;a xis:widget="DashboardWidget" xis:target-container="main"&gt;Show Dashboard&lt;/a&gt;</code></pre>
 
+        <p><strong>Button navigation:</strong></p>
+        <pre><code class="language-html">&lt;button xis:page="/user-profile.html"&gt;
+    View Profile
+&lt;/button&gt;
+
+&lt;button xis:widget="DashboardWidget" xis:target-container="main"&gt;
+    Show Dashboard
+&lt;/button&gt;</code></pre>
+
         <p><strong>DOM Result:</strong></p>
         <pre><code class="language-html">&lt;a xis:page="/user-profile.html" xis:parameters="userId=&#036;{user.id}"&gt;
     View Profile
 &lt;/a&gt;
 &lt;a xis:widget="DashboardWidget" xis:target-container="main"&gt;
     Show Dashboard
-&lt;/a&gt;</code></pre>
+&lt;/a&gt;
+&lt;button xis:page="/user-profile.html"&gt;
+    View Profile
+&lt;/button&gt;
+&lt;button xis:widget="DashboardWidget" xis:target-container="main"&gt;
+    Show Dashboard
+&lt;/button&gt;</code></pre>
 
         <h6>&lt;xis:action&gt;</h6>
         <p>XIS action link element for triggering controller actions.</p>
@@ -382,6 +398,55 @@ class HeaderInclude $​{
     &lt;div class="content"&gt;Content&lt;/div&gt;
     &lt;div class="footer"&gt;Footer&lt;/div&gt;
 &lt;/xis:template&gt;</code></pre>
+
+        <h6>&lt;xis:storage-binding&gt;</h6>
+        <p>Automatically updates DOM content when client-side storage (localStorage, sessionStorage, or clientStorage) changes.
+            This enables reactive UI updates based on storage state without manual refresh calls.</p>
+
+        <p><strong>Allowed attributes:</strong></p>
+        <ul>
+            <li><code>store</code> (element syntax) - The storage type to bind to: <code>"localStorage"</code>, <code>"sessionStorage"</code>, or <code>"clientStorage"</code></li>
+            <li><code>xis:storage-binding="storeName"</code> (attribute syntax) - Shorthand attribute form</li>
+        </ul>
+
+        <p><strong>Element syntax:</strong></p>
+        <pre><code class="language-html">&lt;!-- Bind to localStorage --&gt;
+&lt;xis:storage-binding store="localStorage"&gt;
+    &lt;span&gt;Items in cart: $​{count(localStorage.shoppingCard.products)}&lt;/span&gt;
+&lt;/xis:storage-binding&gt;
+
+&lt;!-- Bind to sessionStorage --&gt;
+&lt;xis:storage-binding store="sessionStorage"&gt;
+    &lt;span&gt;Current user: $​{sessionStorage.currentUser.name}&lt;/span&gt;
+&lt;/xis:storage-binding&gt;</code></pre>
+
+        <p><strong>Attribute syntax:</strong></p>
+        <pre><code class="language-html">&lt;span xis:storage-binding="localStorage"&gt;
+    Total: €$​{sum(flatMap(localStorage.shoppingCard,'products.price'))}
+&lt;/span&gt;
+
+&lt;div xis:storage-binding="sessionStorage"&gt;
+    &lt;p&gt;User: $​{sessionStorage.user.name}&lt;/p&gt;
+    &lt;p&gt;Role: $​{sessionStorage.user.role}&lt;/p&gt;
+&lt;/div&gt;</code></pre>
+
+        <p><strong>Use Cases:</strong></p>
+        <ul>
+            <li>Shopping cart display that updates when items are added/removed</li>
+            <li>User preferences display synchronized with storage</li>
+            <li>Live counters and aggregations based on stored data</li>
+            <li>Multi-widget coordination through shared storage state</li>
+        </ul>
+
+        <p><strong>Note:</strong> Content inside the storage-binding element is automatically re-evaluated and updated
+            whenever the specified storage changes. Works with all EL functions like <code>count()</code>, <code>sum()</code>,
+            <code>flatMap()</code>, etc.</p>
+
+        <div class="warning">
+            <strong>⚠️ Important Restrictions</strong><br/>
+            Widget containers (<code>&lt;xis:widget-container&gt;</code>) are <strong>not allowed</strong> inside storage-binding blocks.
+            Keep storage-binding blocks small and focused for optimal performance and maintainability.
+        </div>
 
         <h6>&lt;xis:raw&gt;</h6>
         <p>Outputs content without XIS processing. Useful for documentation or when you need to display XIS syntax
