@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SQL Repositories - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Data / <span data-current-page>SQL repositories</span></div>
+    <h1>SQL repositories</h1>
+    <p class="lead">
+      XIS SQL is explicit. Reading a row creates an object, but changing that object never changes the database by
+      itself. Writes happen through repository operations.
+    </p>
+
+    <div class="principle">
+      This is a deliberate contrast to JPA-style persistence contexts. XIS favors explicit repository calls and a
+      decoupled service shape. If an application requires an object-level transaction monitor and automatic dirty
+      checking, JPA may be the better persistence model.
+    </div>
+
+    <h2>No hidden persistence context</h2>
+    <p>
+      XIS SQL maps rows to objects and objects to repository operations. It does not keep loaded entities in a session
+      and it does not inspect changed objects at the end of a transaction. A database write happens when code calls an
+      insert, update, save, delete, or explicitly annotated repository method.
+    </p>
+    <p>
+      That style is deliberately simple. It fits services and microfrontend applications where the boundary between
+      reading data, changing data, and publishing UI updates should remain visible in the code.
+    </p>
+    <pre><code class="language-java">import one.xis.sql.CrudRepository;
+import one.xis.sql.Entity;
+import one.xis.sql.Repository;
+import one.xis.sql.Save;
+import one.xis.sql.Select;
+
+import java.util.List;
+
+@Entity("customers")
+record Customer(Long id, String firstName, String lastName) {
+}
+
+@Repository
+interface CustomerRepository extends CrudRepository&lt;Customer, Long&gt; {
+
+    @Select("select * from customers where last_name = {lastName}")
+    List&lt;Customer&gt; findByLastName(String lastName);
+
+    @Save
+    Customer save(Customer customer);
+}</code></pre>
+    <pre><code class="language-java">Customer customer = customerRepository.findById(42L).orElseThrow();
+customer = new Customer(customer.id(), "Ada", customer.lastName());
+
+// Nothing has been written yet. The write is explicit:
+customerRepository.save(customer);</code></pre>
+
+    <h2>Schema changes are part of the application</h2>
+    <p>
+      The DDL builder and change-set model give XIS applications a small migration mechanism without turning SQL into an
+      ORM. Change sets are explicit, ordered, and recorded in the database so the application can evolve its schema in a
+      controlled way.
+    </p>
+    <pre><code class="language-java">import one.xis.ddl.Change;
+import one.xis.ddl.ChangeSet;
+import one.xis.ddl.DDL;
+
+@ChangeSet("customer-schema")
+class CustomerSchema {
+
+    @Change("001-create-customers")
+    void createCustomers(DDL ddl) {
+        var customers = ddl.createTableIfNotExists("customers");
+        customers.addColumn("id").bigint().generatedIdentity().primaryKey();
+        customers.addColumn("name").varchar(200).notNull();
+        customers.addColumn("email").varchar(200).notNull();
+    }
+}</code></pre>
+    <p>
+      XIS discovers change sets at startup when <code>xis-sql</code> and a <code>DataSource</code> are present. The full
+      SQL guide explains <a href="/docs/guide/sql.html#ddl-builder-and-change-sets">DDL builder and change sets</a>,
+      including ordering, the migration history table, and supported schema operations.
+    </p>
+
+    <h2>Full SQL surface</h2>
+    <p>
+      The full SQL guide covers DataSource configuration, optional HikariCP, entity mapping, relations, JSON columns,
+      repositories, select, insert, update, save, delete, DDL change sets, explicit transactions, functions, and stored
+      procedures.
+    </p>
+  </main>
+</div>
+</body>
+</html>

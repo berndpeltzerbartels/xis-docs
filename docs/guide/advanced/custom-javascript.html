@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Custom JavaScript - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / Advanced / <span data-current-page>Custom JavaScript</span></div>
+<h1>Custom JavaScript</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="custom-javascript">Custom JavaScript</h2>
+<div class="note">
+  <strong>Do not load application JavaScript with ordinary <code>&lt;script&gt;</code> tags inside page or frontlet
+  templates.</strong> XIS applications are single-page applications. Navigation, actions, frontlet refreshes, and modal
+  changes replace parts of the live DOM instead of forcing a full browser page load. Browsers do not reliably execute
+  scripts inserted during those DOM updates as a page lifecycle, and even where a browser appears to run one script, the
+  ordering and repeated execution would be fragile. XIS extension files are the supported loading path.
+</div>
+<p>Use a JavaScript extension when project code needs browser-side behavior that is not covered by normal XIS templates.</p>
+<p>Integration tests do not run this JavaScript in a real browser. They use GraalVM JavaScript plus XIS&#x27; small Java implementation of common browser objects. This is good for fast tests of XIS DOM behavior, custom EL functions, and simple DOM manipulation, but it is not a full Web Platform implementation. See <a href="/docs/guide/advanced/integration-test-browser.html">Integration-test browser model</a> for the supported objects and the known limits.</p>
+<p>Write extension files as strict, browser-compatible plain JavaScript. XIS bundles extension files into the generated browser runtime; they are not loaded as JavaScript modules. Do not use <code>export</code> / <code>import</code> syntax in these files.</p>
+<p>XIS exposes only a small public browser API as <code>window.XIS</code>. The internal application runtime is intentionally not published as <code>window.app</code>, so separate static scripts cannot mutate framework internals by accident. JavaScript extension files can use this API while the bundle is loaded, for example to register expression-language functions.</p>
+<h3 id="register-extension-files">Register Extension Files</h3>
+<p>Create this file:</p>
+<pre><code class="language-text">src/main/resources/META-INF/xis/js/extensions</code></pre>
+<p>List one JavaScript resource path per line:</p>
+<pre><code class="language-text">js/app-functions.js
+js/analytics.js</code></pre>
+<p>Put the referenced files under <code>src/main/resources</code>:</p>
+<pre><code class="language-text">src/main/resources/js/app-functions.js
+src/main/resources/js/analytics.js</code></pre>
+<p>XIS reads every <code>META-INF/xis/js/extensions</code> file on the classpath, loads the listed JavaScript files, and bundles them with the XIS browser runtime. This also works from dependency JARs.</p>
+<h3 id="add-a-javascript-extension-dependency">Add A JavaScript Extension Dependency</h3>
+<p>Some browser libraries can be added as ordinary dependencies. For example, XIS provides a small jQuery extension artifact:</p>
+<pre><code class="language-groovy">dependencies {
+    implementation &quot;one.xis:xis-javascript-jquery:0.18.0&quot;
+}</code></pre>
+<p>That artifact depends on the jQuery WebJar and registers the minified jQuery file as a XIS JavaScript extension. The application does not need to copy <code>jquery.min.js</code> into its own resources.</p>
+<p>Use this style when a library should be shared by several applications or when you want a dependency to bring its own browser integration. The JavaScript is still bundled into the XIS browser runtime; it is not loaded from a CDN.</p>
+<h3 id="add-custom-el-functions">Add Custom EL Functions</h3>
+<p>Custom expression-language functions are JavaScript functions registered in the browser runtime.</p>
+<p><code>src/main/resources/js/app-functions.js</code></p>
+<pre><code class="language-javascript">XIS.addElFunction(&#x27;formatCurrency&#x27;, function(value, currency, locale) {
+    const number = Number(value);
+    if (Number.isNaN(number)) {
+        return &#x27;&#x27;;
+    }
+    return new Intl.NumberFormat(locale || undefined, {
+        style: &#x27;currency&#x27;,
+        currency: currency || &#x27;EUR&#x27;
+    }).format(number);
+});</code></pre>
+<p>Register that file:</p>
+<pre><code class="language-text"># src/main/resources/META-INF/xis/js/extensions
+js/app-functions.js</code></pre>
+<p>Use the function in a template:</p>
+<pre><code class="language-html">&lt;span&gt;${formatCurrency(order.total, &#x27;EUR&#x27;, &#x27;de-DE&#x27;)}&lt;/span&gt;</code></pre>
+<p>Function arguments can be expressions, just like built-in EL functions:</p>
+<pre><code class="language-html">&lt;span&gt;${formatCurrency(sum(order.lines), customer.currency, customer.locale)}&lt;/span&gt;</code></pre>
+<p>Custom functions run in the browser. Use them for presentation helpers such as formatting, labels, or small display decisions. Keep validation, permissions, persistence, and business decisions in Java.</p>
+<h3 id="publish-your-own-javascript-extension-artifact">Publish Your Own JavaScript Extension Artifact</h3>
+<p>XIS searches the whole classpath for JavaScript extension registries. That makes it easy to create your own artifact that adds JavaScript to every application that depends on it. A reusable JavaScript extension artifact is just a JAR with normal resources. The artifact can contain application code, a company-specific helper library, or a small wrapper around a browser library. It can also be a reusable EL function library for templates used across several applications.</p>
+<p>For example, a company could publish an internal browser-behavior artifact:</p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java-library&quot;
+}
+
+group = &quot;com.example&quot;
+version = &quot;1.0.0&quot;</code></pre>
+<p>Add the extension registry:</p>
+<pre><code class="language-text">src/main/resources/META-INF/xis/js/extensions</code></pre>
+<p>List the classpath resource that should be bundled:</p>
+<pre><code class="language-text">company/browser/company-ui.js
+company/browser/usage-tracking.js</code></pre>
+<p>Put the referenced files into the same artifact:</p>
+<pre><code class="language-text">src/main/resources/company/browser/company-ui.js
+src/main/resources/company/browser/usage-tracking.js</code></pre>
+<p>When an application adds this artifact as a dependency, <code>JavascriptExtensionLoader</code> finds the registry file, reads the listed JavaScript resources, and appends them to the XIS browser runtime.</p>
+<p>Use the artifact from an application like any other dependency:</p>
+<pre><code class="language-groovy">dependencies {
+    implementation &quot;com.example:company-browser-extensions:1.0.0&quot;
+}</code></pre>
+<p>The artifact must be available through the application&#x27;s normal dependency resolution: for example from an internal Maven repository such as Artifactory or Nexus, from another configured Maven repository, or from the local Maven repository after running <code>publishToMavenLocal</code>.</p>
+<h3 id="global-browser-behavior">Global Browser Behavior</h3>
+<p>JavaScript extensions can also add application-wide browser behavior:</p>
+<pre><code class="language-javascript">document.addEventListener(&#x27;click&#x27;, event =&gt; {
+    const target = event.target.closest(&#x27;[data-track]&#x27;);
+    if (!target) {
+        return;
+    }
+    console.debug(&#x27;tracked click&#x27;, target.dataset.track);
+});</code></pre>
+<p>Keep this kind of code small and defensive. XIS will load it for the application, not for a single page only.</p>
+<h3 id="submit-a-xis-form-from-javascript">Submit A XIS Form From JavaScript</h3>
+<p>Most forms should be submitted by a normal XIS submit button:</p>
+<pre><code class="language-html">&lt;button type=&quot;submit&quot; xis:action=&quot;save&quot;&gt;Save&lt;/button&gt;</code></pre>
+<p>For browser interactions that are not naturally a button click, for example drag and drop, a JavaScript extension can submit an existing XIS form by its ordinary HTML <code>id</code>:</p>
+<pre><code class="language-html">&lt;form id=&quot;moveForm&quot; xis:binding=&quot;move&quot;&gt;
+    &lt;input type=&quot;hidden&quot; xis:binding=&quot;from&quot; id=&quot;fromField&quot;&gt;
+    &lt;input type=&quot;hidden&quot; xis:binding=&quot;to&quot; id=&quot;toField&quot;&gt;
+&lt;/form&gt;</code></pre>
+<pre><code class="language-javascript">function submitMove(from, to) {
+    document.getElementById(&#x27;fromField&#x27;).value = from;
+    document.getElementById(&#x27;toField&#x27;).value = to;
+    XIS.submitForm(&#x27;moveForm&#x27;, &#x27;doMove&#x27;);
+}</code></pre>
+<p>The second argument is the <code>@Action</code> name. XIS still performs normal form binding, validation, and action response handling; the JavaScript only decides when to submit.</p>
+<h3 id="css-and-static-assets">CSS And Static Assets</h3>
+<p>CSS does not have the same execution problem as JavaScript. Put public files in:</p>
+<pre><code class="language-text">src/main/resources/public/</code></pre>
+<p>Reference them from templates without the <code>public</code> segment:</p>
+<pre><code class="language-html">&lt;link rel=&quot;stylesheet&quot; href=&quot;/css/app.css&quot;&gt;
+&lt;img src=&quot;/images/logo.png&quot; alt=&quot;Logo&quot;&gt;</code></pre>
+<p>CSS and JavaScript files under classpath <code>public</code> resources are also added to the root page automatically. Use <code>META-INF/xis/js/extensions</code> instead when JavaScript should become part of the XIS browser runtime bundle. See <a href="/docs/guide/runtime-and-dependencies.html#static-resources">Runtime and dependencies</a>.</p>
+<p>If you use <code>xis-theme</code>, prefer <code>public/theme.css</code> for small variable overrides. See <a href="/docs/guide/advanced/theme.html">XIS theme</a>.</p>
+<h3 id="when-to-use-this">When To Use This</h3>
+<p>Use custom JavaScript for small browser-side extension points, custom EL functions, third-party browser libraries, or application-wide instrumentation.</p>
+<p>Do not use it to reimplement XIS navigation, form binding, validation, or frontlet updates. Those are framework features and should stay in Java controllers and XIS templates.</p>
+  </main>
+</div>
+</body>
+</html>

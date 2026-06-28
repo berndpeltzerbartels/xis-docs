@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Forms and Validation - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Forms and Validation</span></div>
+    <h1>Forms and Validation</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="forms-and-validation">Forms and Validation</h2>
+<p>XIS binds form data to Java objects with <code>@FormData</code>. Actions receive typed form objects instead of manually parsing request parameters.</p>
+<h3 id="basic-form-binding">Basic Form Binding</h3>
+<pre><code class="language-java">package example.users;
+
+import one.xis.Action;
+import one.xis.FormData;
+import one.xis.Page;
+
+@Page(&quot;/users/new.html&quot;)
+class NewUserPage {
+
+    @FormData(&quot;user&quot;)
+    UserForm user() {
+        return new UserForm(&quot;&quot;, &quot;&quot;);
+    }
+
+    @Action
+    Class&lt;?&gt; saveUser(@FormData(&quot;user&quot;) UserForm user) {
+        userService.save(user);
+        return UserListPage.class;
+    }
+
+    record UserForm(String firstName, String email) {
+    }
+}</code></pre>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html xmlns:xis=&quot;https://xis.one/xsd&quot; lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;New User&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;form xis:binding=&quot;user&quot;&gt;
+        &lt;label&gt;
+            First name
+            &lt;input type=&quot;text&quot; xis:binding=&quot;firstName&quot;/&gt;
+        &lt;/label&gt;
+
+        &lt;label&gt;
+            Email
+            &lt;input type=&quot;email&quot; xis:binding=&quot;email&quot;/&gt;
+        &lt;/label&gt;
+
+        &lt;button type=&quot;submit&quot; xis:action=&quot;saveUser&quot;&gt;Save&lt;/button&gt;
+    &lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p>The form binding name and <code>@FormData</code> name must match.</p>
+<p><code>@FormData</code> methods can use the same lifecycle <code>load</code> attribute as <code>@ModelData</code>. This only affects methods that initialize a form, not action parameters that receive submitted form data. <code>@FormData</code> on a parameter is only valid on an <code>@Action</code> method, because submitted form values exist only while that action is processed. A <code>@FormData</code> method must return a form object; returning <code>null</code> is rejected.</p>
+<pre><code class="language-java">@FormData(value = &quot;user&quot;, load = ModelDataLoad.INITIAL)
+UserForm emptyUser() {
+    return new UserForm(&quot;&quot;, &quot;&quot;);
+}
+
+@FormData(value = &quot;user&quot;, load = ModelDataLoad.AFTER_ACTION)
+UserForm userAfterSave() {
+    return new UserForm(&quot;Saved&quot;, &quot;&quot;);
+}</code></pre>
+<p>An action may return form data directly when the action is meant to select or replace the currently edited object. <code>@Action</code> acts as a lifecycle filter here: the method is not a form initializer and is not called by the normal form model request. It runs only when the matching action is triggered, and then its return value becomes the form data for the next render.</p>
+<pre><code class="language-java">@Action
+@FormData(&quot;user&quot;)
+UserForm selectUser(@ActionParameter(&quot;userId&quot;) long userId) {
+    return UserForm.from(userService.findById(userId));
+}</code></pre>
+<h3 id="multiple-submit-actions">Multiple Submit Actions</h3>
+<p>One form can have multiple actions.</p>
+<pre><code class="language-java">@Action(&quot;saveDraft&quot;)
+void saveDraft(@FormData(&quot;document&quot;) DocumentForm document,
+               @ActionParameter(&quot;mode&quot;) String mode) {
+    documentService.saveDraft(document);
+}
+
+@Action(&quot;publish&quot;)
+Class&lt;?&gt; publish(@FormData(&quot;document&quot;) DocumentForm document,
+                 @ActionParameter(&quot;mode&quot;) String mode) {
+    documentService.publish(document);
+    return PublishedDocumentsPage.class;
+}</code></pre>
+<pre><code class="language-html">&lt;form xis:binding=&quot;document&quot;&gt;
+    &lt;input type=&quot;text&quot; xis:binding=&quot;title&quot;/&gt;
+    &lt;textarea xis:binding=&quot;content&quot;&gt;&lt;/textarea&gt;
+
+    &lt;button type=&quot;submit&quot; xis:action=&quot;saveDraft&quot;&gt;
+        &lt;xis:parameter name=&quot;mode&quot; value=&quot;draft&quot;/&gt;
+        Save draft
+    &lt;/button&gt;
+    &lt;button type=&quot;submit&quot; xis:action=&quot;publish&quot;&gt;
+        &lt;xis:parameter name=&quot;mode&quot; value=&quot;publish&quot;/&gt;
+        Publish
+    &lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<p>Element syntax:</p>
+<pre><code class="language-html">&lt;xis:form binding=&quot;document&quot;&gt;
+    &lt;xis:input type=&quot;text&quot; binding=&quot;title&quot;/&gt;
+    &lt;xis:textarea binding=&quot;content&quot;/&gt;
+
+    &lt;xis:submit action=&quot;saveDraft&quot;&gt;
+        &lt;xis:parameter name=&quot;mode&quot; value=&quot;draft&quot;/&gt;
+        Save draft
+    &lt;/xis:submit&gt;
+    &lt;xis:submit action=&quot;publish&quot;&gt;
+        &lt;xis:parameter name=&quot;mode&quot; value=&quot;publish&quot;/&gt;
+        Publish
+    &lt;/xis:submit&gt;
+&lt;/xis:form&gt;</code></pre>
+<p>Form submit actions support the same child <code>&lt;xis:parameter&gt;</code> syntax as action links and action buttons. The submitted form object is read with <code>@FormData</code>; submitter-specific values are read with <code>@ActionParameter</code>.</p>
+<h3 id="nested-objects-and-lists">Nested Objects and Lists</h3>
+<p>Use dot notation for nested objects:</p>
+<pre><code class="language-html">&lt;input type=&quot;text&quot; xis:binding=&quot;customer.name&quot;/&gt;
+&lt;input type=&quot;email&quot; xis:binding=&quot;customer.email&quot;/&gt;
+&lt;input type=&quot;text&quot; xis:binding=&quot;shippingAddress.street&quot;/&gt;</code></pre>
+<p>Use indexed notation for lists:</p>
+<pre><code class="language-html">&lt;div xis:foreach=&quot;item:${cart.items}&quot;&gt;
+    &lt;input type=&quot;hidden&quot; xis:binding=&quot;items[${itemIndex}].productId&quot;/&gt;
+    &lt;input type=&quot;number&quot; xis:binding=&quot;items[${itemIndex}].quantity&quot;/&gt;
+&lt;/div&gt;</code></pre>
+<p>Use repeated bindings when several controls should contribute values to the same Java property. This is common for checkbox groups:</p>
+<pre><code class="language-java">class ProductForm {
+    private List&lt;String&gt; tags;
+
+    List&lt;String&gt; getTags() {
+        return tags;
+    }
+
+    void setTags(List&lt;String&gt; tags) {
+        this.tags = tags;
+    }
+}</code></pre>
+<pre><code class="language-html">&lt;form xis:binding=&quot;product&quot;&gt;
+    &lt;input type=&quot;checkbox&quot; xis:binding=&quot;tags&quot; value=&quot;new&quot;/&gt;
+    &lt;input type=&quot;checkbox&quot; xis:binding=&quot;tags&quot; value=&quot;sale&quot;/&gt;
+    &lt;input type=&quot;checkbox&quot; xis:binding=&quot;tags&quot; value=&quot;archived&quot;/&gt;
+
+    &lt;button type=&quot;submit&quot; xis:action=&quot;save&quot;&gt;Save&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<p>Element syntax:</p>
+<pre><code class="language-html">&lt;xis:form binding=&quot;product&quot;&gt;
+    &lt;xis:checkbox binding=&quot;tags&quot; value=&quot;new&quot;/&gt;
+    &lt;xis:checkbox binding=&quot;tags&quot; value=&quot;sale&quot;/&gt;
+    &lt;xis:checkbox binding=&quot;tags&quot; value=&quot;archived&quot;/&gt;
+
+    &lt;xis:submit action=&quot;save&quot;&gt;Save&lt;/xis:submit&gt;
+&lt;/xis:form&gt;</code></pre>
+<p>If the user selects <code>new</code> and <code>sale</code>, the action receives both values in <code>ProductForm.tags</code>.</p>
+<h3 id="file-uploads">File Uploads</h3>
+<p>Use a normal file input in the form and mark the matching form field with <code>@Upload</code>. XIS switches the submitted request to <code>multipart/form-data</code>, binds the uploaded file to the form object, and runs upload size checks before the action method is called.</p>
+<pre><code class="language-java">package example.documents;
+
+import one.xis.Action;
+import one.xis.FormData;
+import one.xis.Page;
+import one.xis.Upload;
+import one.xis.UploadedFile;
+
+@Page(&quot;/documents/new.html&quot;)
+class NewDocumentPage {
+
+    @FormData(&quot;document&quot;)
+    DocumentForm document() {
+        return new DocumentForm();
+    }
+
+    @Action
+    void save(@FormData(&quot;document&quot;) DocumentForm document) {
+        documentService.store(document.title, document.attachment);
+    }
+
+    static class DocumentForm {
+        public String title;
+
+        @Upload(maxSize = 5 * 1024 * 1024)
+        public UploadedFile attachment;
+    }
+}</code></pre>
+<pre><code class="language-html">&lt;form xis:binding=&quot;document&quot;&gt;
+    &lt;input type=&quot;text&quot; xis:binding=&quot;title&quot;/&gt;
+    &lt;input type=&quot;file&quot; xis:binding=&quot;attachment&quot;/&gt;
+    &lt;span xis:message-for=&quot;attachment&quot;&gt;&lt;/span&gt;
+    &lt;button type=&quot;submit&quot; xis:action=&quot;save&quot;&gt;Save&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<p>Element syntax:</p>
+<pre><code class="language-html">&lt;xis:form binding=&quot;document&quot;&gt;
+    &lt;xis:input type=&quot;text&quot; binding=&quot;title&quot;/&gt;
+    &lt;xis:input type=&quot;file&quot; binding=&quot;attachment&quot;/&gt;
+    &lt;xis:message message-for=&quot;attachment&quot;/&gt;
+    &lt;xis:submit action=&quot;save&quot;&gt;Save&lt;/xis:submit&gt;
+&lt;/xis:form&gt;</code></pre>
+<p><code>@Upload</code> supports <code>UploadedFile</code>, <code>List&lt;UploadedFile&gt;</code>, <code>byte[]</code>, and <code>String</code>. <code>String</code> uploads are decoded as UTF-8. Use <code>List&lt;UploadedFile&gt;</code> when the input allows several selected files.</p>
+<p>Upload limits deliberately have two layers:</p>
+<p>runtime before controller validation starts. When this limit is exceeded, the request can be rejected with HTTP 413.</p>
+<ul>
+<li><code>UploadConfiguration.getMaxRequestSize()</code> is the early HTTP limit for the complete multipart request. It protects the</li>
+<li><code>UploadConfiguration.getMaxFileSize()</code> is the default validation limit for one uploaded file.</li>
+<li><code>@Upload(maxSize = ...)</code> overrides the per-file validation limit for one field or controller parameter.</li>
+</ul>
+<p>For user-friendly validation messages, configure the request limit high enough for the largest form submission that should still reach validation. Keep it finite: it is still the transport-level protection against oversized requests.</p>
+<pre><code class="language-java">import one.xis.UploadConfiguration;
+import one.xis.context.Component;
+
+@Component
+class DocumentUploadConfiguration implements UploadConfiguration {
+
+    @Override
+    public long getMaxFileSize() {
+        return 2 * 1024 * 1024;
+    }
+
+    @Override
+    public long getMaxRequestSize() {
+        return 20 * 1024 * 1024;
+    }
+}</code></pre>
+<h3 id="type-conversion">Type Conversion</h3>
+<p>XIS deserializes submitted form values into the Java types used by the <code>@FormData</code> object. Empty strings are treated as missing values; with <code>@Mandatory</code>, that becomes a validation error.</p>
+<p>Numbers are parsed in two steps. XIS first accepts the canonical Java/JSON representation, then falls back to the request locale. That means a German user can enter <code>1.234,56</code> for <code>BigDecimal</code>, <code>Double</code>, or <code>Float</code>, while <code>1234.56</code> still works as a canonical value. Integer types also accept locale grouping, such as <code>1.234</code> in German or <code>1,234</code> in English, but reject fractional values like <code>1,5</code>.</p>
+<pre><code class="language-java">record ProductForm(String name,
+        BigDecimal price,
+        Integer stock) {
+}</code></pre>
+<pre><code class="language-html">&lt;form xis:binding=&quot;product&quot;&gt;
+    &lt;input type=&quot;text&quot; xis:binding=&quot;name&quot;/&gt;
+    &lt;input type=&quot;text&quot; xis:binding=&quot;price&quot;/&gt;
+    &lt;input type=&quot;text&quot; xis:binding=&quot;stock&quot;/&gt;
+    &lt;button type=&quot;submit&quot; xis:action=&quot;save&quot;&gt;Save&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<p>Element syntax:</p>
+<pre><code class="language-html">&lt;xis:form binding=&quot;product&quot;&gt;
+    &lt;xis:input type=&quot;text&quot; binding=&quot;name&quot;/&gt;
+    &lt;xis:input type=&quot;text&quot; binding=&quot;price&quot;/&gt;
+    &lt;xis:input type=&quot;text&quot; binding=&quot;stock&quot;/&gt;
+    &lt;xis:submit action=&quot;save&quot;&gt;Save&lt;/xis:submit&gt;
+&lt;/xis:form&gt;</code></pre>
+<p>Use a formatter when the displayed string is application-specific, for example money with a currency symbol, percentages, coordinates, or a date format that differs from the built-in conversion.</p>
+<pre><code class="language-java">import one.xis.Formatter;
+
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParsePosition;
+import java.time.ZoneId;
+import java.util.Locale;
+
+class MoneyFormatter implements Formatter&lt;BigDecimal&gt; {
+
+    @Override
+    public String format(BigDecimal value, Locale locale, ZoneId zoneId) {
+        return NumberFormat.getCurrencyInstance(locale).format(value);
+    }
+
+    @Override
+    public BigDecimal parse(String text, Locale locale, ZoneId zoneId) {
+        var format = NumberFormat.getCurrencyInstance(locale);
+        if (format instanceof DecimalFormat decimalFormat) {
+            decimalFormat.setParseBigDecimal(true);
+        }
+        var position = new ParsePosition(0);
+        var number = format.parse(text, position);
+        if (number == null || position.getIndex() != text.length()) {
+            throw new IllegalArgumentException(&quot;Invalid money value&quot;);
+        }
+        if (number instanceof BigDecimal bigDecimal) {
+            return bigDecimal;
+        }
+        return BigDecimal.valueOf(number.doubleValue());
+    }
+}</code></pre>
+<pre><code class="language-java">import one.xis.UseFormatter;
+
+record ProductForm(@UseFormatter(MoneyFormatter.class) BigDecimal price) {
+}</code></pre>
+<h3 id="validation">Validation</h3>
+<p>XIS validates submitted form data before the action method executes. If validation fails, the action is not called and validation messages are available to the template.</p>
+<p>Form DTOs can be Java classes or records. On records, put validation annotations directly on the record components; XIS reads those component annotations during deserialization and validation.</p>
+<pre><code class="language-java">package example.users;
+
+import one.xis.Action;
+import one.xis.FormData;
+import one.xis.Page;
+import one.xis.validation.EMail;
+import one.xis.validation.LabelKey;
+import one.xis.validation.Mandatory;
+import one.xis.validation.MinLength;
+
+@Page(&quot;/register.html&quot;)
+class RegisterPage {
+
+    @FormData(&quot;user&quot;)
+    UserForm user() {
+        return new UserForm(&quot;&quot;, &quot;&quot;);
+    }
+
+    @Action
+    void register(@FormData(&quot;user&quot;) UserForm user) {
+        userService.register(user);
+    }
+
+    record UserForm(@Mandatory
+            @LabelKey(&quot;user.email&quot;)
+            @EMail
+            String email,
+
+            @Mandatory
+            @LabelKey(&quot;user.password&quot;)
+            @MinLength(8)
+            String password) {
+    }
+}</code></pre>
+<pre><code class="language-html">&lt;form xis:binding=&quot;user&quot;&gt;
+    &lt;xis:global-messages/&gt;
+
+    &lt;label&gt;
+        Email
+        &lt;input type=&quot;email&quot; xis:binding=&quot;email&quot;/&gt;
+    &lt;/label&gt;
+    &lt;div xis:message-for=&quot;email&quot;&gt;&lt;/div&gt;
+
+    &lt;label&gt;
+        Password
+        &lt;input type=&quot;password&quot; xis:binding=&quot;password&quot;/&gt;
+    &lt;/label&gt;
+    &lt;div xis:message-for=&quot;password&quot;&gt;&lt;/div&gt;
+
+    &lt;button type=&quot;submit&quot; xis:action=&quot;register&quot;&gt;Register&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<p>Common annotations:</p>
+<table><thead><tr><th>Annotation</th><th>Purpose</th></tr></thead><tbody><tr><td><code>@Mandatory</code></td><td>Value must not be null, empty, or blank.</td></tr><tr><td><code>@EMail</code></td><td>String must be an email address.</td></tr><tr><td><code>@MinLength</code></td><td>String, collection, array, or map must have a minimum length or size.</td></tr><tr><td><code>@RegExpr</code></td><td>String must match a regular expression.</td></tr><tr><td><code>@LabelKey</code></td><td>Supplies a context-specific label for validation messages.</td></tr></tbody></table>
+<p>Field messages are shown with <code>xis:message-for</code>. Global validation messages are shown with <code>&lt;xis:global-messages/&gt;</code>.</p>
+<p>Validation annotations can live on a single field or on the form object itself. Field validation is for one value, such as <code>email</code> or <code>password</code>. Object validation is for rules that need the complete form, such as &quot;end date must be after start date&quot; or &quot;discount must not exceed subtotal&quot;.</p>
+<pre><code class="language-html">&lt;form xis:binding=&quot;user&quot;&gt;
+    &lt;div xis:message-for=&quot;email&quot;&gt;&lt;/div&gt;
+    &lt;xis:global-messages/&gt;
+&lt;/form&gt;</code></pre>
+<p><code>&lt;xis:global-messages/&gt;</code> belongs to the form validation result. Use it for validation messages that are not attached to one field, for example a cross-field rule or a custom validator that reports a form-level problem. It is not the general application error area.</p>
+<p>When global messages exist, XIS renders this structure inside the <code>&lt;xis:global-messages/&gt;</code> element:</p>
+<pre><code class="language-html">&lt;ul class=&quot;error&quot;&gt;
+    &lt;li class=&quot;error&quot;&gt;Message text&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+<p>Style the wrapper element, the generated list, or the shared <code>error</code> class in your CSS:</p>
+<pre><code class="language-css">.error {
+    color: #b00020;
+}
+
+xis\:global-messages ul.error {
+    margin: 0;
+    padding-left: 1.25rem;
+}</code></pre>
+<p>Element syntax for field messages:</p>
+<pre><code class="language-html">&lt;xis:message message-for=&quot;email&quot;/&gt;
+&lt;xis:global-messages/&gt;</code></pre>
+<p>The same field message can be written as an attribute or as a XIS element. These two snippets are equivalent:</p>
+<pre><code class="language-html">&lt;div xis:message-for=&quot;email&quot;&gt;&lt;/div&gt;</code></pre>
+<pre><code class="language-html">&lt;xis:message message-for=&quot;email&quot;/&gt;</code></pre>
+<p>Fields, labels, and wrappers can also get visual error state directly. Use <code>xis:error-class</code> when XIS should add a CSS class while a validation message exists for the bound field:</p>
+<pre><code class="language-html">&lt;input id=&quot;email&quot; xis:binding=&quot;email&quot; xis:error-class=&quot;error&quot;/&gt;
+&lt;label for=&quot;email&quot; xis:binding=&quot;email&quot; xis:error-class=&quot;error&quot;&gt;Email&lt;/label&gt;</code></pre>
+<p>If the element is not a form control and should only point at a field, use <code>xis:error-binding</code>. This is useful for labels or layout wrappers:</p>
+<pre><code class="language-html">&lt;label for=&quot;email&quot;
+       xis:error-binding=&quot;email&quot;
+       xis:error-style=&quot;color: red; font-weight: bold&quot;&gt;
+    Email
+&lt;/label&gt;</code></pre>
+<p><code>xis:error-style</code> applies inline CSS for the error state. Prefer <code>xis:error-class</code> for reusable application styling; <code>xis:error-style</code> is mainly useful for small prototypes or generated markup.</p>
+<p>General server errors are handled separately by the browser-side message handler. If a page contains an element with <code>id=&quot;system-messages&quot;</code>, XIS can render server errors there. Validation messages may also be copied into that general message area, but form templates should still use <code>xis:message-for</code> and <code>&lt;xis:global-messages/&gt;</code> when the user needs to see the errors next to the form.</p>
+<p>Validation messages are resolved from message property files on the classpath. Application files override the XIS defaults. The same resolved bundle is also available in templates as <code>messages</code>, so ordinary UI text can use <code>${messages.title}</code> or <code>${messages[&#x27;customer.form.title&#x27;]}</code>.</p>
+<pre><code class="language-properties"># messages.properties
+validation.email=Please enter a valid email address
+validation.mandatory=${label} is required
+validation.sku=SKU must look like ABC-1234
+
+user.email=Email
+user.password=Password</code></pre>
+<p>Locale-specific files use the Java language suffix, for example <code>messages_de.properties</code>, <code>messages_fr.properties</code>, <code>messages_es.properties</code>, or <code>messages_pl.properties</code>. XIS ships default messages for English, German, French, Spanish, and Polish.</p>
+<p>For a request locale such as Polish, messages are resolved in this order:</p>
+<ol>
+<li><code>messages_pl.properties</code></li>
+<li><code>default-messages_pl.properties</code></li>
+<li><code>messages.properties</code></li>
+<li><code>default-messages.properties</code></li>
+</ol>
+<p>The first matching key wins. Application files are the normal place for user-facing text. Default files are framework fallbacks. Message templates can use <code>${label}</code> and validator-specific parameters such as <code>${minLength}</code>.</p>
+<p><code>@LabelKey</code> lets one validation annotation produce context-specific messages. Without it, a reusable validator such as <code>@NotNegative</code> would need different annotations or different message keys for &quot;total price&quot;, &quot;VAT&quot;, or &quot;current spring discount&quot;. With <code>@LabelKey</code>, the validator stays generic and only the label changes.</p>
+<pre><code class="language-java">record OrderForm(@NotNegative
+        @LabelKey(&quot;order.total&quot;)
+        BigDecimal total,
+
+        @NotNegative
+        @LabelKey(&quot;order.vat&quot;)
+        BigDecimal vat,
+
+        @NotNegative
+        @LabelKey(&quot;order.springDiscount&quot;)
+        BigDecimal springDiscount) {
+}</code></pre>
+<pre><code class="language-properties">validation.notNegative=${label} must not be negative
+validation.notNegative.global=Please check ${label}
+
+order.total=total price
+order.vat=VAT
+order.springDiscount=current spring discount</code></pre>
+<p>If <code>vat</code> is invalid, <code>${label}</code> resolves to <code>VAT</code>. If no <code>@LabelKey</code> is present, XIS uses the Java field, parameter, or record component name as the label key.</p>
+<h3 id="custom-validators">Custom Validators</h3>
+<p>Create a custom annotation with <code>@Validate</code>. Use a field annotation when the validator only needs one value.</p>
+<pre><code class="language-java">package example.validation;
+
+import one.xis.validation.Validate;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.RECORD_COMPONENT;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+@Retention(RUNTIME)
+@Target({FIELD, PARAMETER, RECORD_COMPONENT})
+@Validate(validatorClass = SkuValidator.class, messageKey = &quot;validation.sku&quot;)
+@interface Sku {
+}</code></pre>
+<pre><code class="language-java">package example.validation;
+
+import one.xis.UserContext;
+import one.xis.validation.Validator;
+import one.xis.validation.ValidatorException;
+import one.xis.context.Component;
+
+import java.lang.reflect.AnnotatedElement;
+
+@Component
+class SkuValidator implements Validator&lt;String&gt; {
+
+    private final ProductCatalog catalog;
+
+    SkuValidator(ProductCatalog catalog) {
+        this.catalog = catalog;
+    }
+
+    @Override
+    public void validate(String value, AnnotatedElement target, UserContext userContext) throws ValidatorException {
+        if (value == null || !value.matches(&quot;[A-Z]{3}-[0-9]{4}&quot;)) {
+            throw new ValidatorException();
+        }
+        if (!catalog.exists(value)) {
+            throw new ValidatorException();
+        }
+    }
+}</code></pre>
+<p>Custom validation is annotation-based: the form field, record component, or parameter receives your annotation, and the annotation points to the validator through <code>@Validate</code>. Validators can be normal XIS components, so constructor-injected services or repositories are available for checks that need application state, such as a database lookup.</p>
+<pre><code class="language-java">record ProductForm(@Sku String sku) {
+}</code></pre>
+<p>For cross-field rules, put the validation annotation on the form class or record. The validator receives the complete object.</p>
+<pre><code class="language-java">package example.validation;
+
+import one.xis.validation.Validate;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+@Retention(RUNTIME)
+@Target(TYPE)
+@Validate(
+        validatorClass = DiscountValidator.class,
+        messageKey = &quot;validation.discount&quot;,
+        globalMessageKey = &quot;validation.discount.global&quot;
+)
+@interface ValidDiscount {
+}</code></pre>
+<pre><code class="language-java">package example.orders;
+
+import example.validation.ValidDiscount;
+
+@ValidDiscount
+record DiscountForm(int subtotal, int discount) {
+}</code></pre>
+<pre><code class="language-java">package example.validation;
+
+import example.orders.DiscountForm;
+import one.xis.UserContext;
+import one.xis.validation.Validator;
+import one.xis.validation.ValidatorException;
+
+import java.lang.reflect.AnnotatedElement;
+
+class DiscountValidator implements Validator&lt;DiscountForm&gt; {
+
+    @Override
+    public void validate(DiscountForm form, AnnotatedElement target, UserContext userContext)
+            throws ValidatorException {
+        if (form.discount() &gt; form.subtotal()) {
+            throw new ValidatorException();
+        }
+    }
+}</code></pre>
+<p>Object validation usually belongs in <code>&lt;xis:global-messages/&gt;</code>, because the problem is attached to the submitted form as a whole rather than to one input field. You can still provide both a field message key and a global message key; the global message is the one users normally see for cross-field rules.</p>
+<h3 id="action-validation-failures">Action Validation Failures</h3>
+<p>Most validation should happen before the action method runs: use <code>@Mandatory</code>, built-in validation annotations, or custom annotations based on <code>@Validate</code>. There are cases where the rule belongs to the action itself, for example when a delete action is only allowed while related data is still empty. Creating a special validation annotation just for that action would add a lot of ceremony and would hide the rule in the wrong place.</p>
+<p>For this special case, throw <code>ValidationFailedException</code> from an <code>@Action</code> method or from a service called by that action. XIS catches it during action processing and returns normal validation messages. The same exception thrown while loading model data is treated as an application error, because model data loading should not be a user-correctable validation flow.</p>
+<pre><code class="language-java">import one.xis.Action;
+import one.xis.ActionParameter;
+import one.xis.validation.ValidationFailedException;
+
+class ProjectActions {
+
+    private final ProjectService projects;
+
+    @Action
+    void deleteProject(@ActionParameter(&quot;projectId&quot;) long projectId) {
+        if (!projects.pipelineIsEmpty(projectId)) {
+            throw new ValidationFailedException(&quot;project.delete.pipelineNotEmpty&quot;);
+        }
+        projects.delete(projectId);
+    }
+}</code></pre>
+<p>The exception can add global messages, field messages, or both. Message keys are resolved with the same message resolver used by normal validation.</p>
+<pre><code class="language-java">throw new ValidationFailedException(&quot;project.delete.pipelineNotEmpty&quot;)
+        .addFieldMessage(&quot;/project/name&quot;, &quot;project.name.notDeletable&quot;);</code></pre>
+<p>Use this exception sparingly. It is a bridge for action-specific business validation, not a replacement for ordinary form validation annotations.</p>
+  </main>
+</div>
+</body>
+</html>

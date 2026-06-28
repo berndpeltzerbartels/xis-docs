@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quickstart - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Quickstart</span></div>
+    <h1>Quickstart</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="quickstart">Quickstart</h2>
+<p>This quickstart creates a small XIS application with Spring Boot. The standalone XIS Boot runtime follows the same page, template, and action model; only the application entry point and dependencies differ.</p>
+<h3 id="prerequisites">Prerequisites</h3>
+<ul>
+<li>Java 17 or newer</li>
+<li>Gradle 8 or newer</li>
+</ul>
+<p>Java is the shortest path through this quickstart. XIS also supports Groovy 4+ and Kotlin controllers and form DTOs; see <a href="/docs/guide/groovy.html">Groovy support</a> and <a href="/docs/guide/kotlin.html">Kotlin support</a> when you want to write the server-side code in another JVM language.</p>
+<h3 id="gradle-setup">Gradle Setup</h3>
+<p><code>settings.gradle</code></p>
+<pre><code class="language-groovy">rootProject.name = &quot;my-xis-app&quot;</code></pre>
+<p><code>build.gradle</code></p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+    id &quot;org.springframework.boot&quot; version &quot;3.3.0&quot;
+    id &quot;io.spring.dependency-management&quot; version &quot;1.1.5&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+}
+
+group = &quot;example&quot;
+version = &quot;0.0.1-SNAPSHOT&quot;
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation &quot;one.xis:xis-spring&quot;
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = &quot;UTF-8&quot;
+}
+
+test {
+    useJUnitPlatform()
+}</code></pre>
+<p>The <code>one.xis.plugin</code> plugin adds the XIS annotation processor, copies HTML templates from <code>src/main/java</code> into the runtime resources, configures the XIS test starter, adds the XIS scaffolding tasks, aligns XIS dependency versions to the plugin version, and adds XIS Boot run/build tasks when you use <code>xis-boot</code>. You do not add <code>xis-test</code> or <code>xis-boot-starter-test</code> yourself in this setup; the plugin adds the matching test dependency automatically. See <a href="/docs/guide/gradle-plugin.html">Gradle plugin and tools</a> for the complete task overview.</p>
+<h3 id="application-class">Application Class</h3>
+<p><code>src/main/java/example/Application.java</code></p>
+<pre><code class="language-java">package example;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+class Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}</code></pre>
+<h3 id="where-templates-go">Where Templates Go</h3>
+<p>XIS templates normally live next to the Java controller in the same package. If the controller is:</p>
+<pre><code class="language-text">src/main/java/example/dashboard/DashboardPage.java</code></pre>
+<p>then the matching template is:</p>
+<pre><code class="language-text">src/main/java/example/dashboard/DashboardPage.html</code></pre>
+<p>This is intentional. You usually work on the controller and template together, and keeping them side by side makes that relationship visible in the project tree. The XIS Gradle plugin copies these HTML files into the application resources during the build.</p>
+<p>The plugin can generate missing templates for page and frontlet controllers:</p>
+<pre><code class="language-bash">./gradlew xisTemplates</code></pre>
+<p>Run this after adding a controller when you want XIS to create the template file in the right package. It is often worth writing the controller methods first, even if their bodies are still simple. When <code>xisTemplates</code> sees <code>@ModelData</code>, <code>@FormData</code>, and <code>@Action</code> methods, it can generate expressions, repeated blocks, forms, validation message placeholders, and action buttons that already match the controller. Generated templates are starting points; edit them like normal HTML.</p>
+<p>The plugin can also generate starter integration tests for page controllers:</p>
+<pre><code class="language-bash">./gradlew xisTests</code></pre>
+<p>Generated tests use <code>@XisBootTest</code>, register the page controller in the XIS test context, and open the page through its URL. The required XIS test starter is added automatically by the plugin. Generated tests compile before the full page behavior is implemented, so you can use them for a TDD-style workflow: sketch the page class and its model/form/action methods, run <code>./gradlew xisTemplates xisTests</code>, edit the generated test until it describes the UI behavior you want, then implement the services and refine the template until the test passes.</p>
+<p>When the first version of a page is ready, run XIS validation checks manually:</p>
+<pre><code class="language-bash">./gradlew xisValidate</code></pre>
+<p>This is also the command you usually want in a CI pipeline. It stops at the first validation problem by default and points to the affected template file and line.</p>
+<h3 id="first-page">First Page</h3>
+<p>The first page may feel familiar if you remember simpler request-oriented web models: a controller exposes data and a template renders it. XIS keeps that simple programming shape, but it is not classic server-side rendering. The browser runs a SPA-style DOM application; XIS hides the client-server protocol, DOM replacement, navigation, and refresh logic under the hood.</p>
+<p><code>src/main/java/example/dashboard/DashboardPage.java</code></p>
+<pre><code class="language-java">package example.dashboard;
+
+import one.xis.ModelData;
+import one.xis.Page;
+import one.xis.WelcomePage;
+
+@WelcomePage
+@Page(&quot;/index.html&quot;)
+class DashboardPage {
+
+    @ModelData
+    String title() {
+        return &quot;Dashboard&quot;;
+    }
+}</code></pre>
+<p>Create the template manually or run <code>./gradlew xisTemplates</code> and refine the generated content. Because the controller already has a <code>title</code> model method, the generated template contains a <code>${title}</code> expression as a useful starting point:</p>
+<p><code>src/main/java/example/dashboard/DashboardPage.html</code></p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html xmlns:xis=&quot;https://xis.one/xsd&quot; lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;${title}&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;${title}&lt;/h1&gt;
+    &lt;p&gt;Your first XIS page is running.&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p>Run the app:</p>
+<pre><code class="language-bash">./gradlew bootRun</code></pre>
+<p>Open:</p>
+<pre><code class="language-text">http://localhost:8080/</code></pre>
+<p><code>@WelcomePage</code> marks the default entry page. The page is also available directly at <code>/index.html</code>.</p>
+<p>To generate a first test skeleton for the page, run:</p>
+<pre><code class="language-bash">./gradlew xisTests</code></pre>
+<p>This creates <code>src/test/java/example/dashboard/DashboardPageTest.java</code> if the file does not already exist. The generated test is intentionally small: it uses <code>@XisBootTest</code>, registers the page controller in the test context, opens <code>/index.html</code>, and leaves space for assertions against the rendered document.</p>
+<h3 id="add-an-action">Add an Action</h3>
+<p><code>src/main/java/example/dashboard/CounterPage.java</code></p>
+<pre><code class="language-java">package example.dashboard;
+
+import one.xis.Action;
+import one.xis.ModelData;
+import one.xis.Page;
+
+@Page(&quot;/counter.html&quot;)
+class CounterPage {
+
+    private int count;
+
+    @ModelData
+    int count() {
+        return count;
+    }
+
+    @Action
+    void increment() {
+        count++;
+    }
+}</code></pre>
+<p><code>src/main/java/example/dashboard/CounterPage.html</code></p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html xmlns:xis=&quot;https://xis.one/xsd&quot; lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;Counter&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Counter&lt;/h1&gt;
+    &lt;p&gt;Current count: &lt;span id=&quot;count&quot;&gt;${count}&lt;/span&gt;&lt;/p&gt;
+    &lt;button id=&quot;increment&quot; xis:action=&quot;increment&quot;&gt;Increment&lt;/button&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p>The action is invoked through XIS. You do not create a REST endpoint for it.</p>
+<p>You can generate the test file with <code>./gradlew xisTests</code>; you do not have to create the boilerplate yourself. The generated file is intentionally small, so make the behavior explicit by adding the click and assertions:</p>
+<p><code>src/test/java/example/dashboard/CounterPageTest.java</code></p>
+<pre><code class="language-java">package example.dashboard;
+
+import one.xis.boot.test.XisBootTest;
+import one.xis.context.IntegrationTestContext;
+import one.xis.test.InTestContext;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@XisBootTest
+class CounterPageTest {
+
+    private IntegrationTestContext context;
+
+    @InTestContext
+    private CounterPage counterPage;
+
+    @Test
+    void incrementUpdatesCounter() {
+        var client = context.openPage(&quot;/counter.html&quot;);
+        var document = client.getDocument();
+
+        assertEquals(&quot;0&quot;, document.getElementById(&quot;count&quot;).getInnerText());
+
+        document.getElementById(&quot;increment&quot;).click();
+
+        assertEquals(&quot;1&quot;, document.getElementById(&quot;count&quot;).getInnerText());
+    }
+}</code></pre>
+<h3 id="add-a-form-with-validation">Add a Form With Validation</h3>
+<p>Forms bind HTML controls to a Java object. XIS deserializes the submitted values, validates annotations, and calls the action only when validation succeeds.</p>
+<p><code>src/main/java/example/customer/CustomerForm.java</code></p>
+<pre><code class="language-java">package example.customer;
+
+import one.xis.validation.EMail;
+import one.xis.validation.LabelKey;
+import one.xis.validation.Mandatory;
+
+record CustomerForm(@Mandatory @LabelKey(&quot;customer.name&quot;) String name,
+        @Mandatory @EMail @LabelKey(&quot;customer.email&quot;) String email) {
+}</code></pre>
+<p><code>src/main/java/example/customer/CustomerNewPage.java</code></p>
+<pre><code class="language-java">package example.customer;
+
+import one.xis.Action;
+import one.xis.FormData;
+import one.xis.HtmlFile;
+import one.xis.Page;
+
+@Page(&quot;/customers/new.html&quot;)
+@HtmlFile(&quot;CustomerFormPage.html&quot;)
+class CustomerNewPage {
+
+    @FormData(&quot;customer&quot;)
+    CustomerForm customer() {
+        return new CustomerForm(&quot;&quot;, &quot;&quot;);
+    }
+
+    @Action
+    void save(@FormData(&quot;customer&quot;) CustomerForm customer) {
+        // Store the customer in your service or repository.
+    }
+}</code></pre>
+<p><code>src/main/java/example/customer/CustomerFormPage.html</code></p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html xmlns:xis=&quot;https://xis.one/xsd&quot; lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;Customer&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Customer&lt;/h1&gt;
+
+    &lt;form xis:binding=&quot;customer&quot;&gt;
+        &lt;xis:global-messages/&gt;
+
+        &lt;label for=&quot;name&quot; xis:error-binding=&quot;name&quot; xis:error-style=&quot;color: #b00020&quot;&gt;Name&lt;/label&gt;
+        &lt;input id=&quot;name&quot; xis:binding=&quot;name&quot; xis:error-class=&quot;error&quot;/&gt;
+        &lt;div xis:message-for=&quot;name&quot;&gt;&lt;/div&gt;
+
+        &lt;label for=&quot;email&quot; xis:error-binding=&quot;email&quot; xis:error-style=&quot;color: #b00020&quot;&gt;Email&lt;/label&gt;
+        &lt;input id=&quot;email&quot; type=&quot;email&quot; xis:binding=&quot;email&quot; xis:error-class=&quot;error&quot;/&gt;
+        &lt;div xis:message-for=&quot;email&quot;&gt;&lt;/div&gt;
+
+        &lt;button type=&quot;submit&quot; xis:action=&quot;save&quot;&gt;Save&lt;/button&gt;
+    &lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p><code>src/main/resources/messages.properties</code></p>
+<pre><code class="language-properties">customer.name=Name
+customer.email=Email
+validation.mandatory=${label} is required
+validation.email=Please enter a valid email address</code></pre>
+<p><code>xis:message-for</code> prints the field message. <code>&lt;xis:global-messages/&gt;</code> prints form-level validation messages. <code>xis:error-class</code> and <code>xis:error-style</code> let CSS or inline prototype styling highlight fields and labels while an error exists.</p>
+<h3 id="add-sql">Add SQL</h3>
+<p>Update the dependencies:</p>
+<p><code>build.gradle</code></p>
+<pre><code class="language-groovy">dependencies {
+    implementation &quot;one.xis:xis-spring&quot;
+    implementation &quot;one.xis:xis-sql&quot;
+    runtimeOnly &quot;org.postgresql:postgresql:42.7.11&quot;
+}</code></pre>
+<p>Create a local PostgreSQL database:</p>
+<pre><code class="language-bash">createdb xis_quickstart</code></pre>
+<p>Point the application at that database:</p>
+<p><code>src/main/resources/application.properties</code></p>
+<pre><code class="language-properties">xis.sql.url=jdbc:postgresql://localhost:5432/xis_quickstart
+xis.sql.driver-class-name=org.postgresql.Driver</code></pre>
+<p>If your local PostgreSQL needs explicit credentials, also add <code>xis.sql.user</code> and <code>xis.sql.password</code>.</p>
+<p>Add a DDL change set for the customer table. XIS discovers change-set classes at startup, runs missing changes against the configured <code>DataSource</code>, and records them in <code>__xis_schema_change</code>, so the table is created without a separate SQL script:</p>
+<p><code>src/main/java/example/customer/CustomerSchema.java</code></p>
+<pre><code class="language-java">package example.customer;
+
+import one.xis.ddl.Change;
+import one.xis.ddl.ChangeSet;
+import one.xis.ddl.DDL;
+
+@ChangeSet(&quot;customer-schema&quot;)
+class CustomerSchema {
+
+    @Change(&quot;001-create-customers&quot;)
+    void createCustomers(DDL ddl) {
+        var customers = ddl.createTableIfNotExists(&quot;customers&quot;);
+        customers.addColumn(&quot;id&quot;).bigint().generatedIdentity().primaryKey();
+        customers.addColumn(&quot;name&quot;).varchar(200).notNull();
+        customers.addColumn(&quot;email&quot;).varchar(200).notNull();
+    }
+}</code></pre>
+<p>Add the SQL entity, repository, and service:</p>
+<p><code>src/main/java/example/customer/Customer.java</code></p>
+<pre><code class="language-java">package example.customer;
+
+import one.xis.sql.Entity;
+
+@Entity(&quot;customers&quot;)
+class Customer {
+    Long id;
+    String name;
+    String email;
+}</code></pre>
+<p><code>src/main/java/example/customer/CustomerRepository.java</code></p>
+<pre><code class="language-java">package example.customer;
+
+import one.xis.sql.CrudRepository;
+import one.xis.sql.Repository;
+
+@Repository
+interface CustomerRepository extends CrudRepository&lt;Customer, Long&gt; {
+}</code></pre>
+<p><code>src/main/java/example/customer/CustomerService.java</code></p>
+<pre><code class="language-java">package example.customer;
+
+import java.util.List;
+
+interface CustomerService {
+
+    List&lt;Customer&gt; findAll();
+
+    CustomerForm newForm();
+
+    CustomerForm editForm(long id);
+
+    void save(Long id, CustomerForm form);
+}</code></pre>
+<p><code>src/main/java/example/customer/CustomerServiceImpl.java</code></p>
+<pre><code class="language-java">package example.customer;
+
+import one.xis.context.Component;
+
+import java.util.List;
+
+@Component
+class CustomerServiceImpl implements CustomerService {
+
+    private final CustomerRepository customers;
+
+    CustomerServiceImpl(CustomerRepository customers) {
+        this.customers = customers;
+    }
+
+    @Override
+    public List&lt;Customer&gt; findAll() {
+        return customers.findAll();
+    }
+
+    @Override
+    public CustomerForm newForm() {
+        return new CustomerForm(&quot;&quot;, &quot;&quot;);
+    }
+
+    @Override
+    public CustomerForm editForm(long id) {
+        var customer = customers.findById(id).orElseThrow();
+        return new CustomerForm(customer.name, customer.email);
+    }
+
+    @Override
+    public void save(Long id, CustomerForm form) {
+        var customer = new Customer();
+        customer.id = id;
+        customer.name = form.name();
+        customer.email = form.email();
+        customers.save(customer);
+    }
+}</code></pre>
+<p>Now let the form page save through the service and navigate back to the customer list:</p>
+<p><code>src/main/java/example/customer/CustomerNewPage.java</code></p>
+<pre><code class="language-java">package example.customer;
+
+import one.xis.Action;
+import one.xis.FormData;
+import one.xis.HtmlFile;
+import one.xis.Page;
+
+@Page(&quot;/customers/new.html&quot;)
+@HtmlFile(&quot;CustomerFormPage.html&quot;)
+class CustomerNewPage {
+
+    private final CustomerService customerService;
+
+    CustomerNewPage(CustomerService customerService) {
+        this.customerService = customerService;
+    }
+
+    @FormData(&quot;customer&quot;)
+    CustomerForm customer() {
+        return customerService.newForm();
+    }
+
+    @Action
+    Class&lt;?&gt; save(@FormData(&quot;customer&quot;) CustomerForm customer) {
+        customerService.save(null, customer);
+        return CustomerListPage.class;
+    }
+}</code></pre>
+<h3 id="add-a-customer-list">Add A Customer List</h3>
+<p>Add a list page and link it to the form page.</p>
+<p><code>src/main/java/example/customer/CustomerListPage.java</code></p>
+<pre><code class="language-java">package example.customer;
+
+import one.xis.ModelData;
+import one.xis.Page;
+
+import java.util.List;
+
+@Page(&quot;/customers.html&quot;)
+class CustomerListPage {
+
+    private final CustomerService customerService;
+
+    CustomerListPage(CustomerService customerService) {
+        this.customerService = customerService;
+    }
+
+    @ModelData
+    List&lt;Customer&gt; customers() {
+        return customerService.findAll();
+    }
+}</code></pre>
+<p><code>src/main/java/example/customer/CustomerListPage.html</code></p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html xmlns:xis=&quot;https://xis.one/xsd&quot; lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;Customers&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Customers&lt;/h1&gt;
+
+    &lt;p&gt;
+        &lt;a xis:page=&quot;/customers/new.html&quot;&gt;Add customer&lt;/a&gt;
+    &lt;/p&gt;
+
+    &lt;table&gt;
+        &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th&gt;Name&lt;/th&gt;
+            &lt;th&gt;Email&lt;/th&gt;
+            &lt;th&gt;&lt;/th&gt;
+        &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+        &lt;tr xis:repeat=&quot;customer:${customers}&quot;&gt;
+            &lt;td&gt;${customer.name}&lt;/td&gt;
+            &lt;td&gt;${customer.email}&lt;/td&gt;
+            &lt;td&gt;
+                &lt;a xis:page=&quot;/customers/${customer.id}/edit.html&quot;&gt;Edit&lt;/a&gt;
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;/tbody&gt;
+    &lt;/table&gt;
+
+    &lt;p xis:if=&quot;${empty(customers)}&quot;&gt;No customers yet.&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<h3 id="add-edit">Add Edit</h3>
+<p>Use a second page controller for editing, but keep the same <code>CustomerFormPage.html</code> template. The page URL carries the customer id as a path variable.</p>
+<p><code>src/main/java/example/customer/CustomerEditPage.java</code></p>
+<pre><code class="language-java">package example.customer;
+
+import one.xis.Action;
+import one.xis.FormData;
+import one.xis.HtmlFile;
+import one.xis.Page;
+import one.xis.PathVariable;
+
+@Page(&quot;/customers/{id}/edit.html&quot;)
+@HtmlFile(&quot;CustomerFormPage.html&quot;)
+class CustomerEditPage {
+
+    private final CustomerService customerService;
+
+    CustomerEditPage(CustomerService customerService) {
+        this.customerService = customerService;
+    }
+
+    @FormData(&quot;customer&quot;)
+    CustomerForm customer(@PathVariable(&quot;id&quot;) long id) {
+        return customerService.editForm(id);
+    }
+
+    @Action
+    Class&lt;?&gt; save(@PathVariable(&quot;id&quot;) long id, @FormData(&quot;customer&quot;) CustomerForm customer) {
+        customerService.save(id, customer);
+        return CustomerListPage.class;
+    }
+}</code></pre>
+<p>The HTML template does not change. The existing customer id comes from the page URL, not from a hidden form field.</p>
+<h3 id="move-the-customer-ui-into-frontlets">Move The Customer UI Into Frontlets</h3>
+<p>The customer pages now work end to end: list, new, edit, validation, and SQL persistence. When a part of the UI should be modular or replaceable on its own, move it into frontlets. A frontlet has its own controller and template fragment, and XIS can reload or replace just that fragment instead of rebuilding the whole page.</p>
+<p><code>src/main/java/example/customer/CustomerFrontletPage.java</code></p>
+<pre><code class="language-java">package example.customer;
+
+import one.xis.Page;
+
+@Page(&quot;/customer-frontlet.html&quot;)
+class CustomerFrontletPage {
+}</code></pre>
+<p><code>src/main/java/example/customer/CustomerFrontletPage.html</code></p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html xmlns:xis=&quot;https://xis.one/xsd&quot; lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;Customers&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Customers&lt;/h1&gt;
+    &lt;main xis:frontlet-container=&quot;customer-main&quot;
+          xis:default-frontlet=&quot;CustomerListFrontlet&quot;&gt;&lt;/main&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p><code>src/main/java/example/customer/CustomerListFrontlet.java</code></p>
+<pre><code class="language-java">package example.customer;
+
+import one.xis.Frontlet;
+import one.xis.ModelData;
+
+import java.util.List;
+
+@Frontlet(containerId = &quot;customer-main&quot;)
+class CustomerListFrontlet {
+
+    private final CustomerService customerService;
+
+    CustomerListFrontlet(CustomerService customerService) {
+        this.customerService = customerService;
+    }
+
+    @ModelData
+    List&lt;Customer&gt; customers() {
+        return customerService.findAll();
+    }
+}</code></pre>
+<p><code>src/main/java/example/customer/CustomerListFrontlet.html</code></p>
+<pre><code class="language-html">&lt;xis:template xmlns:xis=&quot;https://xis.one/xsd&quot;&gt;
+    &lt;p&gt;
+        &lt;button xis:frontlet=&quot;CustomerFormFrontlet&quot;
+                xis:target-container=&quot;customer-main&quot;&gt;Add customer&lt;/button&gt;
+    &lt;/p&gt;
+
+    &lt;table&gt;
+        &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th&gt;Name&lt;/th&gt;
+            &lt;th&gt;Email&lt;/th&gt;
+            &lt;th&gt;&lt;/th&gt;
+        &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+        &lt;tr xis:repeat=&quot;customer:${customers}&quot;&gt;
+            &lt;td&gt;${customer.name}&lt;/td&gt;
+            &lt;td&gt;${customer.email}&lt;/td&gt;
+            &lt;td&gt;
+                &lt;a xis:frontlet=&quot;CustomerFormFrontlet&quot;
+                   xis:target-container=&quot;customer-main&quot;&gt;
+                    &lt;xis:parameter name=&quot;customerId&quot; value=&quot;${customer.id}&quot;/&gt;
+                    Edit
+                &lt;/a&gt;
+            &lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;/tbody&gt;
+    &lt;/table&gt;
+
+    &lt;p xis:if=&quot;${empty(customers)}&quot;&gt;No customers yet.&lt;/p&gt;
+&lt;/xis:template&gt;</code></pre>
+<p><code>src/main/java/example/customer/CustomerFormFrontlet.java</code></p>
+<pre><code class="language-java">package example.customer;
+
+import one.xis.Action;
+import one.xis.FormData;
+import one.xis.Frontlet;
+import one.xis.FrontletParameter;
+import one.xis.NullAllowed;
+
+@Frontlet(containerId = &quot;customer-main&quot;)
+class CustomerFormFrontlet {
+
+    private final CustomerService customerService;
+
+    CustomerFormFrontlet(CustomerService customerService) {
+        this.customerService = customerService;
+    }
+
+    @FormData(&quot;customer&quot;)
+    CustomerForm customer(@FrontletParameter(&quot;customerId&quot;) @NullAllowed Long customerId) {
+        return customerId == null ? customerService.newForm() : customerService.editForm(customerId);
+    }
+
+    @Action
+    Class&lt;?&gt; save(@FrontletParameter(&quot;customerId&quot;) @NullAllowed Long customerId,
+            @FormData(&quot;customer&quot;) CustomerForm customer) {
+        customerService.save(customerId, customer);
+        return CustomerListFrontlet.class;
+    }
+}</code></pre>
+<p><code>src/main/java/example/customer/CustomerFormFrontlet.html</code></p>
+<pre><code class="language-html">&lt;xis:template xmlns:xis=&quot;https://xis.one/xsd&quot;&gt;
+    &lt;form xis:binding=&quot;customer&quot;&gt;
+        &lt;xis:global-messages/&gt;
+
+        &lt;label for=&quot;name&quot; xis:error-binding=&quot;name&quot; xis:error-style=&quot;color: #b00020&quot;&gt;Name&lt;/label&gt;
+        &lt;input id=&quot;name&quot; xis:binding=&quot;name&quot; xis:error-class=&quot;error&quot;/&gt;
+        &lt;div xis:message-for=&quot;name&quot;&gt;&lt;/div&gt;
+
+        &lt;label for=&quot;email&quot; xis:error-binding=&quot;email&quot; xis:error-style=&quot;color: #b00020&quot;&gt;Email&lt;/label&gt;
+        &lt;input id=&quot;email&quot; type=&quot;email&quot; xis:binding=&quot;email&quot; xis:error-class=&quot;error&quot;/&gt;
+        &lt;div xis:message-for=&quot;email&quot;&gt;&lt;/div&gt;
+
+        &lt;button type=&quot;submit&quot; xis:action=&quot;save&quot;&gt;Save&lt;/button&gt;
+        &lt;button type=&quot;button&quot;
+                xis:frontlet=&quot;CustomerListFrontlet&quot;
+                xis:target-container=&quot;customer-main&quot;&gt;Cancel&lt;/button&gt;
+    &lt;/form&gt;
+&lt;/xis:template&gt;</code></pre>
+<p>After a successful save, the action returns <code>CustomerListFrontlet.class</code>, so the list replaces the form in the same container. If validation fails, the action is not called and the form stays visible with validation messages.</p>
+<p>Frontlets can read <code>@PathVariable</code> values from the current page URL, even when the frontlet itself has no URL. Use <code>@FrontletParameter</code> for values that belong to a specific frontlet instance, such as the <code>customerId</code> passed from the list to the form above. The frontlet action can read the same parameter, so the edit id does not need a hidden form field.</p>
+<p>Frontlets also become useful when an application grows beyond one deployment unit. Pages and frontlets can be served by different XIS applications, so teams can split a shell page and selected UI fragments across runtimes. That is an advanced setup; continue with <a href="/docs/guide/advanced/microfrontend-architecture.html">Microfrontend Architecture</a> when you need it.</p>
+<h3 id="add-authentication">Add Authentication</h3>
+<p>Add authentication when the customer screen should require a login:</p>
+<pre><code class="language-groovy">dependencies {
+    implementation &quot;one.xis:xis-spring&quot;
+    implementation &quot;one.xis:xis-sql&quot;
+    implementation &quot;one.xis:xis-authentication&quot;
+    implementation &quot;one.xis:xis-local-credentials&quot;
+    implementation &quot;one.xis:xis-local-credentials-sql&quot;
+    runtimeOnly &quot;org.postgresql:postgresql:42.7.11&quot;
+}</code></pre>
+<p>Provide a <code>UserAccountService</code> for the account and roles. <code>xis-local-credentials</code> validates the password separately and <code>xis-local-credentials-sql</code> stores the password hash in SQL:</p>
+<pre><code class="language-java">package example.security;
+
+import one.xis.auth.UserAccount;
+import one.xis.auth.UserAccountImpl;
+import one.xis.auth.UserAccountService;
+import one.xis.context.Component;
+
+import java.util.Optional;
+import java.util.Set;
+
+@Component
+class DemoUserAccountService implements UserAccountService&lt;UserAccount&gt; {
+
+    @Override
+    public Optional&lt;UserAccount&gt; getUserAccount(String userId) {
+        if (!&quot;admin&quot;.equals(userId)) {
+            return Optional.empty();
+        }
+        var user = new UserAccountImpl();
+        user.setUserId(&quot;admin&quot;);
+        user.setRoles(Set.of(&quot;ADMIN&quot;));
+        return Optional.of(user);
+    }
+
+    @Override
+    public void saveUserAccount(UserAccount userAccount) {
+        // Store account profile data here if the application needs it.
+    }
+}</code></pre>
+<p>Protect the customer page with <code>@Authenticated</code> when a login is enough:</p>
+<pre><code class="language-java">package example.customer;
+
+import one.xis.Page;
+import one.xis.Authenticated;
+
+@Authenticated
+@Page(&quot;/customer-frontlet.html&quot;)
+class CustomerFrontletPage {
+}</code></pre>
+<p>Use <code>@Roles</code> when named roles are required. For example, keep the list visible to every logged-in user but restrict saving to admins:</p>
+<pre><code class="language-java">package example.customer;
+
+import one.xis.Action;
+import one.xis.FormData;
+import one.xis.Frontlet;
+import one.xis.FrontletParameter;
+import one.xis.NullAllowed;
+import one.xis.Roles;
+
+@Frontlet(containerId = &quot;customer-main&quot;)
+class CustomerFormFrontlet {
+
+    private final CustomerService customerService;
+
+    CustomerFormFrontlet(CustomerService customerService) {
+        this.customerService = customerService;
+    }
+
+    @FormData(&quot;customer&quot;)
+    CustomerForm customer(@FrontletParameter(&quot;customerId&quot;) @NullAllowed Long customerId) {
+        return customerId == null ? customerService.newForm() : customerService.editForm(customerId);
+    }
+
+    @Action
+    @Roles(&quot;ADMIN&quot;)
+    Class&lt;?&gt; save(@FrontletParameter(&quot;customerId&quot;) @NullAllowed Long customerId,
+            @FormData(&quot;customer&quot;) CustomerForm customer) {
+        customerService.save(customerId, customer);
+        return CustomerListFrontlet.class;
+    }
+}</code></pre>
+<p>The list template can also hide controls that do not match the current user&#x27;s roles:</p>
+<pre><code class="language-html">&lt;button xis:if=&quot;isUserInRole(&#x27;ADMIN&#x27;)&quot;
+        xis:frontlet=&quot;CustomerFormFrontlet&quot;
+        xis:target-container=&quot;customer-main&quot;&gt;Add customer&lt;/button&gt;</code></pre>
+<p><code>isUserInRole(...)</code> and <code>isUserInRoles(...)</code> run in the browser. They are useful for a cleaner UI, but they are not security. Keep <code>@Roles</code> or <code>@Authenticated</code> on the Java controller or action that must be protected.</p>
+  </main>
+</div>
+</body>
+</html>

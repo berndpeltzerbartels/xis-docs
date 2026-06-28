@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scheduled Jobs - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Operations / <span data-current-page>Scheduled jobs</span></div>
+    <h1>Scheduled jobs</h1>
+    <p class="lead">
+      Scheduled jobs are a small but useful public feature. This chapter covers fixed delay, fixed rate, the scheduler
+      component, and typical runtime implications.
+    </p>
+
+    <h2>Fixed delay and fixed rate</h2>
+    <p>
+      A fixed-delay job waits after one run has finished before scheduling the next. A fixed-rate job aims for a regular
+      cadence. The difference matters when work can take longer than expected, so the code examples show both variants
+      instead of treating them as interchangeable timers.
+    </p>
+    <pre><code class="language-java">import one.xis.context.Component;
+import one.xis.context.Scheduled;
+
+import java.util.concurrent.TimeUnit;
+
+@Component
+class ReminderJob {
+
+    @Scheduled(initialDelay = 1, fixedDelay = 1, timeUnit = TimeUnit.MINUTES)
+    void sendDueReminders() {
+        reminderService.sendDueReminders();
+    }
+}</code></pre>
+    <pre><code class="language-java">@Scheduled(initialDelay = 5, fixedRate = 10, timeUnit = TimeUnit.SECONDS)
+void pollExternalStatus() {
+    externalStatusService.poll();
+}</code></pre>
+
+    <h2>Scheduler components</h2>
+    <p>
+      Scheduled work should live in ordinary components with explicit dependencies. That keeps jobs testable and avoids
+      static utility code that is hard to replace in integration tests.
+    </p>
+
+    <h2>Interaction with UI refresh</h2>
+    <p>
+      A scheduled job can publish refresh events after it changes state. It should not talk directly to browser-specific
+      structures. The browser should learn about the change through the same event and refresh model as any other
+      server-side update.
+    </p>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Language Support - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Reference / <span data-current-page>Language support</span></div>
+    <h1>Language support</h1>
+    <p class="lead">
+      Java is the canonical documentation path. Kotlin and Groovy are supported, but their chapters should be honest
+      about requirements, native-image limitations, and tested behavior.
+    </p>
+
+    <h2>Java as the main path</h2>
+    <p>
+      The main documentation examples use Java. That keeps the reference path predictable and matches the strongest test
+      and usage focus.
+    </p>
+    <pre><code class="language-java">import one.xis.ModelData;
+import one.xis.Page;
+
+@Page("/hello.html")
+class HelloPage {
+    @ModelData("message")
+    String message() {
+        return "Hello from Java";
+    }
+}</code></pre>
+
+    <h2>Kotlin</h2>
+    <p>
+      Kotlin controllers and form objects are part of the supported surface. Kotlin is also relevant for native images,
+      because Java and Kotlin are the intended native application languages.
+    </p>
+    <pre><code class="language-kotlin">import one.xis.ModelData
+import one.xis.Page
+
+@Page("/hello-kotlin.html")
+class HelloKotlinPage {
+    @ModelData("message")
+    fun message(): String = "Hello from Kotlin"
+}</code></pre>
+
+    <h2>Groovy</h2>
+    <p>
+      Groovy is supported on the JVM path and has tests, but it is not the main development path. XIS documents that
+      distinction explicitly so Groovy is neither overstated as the main path nor treated as accidental support.
+    </p>
+    <pre><code class="language-groovy">import one.xis.ModelData
+import one.xis.Page
+
+@Page("/hello-groovy.html")
+class HelloGroovyPage {
+    @ModelData("message")
+    String message() {
+        "Hello from Groovy"
+    }
+}</code></pre>
+  </main>
+</div>
+</body>
+</html>

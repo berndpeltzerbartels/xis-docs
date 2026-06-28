@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Template Location And Mapping - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Template Location And Mapping</span></div>
+    <h1>Template Location And Mapping</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="template-location-and-mapping">Template Location And Mapping</h2>
+<p>Every page, frontlet, and include has Java code and an HTML template. XIS looks for the template by convention first, and you only need an annotation when you want to override that convention.</p>
+<h3 id="default-location">Default Location</h3>
+<p>By default, put the HTML file next to the Java controller in the same package:</p>
+<pre><code class="language-text">src/main/java/
+  example/products/
+    ProductPage.java
+    ProductPage.html</code></pre>
+<p>For a controller class named <code>ProductPage</code>, XIS looks for <code>ProductPage.html</code> in the same package. This works for files kept under <code>src/main/java</code> because the XIS Gradle plugin copies HTML templates into the application resources during the build.</p>
+<p>This side-by-side layout is the recommended XIS style. Most changes touch the controller and template together, and the project tree immediately shows which Java class owns which HTML file.</p>
+<p>During development, XIS resolves side-by-side templates from <code>src/main/java</code> before it falls back to copied build resources. When an HTML template is changed on disk, the next browser request reparses it if the file timestamp changed. That means normal template edits usually only need a browser reload, not a Java restart or a Gradle resource-copy step.</p>
+<p>The same package can also be mirrored under <code>src/main/resources</code>:</p>
+<pre><code class="language-text">src/main/resources/
+  example/products/
+    ProductPage.html</code></pre>
+<p>Use the side-by-side <code>src/main/java</code> style when you want the controller and template to be easy to find together. Use <code>src/main/resources</code> when your project convention keeps all resource files there.</p>
+<p>If the same resource path exists in both source roots, <code>src/main/java</code> wins. This keeps the controller-near template as the active development file.</p>
+<h3 id="generate-missing-templates-and-tests">Generate Missing Templates And Tests</h3>
+<p>The <a href="/docs/guide/gradle-plugin.html">XIS Gradle plugin and tools</a> can generate missing template files for page and frontlet controllers:</p>
+<pre><code class="language-bash">./gradlew xisTemplates</code></pre>
+<p>The generated files are only a starting point. They are written to the package of the Java controller, so the project tree shows which template belongs to which controller.</p>
+<p>It is usually better to write the controller skeleton before running the generator. If the controller already contains its <code>@ModelData</code>, <code>@FormData</code>, and <code>@Action</code> methods, <code>xisTemplates</code> can create a more useful template: model data is rendered with expressions or <code>xis:foreach</code>, form data becomes a bound form with validation message placeholders, and actions become buttons. In other words, the generated template is not just based on the controller class name; it tries to mirror the controller methods that define the page contract.</p>
+<p>For example, a controller with a <code>@FormData(&quot;customer&quot;)</code> method and a matching save action will produce a form using <code>xis:binding=&quot;customer&quot;</code>, field bindings, error bindings, and a submit button. You still edit the generated HTML, but you start with the important XIS wiring already in place.</p>
+<p>The same plugin can generate missing integration-test skeletons for page controllers:</p>
+<pre><code class="language-bash">./gradlew xisTests</code></pre>
+<p>The generated tests are written under <code>src/test/java</code> in the same package as the page controller. They use <code>@XisBootTest</code>, register the page controller in the XIS test context, and open the page by URL. The XIS Gradle plugin adds the required test starter automatically; do not add <code>xis-test</code> or <code>xis-boot-starter-test</code> again in a normal plugin-based build. Existing files are never overwritten, so both tasks are safe to run repeatedly while you add controllers.</p>
+<p>You can run both tasks together after creating a page class:</p>
+<pre><code class="language-bash">./gradlew xisTemplates xisTests</code></pre>
+<p>That gives you the two files a new page usually needs next: the HTML template and a first executable test. For best results, first sketch the controller methods that should exist, then generate the template and test, and then refine both files into the final behavior.</p>
+<h3 id="explicit-template-with-htmlfile">Explicit Template With <code>@HtmlFile</code></h3>
+<p>Use <code>@HtmlFile</code> when the template name or location should not follow the default convention. The annotation works for templates copied from <code>src/main/java</code> and for templates kept directly in <code>src/main/resources</code>; at runtime both are classpath resources.</p>
+<pre><code class="language-java">package example.products;
+
+import one.xis.HtmlFile;
+import one.xis.Page;
+
+@Page(&quot;/products.html&quot;)
+@HtmlFile(&quot;ProductList.html&quot;)
+class ProductPage {
+}</code></pre>
+<p>A relative <code>@HtmlFile</code> path is resolved from the controller package. The example above looks for:</p>
+<pre><code class="language-text">example/products/ProductList.html</code></pre>
+<p>An absolute path starts with <code>/</code> and is resolved from the classpath resource root:</p>
+<pre><code class="language-java">package example.products;
+
+import one.xis.HtmlFile;
+import one.xis.Page;
+
+@Page(&quot;/products.html&quot;)
+@HtmlFile(&quot;/templates/ProductList.html&quot;)
+class ProductPage {
+}</code></pre>
+<p>This looks for:</p>
+<pre><code class="language-text">templates/ProductList.html</code></pre>
+<p>Use an absolute path when a template should live in a shared folder independent of the controller package. Use a relative path when the template should still be organized near the controller package, but should not use the controller class name.</p>
+<h3 id="shared-templates">Shared Templates</h3>
+<p>Several controllers can use the same template by pointing them to the same <code>@HtmlFile</code>.</p>
+<pre><code class="language-java">package example.products;
+
+import one.xis.HtmlFile;
+import one.xis.Page;
+
+@Page(&quot;/products.html&quot;)
+@HtmlFile(&quot;/templates/catalog.html&quot;)
+class ProductPage {
+}</code></pre>
+<pre><code class="language-java">package example.offers;
+
+import one.xis.HtmlFile;
+import one.xis.Page;
+
+@Page(&quot;/offers.html&quot;)
+@HtmlFile(&quot;/templates/catalog.html&quot;)
+class OfferPage {
+}</code></pre>
+<p>This is useful when different controllers expose the same model shape and should render with the same HTML.</p>
+<h3 id="default-templates">Default Templates</h3>
+<p><code>@DefaultHtmlFile</code> is mainly useful for reusable library controllers that provide a framework default while still allowing an application to override the template with <code>@HtmlFile</code>. See <a href="/docs/guide/advanced/reusable-web-artifacts.html">Reusable web artifacts</a> for the full pattern.</p>
+<pre><code class="language-java">package example.library;
+
+import one.xis.DefaultHtmlFile;
+import one.xis.Page;
+
+@Page(&quot;/profile.html&quot;)
+@DefaultHtmlFile(&quot;/default-profile.html&quot;)
+class ProfilePage {
+}</code></pre>
+<p>Application code normally uses the default convention or <code>@HtmlFile</code>.</p>
+  </main>
+</div>
+</body>
+</html>

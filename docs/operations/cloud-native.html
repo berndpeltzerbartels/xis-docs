@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cloud Native - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Operations / <span data-current-page>Cloud native</span></div>
+    <h1>Cloud native and native images</h1>
+    <p class="lead">
+      XIS can build JVM applications and GraalVM native executables. Native images are mainly about startup, memory, and
+      deployment shape. Throughput-sensitive services should still be benchmarked in their target environment.
+    </p>
+
+    <h2>Native build tasks</h2>
+    <p>
+      The normal native task uses conservative defaults that work across machines. <code>xisNativeCompileForHost</code>
+      is meant for deployments where the executable is built on the same CPU family on which it will run. It can pass
+      host-oriented compiler options without making that the default for every build pipeline.
+    </p>
+    <p>
+      Optimization level should be configurable, but the default should remain aligned with GraalVM's documented
+      recommendation. Users who care about a specific service must benchmark their actual workload.
+    </p>
+    <pre><code class="language-groovy">dependencies {
+    implementation "one.xis:xis-boot-native"
+}</code></pre>
+    <pre><code class="language-bash">./gradlew xisNativeCompile
+./gradlew xisNativeCompileForHost
+./gradlew xisNativeCompileForHost -PxisNativeImageArgs="-O3"</code></pre>
+
+    <h2>Native metadata</h2>
+    <p>
+      Native applications use generated catalogs and generated metadata instead of relying on runtime classpath scanning.
+      This is a major part of the XIS native value: users should not have to hand-maintain reflection, proxy, resource,
+      and component metadata.
+    </p>
+    <pre><code class="language-java">import one.xis.boot.XISBootApplication;
+
+@XISBootApplication
+public class Application {
+}</code></pre>
+    <p>
+      The plugin uses the application class to generate the native entry point and the metadata catalogs. Application
+      code does not call the generated native runner directly.
+    </p>
+
+    <h2>What native is good at</h2>
+    <p>
+      Native images are attractive for fast startup, lower memory use, small service processes, command-line helpers,
+      and environments where many JVM processes would otherwise be too expensive. These are real operational benefits
+      for XIS Boot applications and pure HTTP Controller services.
+    </p>
+
+    <h2>What native does not promise</h2>
+    <p>
+      A native executable is not automatically faster for long-running server throughput. The JVM can optimize hot code
+      while the application is running, and that can beat compile-time optimization in some workloads. Choose native for
+      startup time, memory footprint, packaging, and operational shape; benchmark long-running throughput in the target
+      environment before treating native as the faster option.
+    </p>
+
+    <h2>Native database modules</h2>
+    <p>
+      Native images need database drivers and driver metadata at build time. On the JVM, a JDBC driver can often be a
+      late <code>runtimeOnly</code> dependency and still be discovered through <code>DriverManager</code> or service
+      loading. A native image is closed during the build: driver classes, service registrations, resources, reflection
+      needs, and initialization behavior must already be reachable.
+    </p>
+    <p>
+      Add the normal persistence module plus the native driver module for the database used by the application:
+    </p>
+    <pre><code class="language-groovy">dependencies {
+    implementation "one.xis:xis-boot-native"
+    implementation "one.xis:xis-sql"
+    implementation "one.xis:xis-boot-native-postgresql"
+}</code></pre>
+    <p>
+      The available native SQL driver modules are <code>xis-boot-native-h2</code>,
+      <code>xis-boot-native-postgresql</code>, and <code>xis-boot-native-mariadb</code>. For MongoDB applications use
+      <code>xis-boot-native-mongodb</code> together with the MongoDB repository module.
+    </p>
+    <pre><code class="language-groovy">dependencies {
+    implementation "one.xis:xis-boot-native"
+    implementation "one.xis:xis-mongodb"
+    implementation "one.xis:xis-boot-native-mongodb"
+}</code></pre>
+    <p>
+      The complete guide has the full dependency matrix and background in
+      <a href="/docs/guide/cloud-native.html#database-modules">Database Modules</a>.
+    </p>
+
+    <h2>Reflection, records, and inner classes</h2>
+    <p>
+      Native-image support must include the classes used by controllers, DTOs, nested DTOs, records, validation objects,
+      and response models. Inner classes matter because they often appear naturally in small page controllers and form
+      models. The generated metadata must walk that structure instead of assuming one public top-level class per file.
+    </p>
+
+    <h2>HTTP services</h2>
+    <p>
+      The HTTP Controller API is an especially clean native-image target. A small service can depend on the HTTP runtime,
+      validation, and its own business code without shipping the page framework JavaScript resources. If an application
+      uses XIS pages, those resources are included because the browser runtime needs them.
+    </p>
+    <pre><code class="language-groovy">dependencies {
+    implementation "one.xis:xis-http-controller-native"
+}</code></pre>
+  </main>
+</div>
+</body>
+</html>

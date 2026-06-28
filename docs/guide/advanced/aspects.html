@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aspects And Interface Advice - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / Advanced / <span data-current-page>Aspects And Interface Advice</span></div>
+    <h1>Aspects And Interface Advice</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="aspects-and-interface-advice">Aspects And Interface Advice</h2>
+<p><a href="/docs/guide/advanced/index.html">Advanced topics</a></p>
+<p>XIS Boot has a small AOP-style mechanism for cross-cutting behavior. It is deliberately narrower than AspectJ or Spring AOP: advice is applied only to components that are used through an interface. XIS does not modify classes and does not use bytecode generation.</p>
+<p>This limitation is intentional. Interface proxies keep the runtime friendly to native-image builds, avoid bytecode and classloader surprises, produce clearer error messages, and keep object lifetimes simple for the garbage collector. The price is explicit architecture: code that should be advised must be used through an interface.</p>
+<p>Use this when a library or application needs behavior such as timing, transactions, locking, retries, or auditing around service method calls.</p>
+<h3 id="shape">Shape</h3>
+<p>Create an annotation and mark that annotation with <code>@UseAdvice</code>:</p>
+<pre><code class="language-java">import one.xis.context.UseAdvice;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+
+@UseAdvice(TimedAdvice.class)
+@Target({TYPE, METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@interface Timed {
+}</code></pre>
+<p>The advice receives an <code>AdviceInvocation</code>. It can inspect the method, arguments, annotations, target object, and context, and then call <code>proceed()</code>.</p>
+<pre><code class="language-java">import one.xis.context.Advice;
+import one.xis.context.AdviceInvocation;
+
+class TimedAdvice implements Advice {
+
+    @Override
+    public Object around(AdviceInvocation invocation) throws Throwable {
+        long start = System.nanoTime();
+        try {
+            return invocation.proceed();
+        } finally {
+            long millis = (System.nanoTime() - start) / 1_000_000;
+            System.out.println(invocation.method().getName() + &quot; took &quot; + millis + &quot; ms&quot;);
+        }
+    }
+}</code></pre>
+<h3 id="usage">Usage</h3>
+<p>Apply the annotation to an implementation method and inject the service through its interface:</p>
+<pre><code class="language-java">interface CustomerService {
+    void update(Customer customer);
+}</code></pre>
+<pre><code class="language-java">import one.xis.context.Service;
+
+@Service
+class CustomerServiceImpl implements CustomerService {
+
+    @Timed
+    public void update(Customer customer) {
+        // business logic
+    }
+}</code></pre>
+<pre><code class="language-java">@Service
+class CustomerPageService {
+
+    private final CustomerService customerService;
+
+    CustomerPageService(CustomerService customerService) {
+        this.customerService = customerService;
+    }
+}</code></pre>
+<p>The annotation may also be placed on the implementation class or the service interface. Type-level advice applies to all methods that are called through the proxied interface.</p>
+<p>The original object remains the target for dependency injection, <code>@Init</code>, <code>@Bean</code>, <code>@Scheduled</code>, and other framework reflection. The object injected into interface consumers is a JDK proxy.</p>
+<h3 id="limits">Limits</h3>
+<p>is not declared by such an interface, fails fast.</p>
+<ul>
+<li>A component must be used through an interface to be advised.</li>
+<li>XIS validates advice placement at context startup. Advice on a class without a usable interface, or on a method that</li>
+<li>Injecting the concrete implementation class bypasses advice.</li>
+<li>Self-invocation is not intercepted. A call like <code>this.update(...)</code> inside <code>CustomerServiceImpl</code> is a normal Java call.</li>
+<li>Advice classes currently need a no-argument constructor.</li>
+</ul>
+<p>For generated interface proxies such as repository proxies, see <a href="/docs/guide/advanced/custom-proxies.html">Custom proxies</a>.</p>
+  </main>
+</div>
+</body>
+</html>

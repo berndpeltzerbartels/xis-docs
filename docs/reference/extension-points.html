@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Extension Points - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Reference / <span data-current-page>Extension points</span></div>
+    <h1>Extension points</h1>
+    <p class="lead">
+      Advanced extension points include aspects, interface advice, custom proxies, request filters, HTTP filters, custom
+      JavaScript, and custom EL functions.
+    </p>
+
+    <h2>Use extension points sparingly</h2>
+    <p>
+      Extension points exist so applications and libraries can integrate with the framework without forking it. They are
+      not meant to be the first solution for normal page behavior. Prefer ordinary pages, actions, repositories, and
+      services until the repeated pattern is clear.
+    </p>
+
+    <h2>Filters</h2>
+    <p>
+      HTTP filters are the right place for cross-cutting request handling such as static resource shortcuts, diagnostic
+      headers, or special integration endpoints. Page logic should stay in page controllers.
+    </p>
+    <pre><code class="language-java">import one.xis.context.Component;
+import one.xis.http.FilterChain;
+import one.xis.http.HttpFilter;
+import one.xis.http.HttpRequest;
+import one.xis.http.HttpResponse;
+
+import java.util.UUID;
+
+@Component
+class RequestIdFilter implements HttpFilter {
+    @Override
+    public void doFilter(HttpRequest request, HttpResponse response, FilterChain chain) {
+        response.addHeader("X-Request-Id", UUID.randomUUID().toString());
+        chain.doFilter(request, response);
+    }
+}</code></pre>
+
+    <h2>Custom EL functions</h2>
+    <p>
+      Custom expression-language functions can make templates cleaner when a formatting or calculation rule is repeated.
+      They should remain deterministic and presentation-oriented. Business decisions belong in model data or controller
+      methods.
+    </p>
+    <pre><code class="language-text"># src/main/resources/META-INF/xis/js/extensions
+js/template-functions.js</code></pre>
+    <pre><code class="language-javascript">XIS.addElFunction('initials', function(name) {
+    return String(name || '')
+        .trim()
+        .split(/\s+/)
+        .map(part =&gt; part.charAt(0).toUpperCase())
+        .join('');
+});</code></pre>
+    <pre><code class="language-html">&lt;span class="avatar"&gt;${initials(customer.name)}&lt;/span&gt;</code></pre>
+
+    <h2>Proxies and aspects</h2>
+    <p>
+      Proxy and advice mechanisms are advanced integration tools. They are useful for infrastructure concerns, but they
+      can also make control flow harder to read. Reach for them after the ordinary component model is clear, not as the
+      default way to structure application code.
+    </p>
+    <pre><code class="language-java">import one.xis.context.Advice;
+import one.xis.context.AdviceInvocation;
+import one.xis.context.UseAdvice;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+@UseAdvice(TimedAdvice.class)
+@Retention(RetentionPolicy.RUNTIME)
+@interface Timed {
+}
+
+class TimedAdvice implements Advice {
+    @Override
+    public Object around(AdviceInvocation invocation) throws Throwable {
+        long start = System.nanoTime();
+        try {
+            return invocation.proceed();
+        } finally {
+            System.out.println(invocation.method().getName() + " took " + (System.nanoTime() - start) + " ns");
+        }
+    }
+}</code></pre>
+
+    <h2>Replaceable defaults</h2>
+    <p>
+      Framework modules and reusable libraries can provide a fallback implementation with <code>@DefaultComponent</code>.
+      If the application provides a normal component for the same type, the normal component wins. This is useful when a
+      module should work out of the box but still be easy to replace.
+    </p>
+    <pre><code class="language-java">import one.xis.context.DefaultComponent;
+
+@DefaultComponent
+class DefaultMailSender implements MailSender {
+    @Override
+    public void send(Message message) {
+        // framework or library default
+    }
+}</code></pre>
+    <pre><code class="language-java">import one.xis.context.Component;
+
+@Component
+class SmtpMailSender implements MailSender {
+    @Override
+    public void send(Message message) {
+        // application-specific implementation
+    }
+}</code></pre>
+    <p>
+      The replacement rule also applies to injected collections and to <code>@Bean</code> methods declared on a replaced
+      default component. That keeps defaults from leaking into the runtime after the application has supplied a real
+      implementation.
+    </p>
+  </main>
+</div>
+</body>
+</html>

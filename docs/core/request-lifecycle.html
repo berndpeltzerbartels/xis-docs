@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Request Lifecycle - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Core / <span data-current-page>Request lifecycle</span></div>
+    <h1>Request lifecycle</h1>
+    <p class="lead">
+      XIS turns page loads, navigation, actions, forms, shared values, client state, and refresh events into one coherent
+      browser/server flow.
+    </p>
+
+    <h2>Lifecycle picture</h2>
+    <div class="flow-steps" aria-label="XIS request lifecycle">
+      <div class="flow-step"><strong>1. Browser event</strong><span>Link, button, form, modal, drag/drop, or refresh signal.</span></div>
+      <div class="flow-step"><strong>2. Small XIS request</strong><span>The runtime sends the action, parameters, form data, and client id.</span></div>
+      <div class="flow-step"><strong>3. Controller method</strong><span>Java code validates, calls services, and returns a response.</span></div>
+      <div class="flow-step"><strong>4. Server-rendered result</strong><span>XIS renders the affected page, frontlet, modal, or model fragment.</span></div>
+      <div class="flow-step"><strong>5. DOM replacement</strong><span>The browser runtime replaces the relevant elements; the shell stays alive.</span></div>
+    </div>
+
+    <h2>Initial load</h2>
+    <p>
+      On the first request, XIS resolves the page, creates the model data, renders the HTML, and sends the page together
+      with the runtime scripts needed for later interactions. A reload or deep link must be able to reconstruct the page
+      without relying on hidden client state.
+    </p>
+
+    <h2>Action request</h2>
+    <p>
+      A click, form submit, drag-and-drop action, or modal command sends a small request to the server. The controller
+      method runs, validation is applied where relevant, and the response describes the next UI state. The browser does
+      not reimplement that decision. It applies the server response.
+    </p>
+    <pre><code class="language-java">import one.xis.Action;
+import one.xis.ModelData;
+import one.xis.Page;
+
+@Page("/counter.html")
+class CounterPage {
+    private final CounterService counterService;
+
+    CounterPage(CounterService counterService) {
+        this.counterService = counterService;
+    }
+
+    @ModelData("count")
+    int count() {
+        return counterService.currentValue();
+    }
+
+    @Action("increase")
+    void increase() {
+        counterService.increase();
+    }
+}</code></pre>
+    <pre><code class="language-html">&lt;main&gt;
+  &lt;strong&gt;${count}&lt;/strong&gt;
+  &lt;button xis:action="increase"&gt;Increase&lt;/button&gt;
+&lt;/main&gt;</code></pre>
+
+    <h2>Partial updates</h2>
+    <p>
+      XIS can update a page region, a frontlet, a modal, or the whole page. The framework chooses the concrete DOM work
+      from the response and the template structure. This is where XIS produces SPA behavior without asking the
+      application developer to maintain a separate JavaScript state tree.
+    </p>
+    <p>
+      The phrase "whole page" still does not mean a browser full page reload. It means that the XIS runtime replaces the
+      page content in the live browser document. The JavaScript runtime stays loaded, the application shell remains
+      alive, and the transition is handled as a controlled DOM update.
+    </p>
+
+    <h2>Client state</h2>
+    <p>
+      Some browser state is inherently local: focus, input composition, scroll positions, and custom JavaScript widgets.
+      XIS should preserve it when possible, but it should not become the source of business truth. Durable state belongs
+      in the server model or in explicit browser storage fields.
+    </p>
+
+    <h2>Refresh events</h2>
+    <p>
+      Server-triggered refresh events invalidate page or frontlet data. They do not replace the lifecycle. After an
+      event, the browser asks for the affected model through the usual XIS path and then applies the resulting update.
+    </p>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Events - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Events</span></div>
+    <h1>Events</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="events">Events</h2>
+<p>Events let server-side application code update already open browser clients after something changes. The main public event mechanism is a refresh event: a page or frontlet declares an event key, and application code publishes that key when the UI should reload its model data and render again.</p>
+<p>Use refresh events for UI state that can change outside the current browser action, for example a cart counter, a dashboard tile, a notification badge, or a score display.</p>
+<p>The publishing API is <code>one.xis.RefreshEventPublisher</code>. Inject it into a controller or service and call one of its <code>publish...</code> methods. The receiving page or frontlet must declare the same key with <code>@RefreshOnUpdateEvents</code>.</p>
+<p>This is not an SSO feature. Authentication can be involved when you target a user, but the mechanism itself is a general UI refresh mechanism.</p>
+<h3 id="refresh-events">Refresh Events</h3>
+<h3 id="declare-the-refresh-key">Declare The Refresh Key</h3>
+<p>Put <code>@RefreshOnUpdateEvents</code> on every page or frontlet that should react to an event key.</p>
+<pre><code class="language-java">import one.xis.ModelData;
+import one.xis.Page;
+import one.xis.RefreshOnUpdateEvents;
+
+@Page(&quot;/cart.html&quot;)
+@RefreshOnUpdateEvents(&quot;cart-updated&quot;)
+class CartPage {
+
+    private final CartService cartService;
+
+    CartPage(CartService cartService) {
+        this.cartService = cartService;
+    }
+
+    @ModelData(&quot;itemCount&quot;)
+    int itemCount() {
+        return cartService.currentItemCount();
+    }
+}</code></pre>
+<pre><code class="language-html">&lt;span id=&quot;cart-count&quot;&gt;${itemCount}&lt;/span&gt;</code></pre>
+<p>When the browser receives <code>cart-updated</code>, XIS reloads the model data for the current page if that page declares the key. If the page does not declare it, XIS checks the currently visible frontlets and refreshes those whose controller declares the key.</p>
+<p>Event keys must be declared. Publishing an unknown key is treated as a programming error, because otherwise a typo would look like a refresh that simply never arrives.</p>
+<h3 id="page-content-or-frontlet">Page Content Or Frontlet</h3>
+<p>A value such as a cart counter can live directly in the page template:</p>
+<pre><code class="language-java">@Page(&quot;/products.html&quot;)
+@RefreshOnUpdateEvents(&quot;cart-updated&quot;)
+class ProductsPage {
+
+    private final CartService cartService;
+
+    ProductsPage(CartService cartService) {
+        this.cartService = cartService;
+    }
+
+    @ModelData(&quot;cartItemCount&quot;)
+    int cartItemCount() {
+        return cartService.currentItemCount();
+    }
+}</code></pre>
+<pre><code class="language-html">&lt;header&gt;
+    &lt;span id=&quot;cart-count&quot;&gt;${cartItemCount}&lt;/span&gt;
+&lt;/header&gt;</code></pre>
+<p>That is fine code style when the value belongs to the page and a page refresh is acceptable. Every page that renders the counter directly must declare the refresh key and expose the model data.</p>
+<p>If the same counter should be refreshed as an independent fragment across pages, model it as a frontlet instead:</p>
+<pre><code class="language-java">import one.xis.Frontlet;
+import one.xis.ModelData;
+import one.xis.RefreshOnUpdateEvents;
+
+@Frontlet
+@RefreshOnUpdateEvents(&quot;cart-updated&quot;)
+class CartSummaryFrontlet {
+
+    private final CartService cartService;
+
+    CartSummaryFrontlet(CartService cartService) {
+        this.cartService = cartService;
+    }
+
+    @ModelData(&quot;cartItemCount&quot;)
+    int cartItemCount() {
+        return cartService.currentItemCount();
+    }
+}</code></pre>
+<pre><code class="language-html">&lt;xis:frontlet-container container-id=&quot;cart-summary&quot; default-frontlet=&quot;CartSummaryFrontlet&quot;/&gt;</code></pre>
+<p>XIS does not provide a targeted partial reload for arbitrary page markup. A targeted fragment refresh needs a frontlet. Do not use <code>PageResponse</code> from a frontlet action just to force the whole page to reload for a header counter; that makes the action depend on page navigation when the actual intent is only to refresh a small UI fragment.</p>
+<h3 id="publish-to-all-clients">Publish To All Clients</h3>
+<p>Inject <code>RefreshEventPublisher</code> into a service or controller and publish the declared key.</p>
+<pre><code class="language-java">import one.xis.Action;
+import one.xis.Page;
+import one.xis.RefreshEventPublisher;
+
+@Page(&quot;/cart.html&quot;)
+class CartPage {
+
+    private final CartService cartService;
+    private final RefreshEventPublisher refreshEvents;
+
+    CartPage(CartService cartService, RefreshEventPublisher refreshEvents) {
+        this.cartService = cartService;
+        this.refreshEvents = refreshEvents;
+    }
+
+    @Action
+    void addItem() {
+        cartService.addItem();
+        refreshEvents.publishToAll(&quot;cart-updated&quot;);
+    }
+}</code></pre>
+<p><code>publishToAll(...)</code> sends the event to every connected or recently connected client. If a client is reconnecting its SSE stream, XIS keeps the refresh event briefly and delivers it after the reconnect. Use this for public or shared state such as a scoreboard.</p>
+<h3 id="publish-to-one-client">Publish To One Client</h3>
+<p>Use <code>@ClientId</code> when only the browser client that triggered an action should refresh.</p>
+<pre><code class="language-java">import one.xis.Action;
+import one.xis.ClientId;
+import one.xis.Page;
+import one.xis.RefreshEventPublisher;
+
+@Page(&quot;/cart.html&quot;)
+class CartPage {
+
+    private final RefreshEventPublisher refreshEvents;
+
+    CartPage(RefreshEventPublisher refreshEvents) {
+        this.refreshEvents = refreshEvents;
+    }
+
+    @Action
+    void recalculate(@ClientId String clientId) {
+        refreshEvents.publishToClient(&quot;cart-updated&quot;, clientId);
+    }
+}</code></pre>
+<p>A client is one browser connection. Two tabs or two devices of the same logged-in user are different clients. If the client is briefly between SSE connections, XIS queues the event for the reconnect interval instead of dropping it.</p>
+<h3 id="publish-to-one-user">Publish To One User</h3>
+<p>Use <code>publishToUser(...)</code> when every connected client of the same authenticated user should refresh.</p>
+<pre><code class="language-java">import one.xis.Action;
+import one.xis.Page;
+import one.xis.RefreshOnUpdateEvents;
+import one.xis.Roles;
+import one.xis.UserId;
+import one.xis.RefreshEventPublisher;
+
+@Page(&quot;/account/cart.html&quot;)
+@Roles(&quot;USER&quot;)
+@RefreshOnUpdateEvents(&quot;cart-updated&quot;)
+class UserCartPage {
+
+    private final CartService cartService;
+    private final RefreshEventPublisher refreshEvents;
+
+    UserCartPage(CartService cartService, RefreshEventPublisher refreshEvents) {
+        this.cartService = cartService;
+        this.refreshEvents = refreshEvents;
+    }
+
+    @Action
+    void addItem(@UserId String userId) {
+        cartService.addItem(userId);
+        refreshEvents.publishToUser(&quot;cart-updated&quot;, userId);
+    }
+}</code></pre>
+<p>User targeting requires authentication, because XIS must know which connected or recently connected clients belong to which user. It is not the same as client targeting: one user can have several clients. Brief reconnect gaps are handled the same way as client targeting.</p>
+<h3 id="publish-to-authenticated-users">Publish To Authenticated Users</h3>
+<p>Use <code>publishToAllUsers(...)</code> when every authenticated client should refresh, but anonymous clients should not.</p>
+<pre><code class="language-java">@Action
+void publishAccountNotice() {
+    refreshEvents.publishToAllUsers(&quot;account-notice-updated&quot;);
+}</code></pre>
+<p>Use this for state that only makes sense after login. Use <code>publishToAll(...)</code> when anonymous clients should also receive the refresh.</p>
+<h3 id="choosing-the-right-target">Choosing The Right Target</h3>
+<table><thead><tr><th>Need</th><th>Use</th></tr></thead><tbody><tr><td>Public/shared state changed for every open browser</td><td><code>publishToAll(&quot;key&quot;)</code></td></tr><tr><td>Only the current browser client should refresh</td><td><code>publishToClient(&quot;key&quot;, clientId)</code> with <code>@ClientId</code></td></tr><tr><td>All clients of one logged-in user should refresh</td><td><code>publishToUser(&quot;key&quot;, userId)</code> with <code>@UserId</code></td></tr><tr><td>All authenticated clients should refresh</td><td><code>publishToAllUsers(&quot;key&quot;)</code></td></tr></tbody></table>
+  </main>
+</div>
+</body>
+</html>

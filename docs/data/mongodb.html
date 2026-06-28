@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MongoDB - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Data / <span data-current-page>MongoDB</span></div>
+    <h1>MongoDB</h1>
+    <p class="lead">
+      MongoDB support gets its own chapter: dependencies, configuration, document mapping, repositories, JSON queries,
+      and change streams.
+    </p>
+
+    <h2>Documents</h2>
+    <p>
+      MongoDB works best when the aggregate shape already fits the document model. XIS documents mapping, identifiers,
+      repository operations, and the difference between document updates and relational joins without pretending that
+      MongoDB is just SQL with another syntax.
+    </p>
+    <pre><code class="language-java">import one.xis.mongodb.MongoDocument;
+import one.xis.mongodb.MongoField;
+import one.xis.mongodb.MongoId;
+
+@MongoDocument("customers")
+class Customer {
+    @MongoId
+    String customerId;
+
+    @MongoField("first_name")
+    String firstName;
+
+    String lastName;
+}</code></pre>
+
+    <h2>Repositories</h2>
+    <p>
+      Repository methods should make persistence explicit. Loading a document and changing a Java object should not
+      silently write data back. This keeps the mental model aligned with services, DTOs, and server-driven UI actions.
+    </p>
+    <pre><code class="language-java">import one.xis.mongodb.MongoCrudRepository;
+import one.xis.mongodb.MongoQuery;
+import one.xis.mongodb.MongoRepository;
+
+import java.util.List;
+
+@MongoRepository
+interface CustomerRepository extends MongoCrudRepository&lt;Customer, String&gt; {
+
+    @MongoQuery("{ lastName: ?0 }")
+    List&lt;Customer&gt; findByLastName(String lastName);
+}</code></pre>
+
+    <h2>Change streams</h2>
+    <p>
+      MongoDB change streams can pair well with XIS refresh events. A change in the database can invalidate a page or
+      frontlet, and the browser can then reload the affected model through the normal XIS lifecycle.
+    </p>
+    <pre><code class="language-java">import one.xis.RefreshEvent;
+import one.xis.RefreshEventPublisher;
+import one.xis.context.Component;
+import one.xis.mongodb.MongoChangeEvent;
+import one.xis.mongodb.MongoWatch;
+
+@Component
+class CustomerChanges {
+    private final RefreshEventPublisher refreshEvents;
+
+    CustomerChanges(RefreshEventPublisher refreshEvents) {
+        this.refreshEvents = refreshEvents;
+    }
+
+    @MongoWatch(Customer.class)
+    void customerChanged(MongoChangeEvent&lt;Customer&gt; event) {
+        refreshEvents.publish(new RefreshEvent("customers"));
+    }
+}</code></pre>
+
+    <h2>Current maturity</h2>
+    <p>
+      MongoDB is part of the XIS documentation because the framework has support and tests for it. The main production
+      path has historically been SQL, so treat MongoDB integration like any newer persistence path: keep application
+      tests close to the repositories and change-stream behavior you rely on.
+    </p>
+  </main>
+</div>
+</body>
+</html>

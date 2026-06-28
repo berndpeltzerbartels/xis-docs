@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Custom JavaScript - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">UI Composition / <span data-current-page>Custom JavaScript</span></div>
+    <h1>Custom JavaScript</h1>
+    <p class="lead">
+      XIS tries to remove routine frontend plumbing, not the possibility of writing JavaScript. Extension files, custom
+      EL functions, and global browser behavior remain available for cases where the UI really needs them.
+    </p>
+
+    <div class="principle">
+      Custom JavaScript is an escape hatch, not the normal XIS programming model. Start with pages, frontlets, actions,
+      forms, validation, refresh events, and template expressions. Add JavaScript only when the browser itself is the
+      thing you need to control.
+    </div>
+
+    <h2>Use JavaScript where it earns its place</h2>
+    <p>
+      Good reasons include rich browser controls, canvas/WebGL scenes, custom keyboard or pointer handling, specialized
+      visualization, or integration with a browser-only library. Ordinary form validation, navigation, and model updates
+      should usually remain in XIS.
+    </p>
+    <p>
+      A useful rule of thumb: if the code decides business state, permissions, validation, persistence, or navigation,
+      keep it in Java. If it adapts a browser-only interaction to an existing XIS action, formats a value for display, or
+      integrates a browser library, JavaScript can be the right tool.
+    </p>
+    <p>
+      The detailed reference is in the <a href="/docs/guide/advanced/custom-javascript.html">Custom JavaScript guide</a>.
+      It covers extension registration, reusable JavaScript artifacts, custom EL functions, global browser behavior,
+      submitting XIS forms from JavaScript, CSS/static assets, and the limits of the integration-test browser model.
+    </p>
+
+    <h2>Extension files</h2>
+    <p>
+      JavaScript extensions should be registered explicitly and packaged as part of the application or a reusable web
+      artifact. This makes the dependency visible and keeps generated XIS resources separate from application-specific
+      browser behavior.
+    </p>
+    <div class="note">
+      <strong>Do not include application JavaScript with ordinary <code>&lt;script&gt;</code> tags inside XIS page or
+      frontlet templates.</strong> XIS does not navigate by doing a full browser page load. It asks the server for the
+      next page, frontlet, or modal state and then replaces the affected DOM elements in the already running document.
+      Browsers do not treat scripts inserted that way like scripts from a freshly loaded HTML page, and different update
+      paths would make execution order and repeated execution hard to reason about. Use extension files when JavaScript
+      must be loaded as part of the XIS browser runtime.
+    </div>
+    <pre><code class="language-text"># src/main/resources/META-INF/xis/js/extensions
+js/app-functions.js
+js/analytics.js</code></pre>
+    <pre><code class="language-text">src/main/resources/js/app-functions.js
+src/main/resources/js/analytics.js</code></pre>
+
+    <h2>Calling XIS from JavaScript</h2>
+    <p>
+      Some components need to submit a XIS form or trigger an action from custom JavaScript. That is acceptable when the
+      JavaScript remains an adapter and the server action remains the business boundary.
+    </p>
+    <p>
+      This should stay small. The JavaScript can collect coordinates, drag/drop data, selected text, or other browser
+      facts, then submit an ordinary XIS form. Binding, validation, authorization, persistence, and the resulting UI
+      update still happen through the normal XIS action flow.
+    </p>
+    <pre><code class="language-html">&lt;form id="moveForm" xis:binding="move"&gt;
+  &lt;input type="hidden" xis:binding="from" id="fromField"&gt;
+  &lt;input type="hidden" xis:binding="to" id="toField"&gt;
+&lt;/form&gt;</code></pre>
+    <pre><code class="language-javascript">function submitMove(from, to) {
+    document.getElementById('fromField').value = from;
+    document.getElementById('toField').value = to;
+    XIS.submitForm('moveForm', 'doMove');
+}</code></pre>
+
+    <h2>Custom EL functions</h2>
+    <p>
+      Repeated presentation helpers can be registered in the browser runtime. Keep them deterministic and display-only.
+    </p>
+    <p>
+      This is appropriate for formatting and labels. It is not appropriate for security decisions or validation rules,
+      because those must remain authoritative on the server.
+    </p>
+    <pre><code class="language-javascript">XIS.addElFunction('formatCurrency', function(value, currency, locale) {
+    return new Intl.NumberFormat(locale || undefined, {
+        style: 'currency',
+        currency: currency || 'EUR'
+    }).format(Number(value));
+});</code></pre>
+    <pre><code class="language-html">&lt;span&gt;${formatCurrency(order.total, 'EUR', 'de-DE')}&lt;/span&gt;</code></pre>
+
+    <h2>Static applications beside XIS</h2>
+    <p>
+      A fully custom browser app can live in public resources and talk to HTTP controllers. That is a special path, not
+      the normal XIS page model. The public resource boundary should keep this clear.
+    </p>
+    <p>
+      Choose this only when the application is intentionally a custom browser client, for example a game, visualization,
+      or a tool with its own rendering loop. For normal business screens, XIS pages and frontlets should remain the
+      default.
+    </p>
+  </main>
+</div>
+</body>
+</html>

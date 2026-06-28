@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XIS Documentation</title>
+  <meta name="description" content="XIS documentation for server-driven SPA applications on the JVM.">
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Documentation / <span data-current-page>Overview</span></div>
+    <h1>Server-driven SPA development for JVM teams</h1>
+    <p class="lead">
+      XIS lets Java, Kotlin, and Groovy developers build interactive SPA-style applications from backend controllers and
+      plain HTML templates. The programming model feels close to classic request/response development, while the browser
+      is updated by the XIS JavaScript runtime without handwritten frontend application plumbing.
+    </p>
+
+    <div class="principle">
+      <strong>Core idea.</strong> A feature should be understandable as a vertical slice: controller, template, tests,
+      and optional persistence live close to each other. XIS supplies transport, synchronization, validation feedback,
+      navigation, and partial refreshes.
+    </div>
+
+    <pre><code class="language-java">import one.xis.ModelData;
+import one.xis.Page;
+
+@Page("/hello.html")
+class HelloPage {
+    @ModelData("message")
+    String message() {
+        return "Hello from XIS";
+    }
+}</code></pre>
+    <pre><code class="language-html">&lt;h1&gt;${message}&lt;/h1&gt;</code></pre>
+
+    <h2>Who XIS is for</h2>
+    <p>
+      XIS is aimed at backend-oriented JVM teams that still want a modern browser experience. You should be able to
+      build pages, forms, validation feedback, navigation, refreshes, and modal interactions without first creating a
+      separate REST contract, DTO layer, frontend client, and frontend state model.
+    </p>
+    <p>
+      That does not mean JavaScript is forbidden. It means JavaScript is no longer required for routine application
+      plumbing. When a feature genuinely needs browser-side behavior, XIS offers extension points for custom JavaScript
+      and custom expression-language functions.
+    </p>
+
+    <h2>Start here</h2>
+    <div class="chapter-list">
+      <a class="chapter-card" href="/docs/getting-started/quickstart.html">
+        <strong>Quickstart</strong>
+        <span>Create a small XIS app, run it, validate it, and add the first test without reading the full guide first.</span>
+      </a>
+      <a class="chapter-card chapter-card-disabled" aria-disabled="true">
+        <strong>Tutorial</strong>
+        <span>A guided example application will grow chapter by chapter. Planned, not published yet.</span>
+      </a>
+      <a class="chapter-card" href="/app-wizzard/index.html">
+        <strong>App wizard</strong>
+        <span>Create an application skeleton and download it as a ready-to-open project archive.</span>
+      </a>
+    </div>
+
+    <h2>Understand XIS</h2>
+    <div class="chapter-list">
+      <a class="chapter-card" href="/docs/core/runtime-model.html">
+        <strong>How the runtime works</strong>
+        <span>Pages, model data, actions, DOM updates, and why XIS feels like request/response while behaving like an SPA.</span>
+      </a>
+      <a class="chapter-card" href="/docs/core/pages-templates.html">
+        <strong>Pages and templates</strong>
+        <span>How backend controllers and plain HTML templates produce interactive browser pages.</span>
+      </a>
+      <a class="chapter-card" href="/docs/ui/frontlets-theme.html">
+        <strong>Frontlets and composition</strong>
+        <span>Split a page into focused UI fragments without introducing a separate frontend application model.</span>
+      </a>
+      <a class="chapter-card" href="/docs/core/actions-navigation.html">
+        <strong>Actions and navigation</strong>
+        <span>Call Java methods from links, buttons, forms, modals, and drag-and-drop without creating REST plumbing.</span>
+      </a>
+    </div>
+
+    <h2>Documentation</h2>
+    <div class="chapter-list">
+      <a class="chapter-card" href="/docs/core/runtime-model.html">
+        <strong>Runtime overview</strong>
+        <span>Choose XIS Boot, XIS Spring, native images, or the advanced HTTP controller path intentionally.</span>
+      </a>
+      <a class="chapter-card" href="/docs/data/sql.html">
+        <strong>SQL and MongoDB</strong>
+        <span>XIS SQL uses repository operations. Loaded objects do not silently flush themselves into the database.</span>
+      </a>
+      <a class="chapter-card" href="/docs/operations/cloud-native.html">
+        <strong>Operations</strong>
+        <span>Build runnable jars or GraalVM native executables with generated XIS metadata.</span>
+      </a>
+      <a class="chapter-card" href="/docs/guide/index.html">
+        <strong>Complete guide</strong>
+        <span>Use the full static guide for every annotation, tag, task, persistence feature, security variant, and advanced topic.</span>
+      </a>
+      <a class="chapter-card" href="/docs/reference/index.html">
+        <strong>Index</strong>
+        <span>Find annotations, interfaces, response types, repository APIs, test helpers, and extension points alphabetically or by topic.</span>
+      </a>
+    </div>
+
+    <h2>Documentation goals</h2>
+    <p>
+      The documentation starts with a small conceptual overview and then moves into practical, complete reference
+      chapters. Quickstart and, later, tutorials have their own place because they are learning paths rather than
+      reference material.
+    </p>
+  </main>
+</div>
+</body>
+</html>

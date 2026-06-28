@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Microfrontends - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Architecture / <span data-current-page>Microfrontends</span></div>
+    <h1>Microfrontend Architecture</h1>
+    <p class="lead">
+      XIS fits vertical ownership: a service can own its business logic and the page or frontlet that presents it. The
+      browser can still behave like one coherent application.
+    </p>
+
+    <h2>Vertical slices</h2>
+    <p>
+      XIS microfrontends are not primarily a packaging trick. They are a way to keep business ownership vertical:
+      persistence, service code, page controller, template, validation, and tests can live in the same feature or
+      service boundary. The browser receives a coherent UI, while the code remains split along business responsibilities.
+    </p>
+    <p>
+      Think of a product page in a shop. The visible page is one experience, but catalog, price, discount, stock,
+      store-pickup, notification, and cart behavior may belong to different teams and databases. XIS frontlets let those
+      teams contribute focused UI parts without forcing the product page to become a large client-side integration
+      project.
+    </p>
+    <p>
+      The product id belongs to the page URL, not to the frontlet instances. The page and every frontlet can read the
+      same path variable with <code>@PathVariable("id")</code>. Frontlet parameters are still useful, but they should
+      describe the concrete frontlet instance, not repeat context that is already part of the route.
+    </p>
+    <h3>ProductPage.html</h3>
+    <pre><code class="language-html">&lt;article class="product-page"&gt;
+  &lt;header class="product-hero"&gt;
+    &lt;p&gt;SKU ${product.sku}&lt;/p&gt;
+    &lt;h1&gt;${product.name}&lt;/h1&gt;
+    &lt;p&gt;${product.teaser}&lt;/p&gt;
+  &lt;/header&gt;
+
+  &lt;main xis:frontlet-container="description"
+        xis:default-frontlet="ProductDescriptionFrontlet"&gt;&lt;/main&gt;
+
+  &lt;aside xis:frontlet-container="offer"
+         xis:default-frontlet="DeliveryAndDiscountFrontlet"&gt;&lt;/aside&gt;
+
+  &lt;section xis:frontlet-container="stock"
+           xis:default-frontlet="StockAndPickupFrontlet"&gt;&lt;/section&gt;
+
+  &lt;section xis:frontlet-container="cart"
+           xis:default-frontlet="AddToCartFrontlet"&gt;&lt;/section&gt;
+&lt;/article&gt;</code></pre>
+    <h3>ProductPage.java</h3>
+    <pre><code class="language-java">import one.xis.ModelData;
+import one.xis.Page;
+import one.xis.PathVariable;
+
+@Page("/products/{id}.html")
+class ProductPage {
+
+    private final CatalogService catalogService;
+
+    ProductPage(CatalogService catalogService) {
+        this.catalogService = catalogService;
+    }
+
+    @ModelData("product")
+    ProductHeader product(@PathVariable("id") long productId) {
+        return catalogService.header(productId);
+    }
+}</code></pre>
+    <h3>ProductDescriptionFrontlet.html</h3>
+    <pre><code class="language-html">&lt;section class="product-description"&gt;
+  &lt;h2&gt;Description&lt;/h2&gt;
+  &lt;p&gt;${description.summary}&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li xis:foreach="feature:description.features"&gt;${feature}&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/section&gt;</code></pre>
+    <h3>ProductDescriptionFrontlet.java</h3>
+    <pre><code class="language-java">import one.xis.Frontlet;
+import one.xis.ModelData;
+import one.xis.PathVariable;
+
+@Frontlet
+class ProductDescriptionFrontlet {
+
+    private final CatalogService catalogService;
+
+    ProductDescriptionFrontlet(CatalogService catalogService) {
+        this.catalogService = catalogService;
+    }
+
+    @ModelData("description")
+    ProductDescription description(@PathVariable("id") long productId) {
+        return catalogService.description(productId);
+    }
+}</code></pre>
+    <h3>DeliveryAndDiscountFrontlet.html</h3>
+    <pre><code class="language-html">&lt;section class="offer-box"&gt;
+  &lt;h2&gt;Delivery and offers&lt;/h2&gt;
+  &lt;p&gt;Delivery: ${offer.deliveryLabel}&lt;/p&gt;
+  &lt;p xis:if="offer.discountAvailable"&gt;Discount: ${offer.discountLabel}&lt;/p&gt;
+&lt;/section&gt;</code></pre>
+    <h3>DeliveryAndDiscountFrontlet.java</h3>
+    <pre><code class="language-java">import one.xis.Frontlet;
+import one.xis.ModelData;
+import one.xis.PathVariable;
+
+@Frontlet
+class DeliveryAndDiscountFrontlet {
+
+    private final PricingService pricingService;
+
+    DeliveryAndDiscountFrontlet(PricingService pricingService) {
+        this.pricingService = pricingService;
+    }
+
+    @ModelData("offer")
+    ProductOffer offer(@PathVariable("id") long productId) {
+        return pricingService.currentOffer(productId);
+    }
+}</code></pre>
+    <h3>StockAndPickupFrontlet.html</h3>
+    <pre><code class="language-html">&lt;section class="stock-box"&gt;
+  &lt;h2&gt;Availability&lt;/h2&gt;
+  &lt;p xis:if="stock.available"&gt;${stock.availableText}&lt;/p&gt;
+  &lt;p xis:if="!stock.available"&gt;Currently unavailable online.&lt;/p&gt;
+
+  &lt;form xis:binding="notification" xis:if="!stock.available"&gt;
+    &lt;label&gt;
+      Notify me
+      &lt;input type="email" xis:binding="email"&gt;
+    &lt;/label&gt;
+    &lt;button xis:action="notifyWhenAvailable"&gt;Send notification&lt;/button&gt;
+  &lt;/form&gt;
+&lt;/section&gt;</code></pre>
+    <h3>StockAndPickupFrontlet.java</h3>
+    <pre><code class="language-java">import one.xis.Action;
+import one.xis.FormData;
+import one.xis.Frontlet;
+import one.xis.ModelData;
+import one.xis.PathVariable;
+
+@Frontlet
+class StockAndPickupFrontlet {
+
+    private final InventoryService inventoryService;
+
+    StockAndPickupFrontlet(InventoryService inventoryService) {
+        this.inventoryService = inventoryService;
+    }
+
+    @ModelData("stock")
+    StockStatus stock(@PathVariable("id") long productId) {
+        return inventoryService.status(productId);
+    }
+
+    @FormData("notification")
+    NotificationForm notification() {
+        return new NotificationForm();
+    }
+
+    @Action
+    void notifyWhenAvailable(@PathVariable("id") long productId,
+                             @FormData("notification") NotificationForm form) {
+        inventoryService.registerNotification(productId, form.email());
+    }
+}</code></pre>
+    <h3>AddToCartFrontlet.html</h3>
+    <pre><code class="language-html">&lt;form class="buy-box" xis:binding="cartLine"&gt;
+  &lt;label&gt;
+    Quantity
+    &lt;input type="number" min="1" xis:binding="quantity"&gt;
+  &lt;/label&gt;
+  &lt;button xis:action="addToCart"&gt;Add to cart&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+    <h3>AddToCartFrontlet.java</h3>
+    <pre><code class="language-java">import one.xis.Action;
+import one.xis.FormData;
+import one.xis.Frontlet;
+import one.xis.PathVariable;
+
+@Frontlet
+class AddToCartFrontlet {
+
+    private final CartService cartService;
+
+    AddToCartFrontlet(CartService cartService) {
+        this.cartService = cartService;
+    }
+
+    @FormData("cartLine")
+    CartLineForm cartLine() {
+        return new CartLineForm(1);
+    }
+
+    @Action
+    void addToCart(@PathVariable("id") long productId,
+                   @FormData("cartLine") CartLineForm form) {
+        cartService.add(productId, form.quantity());
+    }
+}</code></pre>
+    <p>
+      The catalog, pricing, inventory, and checkout teams can each own one vertical slice: their persistence, services,
+      controller, template, validation, and tests. The product page stays readable because the route supplies the common
+      product context, while each frontlet decides what it needs to render and refresh.
+    </p>
+
+    <h2>Pages and frontlets across modules</h2>
+    <p>
+      A page can be owned by one module and composed with frontlets from another. This is useful for dashboards, shell
+      applications, and distributed business tools. The important rule is that each fragment should still have a clear
+      owner and a clear refresh contract.
+    </p>
+    <pre><code class="language-properties">xis.distributed.hosts=https://catalog.example.com,https://inventory.example.com,https://checkout.example.com
+xis.distributed.allowed-origins=https://shop.example.com</code></pre>
+
+    <h2>Routing model</h2>
+    <p>
+      Distributed applications need predictable routing. URLs should stay meaningful and should not depend on fragile
+      client-side state. XIS can navigate by URL, by page response, and by frontlet refresh, so the architecture can use
+      browser-visible routes where they help and server-side interactions where they keep the workflow simpler.
+    </p>
+
+    <h2>SSO</h2>
+    <p>
+      Authentication is the place where distributed applications become visible to users. XIS security and SSO support
+      belong together with the microfrontend story, but the detailed security model lives in the security chapter. The
+      architectural point is simple: separate services should not force separate logins for one logical application.
+    </p>
+
+    <h2>When not to split</h2>
+    <p>
+      A small application does not become better just because every screen is a separate artifact. Split when the team
+      structure, deployment model, or business boundary needs it. Otherwise, a single XIS application with well-kept
+      feature packages is often easier to understand.
+    </p>
+  </main>
+</div>
+</body>
+</html>

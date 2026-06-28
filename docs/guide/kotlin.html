@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kotlin Support - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Kotlin Support</span></div>
+    <h1>Kotlin Support</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="kotlin-support">Kotlin Support</h2>
+<p>XIS supports Kotlin for controller classes, components, form objects, and standalone XIS Boot applications. The same server-driven programming model applies: controllers declare pages, model data, form data, and actions; HTML templates declare the UI.</p>
+<p>Kotlin works on the normal JVM path and with XIS Boot Native. That means a Kotlin XIS Boot application can be packaged as a runnable JVM jar or compiled to a GraalVM native executable with the XIS Gradle plugin.</p>
+<h3 id="requirements">Requirements</h3>
+<p>Use the Kotlin JVM plugin together with the XIS Gradle plugin:</p>
+<p><code>build.gradle</code></p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+    id &quot;org.jetbrains.kotlin.jvm&quot; version &quot;2.0.21&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation &quot;one.xis:xis-boot&quot; // or xis-spring
+    implementation &quot;org.jetbrains.kotlin:kotlin-stdlib&quot;
+}</code></pre>
+<p>For native images, use <code>xis-boot-native</code>:</p>
+<pre><code class="language-groovy">dependencies {
+    implementation &quot;one.xis:xis-boot-native&quot;
+    implementation &quot;org.jetbrains.kotlin:kotlin-stdlib&quot;
+}</code></pre>
+<h3 id="controller-example">Controller Example</h3>
+<p><code>src/main/kotlin/example/KotlinPage.kt</code></p>
+<pre><code class="language-kotlin">package example
+
+import one.xis.Action
+import one.xis.FormData
+import one.xis.HtmlFile
+import one.xis.ModelData
+import one.xis.Page
+import one.xis.PathVariable
+import one.xis.QueryParameter
+import one.xis.validation.Mandatory
+
+@Page(&quot;/kotlin/{id}.html&quot;)
+@HtmlFile(&quot;KotlinPage.html&quot;)
+class KotlinPage {
+
+    private var saved = KotlinForm(name = &quot;initial&quot;, amount = 3)
+
+    @ModelData(&quot;headline&quot;)
+    fun headline(@PathVariable(&quot;id&quot;) id: Int, @QueryParameter(&quot;mode&quot;) mode: String?): String {
+        return &quot;Item $id ${mode ?: &quot;&quot;}&quot;.trim()
+    }
+
+    @FormData(&quot;form&quot;)
+    fun form(): KotlinForm = saved
+
+    @ModelData(&quot;saved&quot;)
+    fun saved(): String = &quot;${saved.name}:${saved.amount}&quot;
+
+    @Action(&quot;save&quot;)
+    fun save(@FormData(&quot;form&quot;) form: KotlinForm) {
+        saved = form
+    }
+}
+
+class KotlinForm(
+    @field:Mandatory
+    var name: String = &quot;&quot;,
+    var amount: Int = 0
+)</code></pre>
+<p><code>src/main/kotlin/example/KotlinPage.html</code></p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html xmlns:xis=&quot;https://xis.one/xsd&quot; lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;title&gt;Kotlin&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h1&gt;${headline}&lt;/h1&gt;
+&lt;p&gt;${saved}&lt;/p&gt;
+
+&lt;form xis:binding=&quot;form&quot;&gt;
+    &lt;input xis:binding=&quot;name&quot; xis:error-class=&quot;error&quot;/&gt;
+    &lt;div xis:message-for=&quot;name&quot;&gt;&lt;/div&gt;
+
+    &lt;input xis:binding=&quot;amount&quot; type=&quot;number&quot; xis:error-class=&quot;error&quot;/&gt;
+    &lt;div xis:message-for=&quot;amount&quot;&gt;&lt;/div&gt;
+
+    &lt;button xis:action=&quot;save&quot;&gt;Save&lt;/button&gt;
+&lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p>The action receives a deserialized <code>KotlinForm</code>. XIS validates the form before the action runs. If validation fails, the action is not called, the submitted values stay visible, and validation messages/classes are rendered like in Java and Groovy controllers.</p>
+<p>For form and model DTOs, prefer mutable properties with defaults or nullable properties. XIS creates and fills these objects from Java-side framework code. Kotlin non-null types are compile-time contracts for Kotlin callers, but Java reflection can still leave a property unset or pass <code>null</code> into generated accessors. Defaults like <code>var name: String = &quot;&quot;</code> are therefore friendlier than <code>lateinit var name: String</code> or constructor-only DTOs without defaults.</p>
+<h3 id="template-location">Template Location</h3>
+<p>For Kotlin controllers, you can place templates next to the controller under <code>src/main/kotlin</code> or under <code>src/main/resources</code> using the controller package path. XIS copies <code>*.html</code> files from <code>src/main/kotlin</code> to the runtime resources when the Kotlin JVM plugin is applied.</p>
+<p>You normally do not need <code>@HtmlFile</code> when the template follows the default name and package location. Use <code>@HtmlFile(&quot;KotlinPage.html&quot;)</code> only when you want to name the template explicitly; the file name is then resolved relative to the controller package in both source layouts.</p>
+<h3 id="xis-boot">XIS Boot</h3>
+<p>Standalone XIS Boot applications can use <code>@XISBootApplication</code> on a Kotlin class:</p>
+<pre><code class="language-kotlin">package example
+
+import one.xis.boot.XISBootApplication
+import one.xis.boot.XISBootRunner
+
+@XISBootApplication
+class Application {
+    companion object {
+        @JvmStatic
+        fun main(args: Array&lt;String&gt;) {
+            XISBootRunner.run(Application::class.java, args)
+        }
+    }
+}</code></pre>
+<p>The XIS Gradle plugin can then package the application:</p>
+<pre><code class="language-bash">./gradlew xisJar</code></pre>
+<h3 id="native-images">Native Images</h3>
+<p>Kotlin is supported by XIS Boot Native. Use <code>xis-boot-native</code> and the normal native tasks:</p>
+<pre><code class="language-bash">./gradlew xisNativeCompile
+./gradlew xisNativeRun
+./gradlew xisNativeSmokeTest</code></pre>
+<p>The plugin scans Kotlin source files for XIS components, copies Kotlin-side templates into runtime resources, generates native resource metadata, and creates the native runner. Native startup uses generated catalogs instead of runtime classpath scanning, just like Java native applications.</p>
+<h3 id="tested-behavior">Tested Behavior</h3>
+<p>XIS has end-to-end coverage for these Kotlin paths:</p>
+<ul>
+<li>component scanning and singleton creation</li>
+<li>constructor injection</li>
+<li><code>@Bean</code> method invocation</li>
+<li>default template resolution next to a Kotlin controller</li>
+<li>explicit <code>@HtmlFile</code> template resolution next to a Kotlin controller</li>
+<li>page rendering with <code>@ModelData</code></li>
+<li>getter-like <code>@ModelData</code></li>
+<li>form initialization with <code>@FormData</code></li>
+<li>action invocation with deserialized <code>@FormData</code></li>
+<li>XIS Boot Native compilation and native smoke startup</li>
+</ul>
+  </main>
+</div>
+</body>
+</html>

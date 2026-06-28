@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reusable Web Artifacts - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / Advanced / <span data-current-page>Reusable Web Artifacts</span></div>
+    <h1>Reusable Web Artifacts</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="reusable-web-artifacts">Reusable Web Artifacts</h2>
+<p>XIS libraries can ship usable web functionality, not only Java classes. A reusable artifact can contain controllers, default templates, static resources, CSS, and JavaScript extensions. The application gets a working default UI from the library and can still replace the parts that should follow its own product design.</p>
+<p>This matters because reuse in web applications often fails at the template boundary. A backend component may be reusable, but the HTML around it usually has to fit the consuming application. XIS keeps that boundary explicit.</p>
+<h3 id="replaceable-templates">Replaceable Templates</h3>
+<p>Use <code>@HtmlFile</code> together with <code>@DefaultHtmlFile</code> when a controller should first look for an application template and then fall back to a library-provided default.</p>
+<pre><code class="language-java">package company.account;
+
+import one.xis.DefaultHtmlFile;
+import one.xis.HtmlFile;
+import one.xis.Page;
+
+@Page(&quot;/account/login.html&quot;)
+@HtmlFile(&quot;/account/login.html&quot;)
+@DefaultHtmlFile(&quot;/company-default-login.html&quot;)
+class CompanyLoginController {
+}</code></pre>
+<p>With this setup XIS resolves templates in this order:</p>
+<ol>
+<li><code>/account/login.html</code>, usually supplied by the application.</li>
+<li><code>/company-default-login.html</code>, supplied by the library artifact.</li>
+<li>The normal controller-name convention, if neither annotated resource exists.</li>
+</ol>
+<p>The controller, model methods, form data, actions, validation, events, and routing behavior stay in the library. The application only replaces the HTML template when it needs a different layout or design.</p>
+<p>The built-in <code>LoginFormController</code> follows this pattern. It is mapped to <code>/login.html</code>, looks for <code>/login.html</code> first, and falls back to <code>/default-login.html</code> from <code>xis-authentication</code>.</p>
+<h3 id="default-functionality-first">Default Functionality First</h3>
+<p>A reusable artifact should usually provide a default template even when teams are expected to replace it. That gives users an immediately working feature and a living example of the required bindings, actions, message areas, and model data.</p>
+<p>For example, a reusable CRM artifact could provide:</p>
+<ul>
+<li>a customer search controller</li>
+<li>a default <code>customer-search.html</code></li>
+<li>CSS that makes the default screen usable</li>
+<li>actions for opening a customer detail modal</li>
+<li>refresh events after updates</li>
+</ul>
+<p>The consuming application can then replace only <code>customer-search.html</code> and keep the controller behavior.</p>
+<h3 id="javascript-extensions">JavaScript Extensions</h3>
+<p>Reusable artifacts can also ship browser-side extensions. Put extension declarations in:</p>
+<pre><code class="language-text">src/main/resources/META-INF/xis/js/extensions</code></pre>
+<p>and list JavaScript resource paths in that file. XIS reads every extension declaration on the classpath and bundles the listed scripts into the browser runtime.</p>
+<p>This makes company-specific or product-specific browser behavior easy to ship as a dependency:</p>
+<pre><code class="language-groovy">dependencies {
+    implementation &quot;com.example:company-browser-extensions:1.0.0&quot;
+}</code></pre>
+<p>Inside that artifact, the extension registry can point to ordinary classpath resources:</p>
+<pre><code class="language-text"># src/main/resources/META-INF/xis/js/extensions
+company/browser/company-ui.js
+company/browser/usage-tracking.js</code></pre>
+<p>The listed scripts may also come from transitive dependencies. XIS&#x27; <code>xis-javascript-jquery</code> module uses that variant: it depends on the jQuery WebJar and registers the WebJar&#x27;s <code>jquery.min.js</code> resource.</p>
+<p>This allows a library to deliver several layers together:</p>
+<ul>
+<li>Java controllers and services</li>
+<li>default templates</li>
+<li>CSS and static resources</li>
+<li>custom EL functions</li>
+<li>browser behavior that belongs to the feature</li>
+</ul>
+<p>Use this sparingly. Normal application behavior should stay in Java controllers and XIS templates. JavaScript extensions are useful when the reusable feature really needs browser-specific behavior, custom expression-language functions, or an integration with a browser library.</p>
+<p>See also <a href="/docs/guide/template-location-and-mapping.html">Template location and mapping</a> and <a href="/docs/guide/advanced/custom-javascript.html">Custom JavaScript and custom EL functions</a>.</p>
+  </main>
+</div>
+</body>
+</html>

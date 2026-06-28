@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Index - XIS Reference</title>
+  <meta name="description" content="Alphabetical and thematic index of XIS annotations, interfaces, response types, repository APIs, test helpers, and extension points.">
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">XIS Reference / <span data-current-page>Index</span></div>
+    <h1>Index</h1>
+    <p class="lead">
+      This page is the lookup index for the public XIS API surface. Use the alphabetical list when you know the name,
+      and the thematic list when you know the problem area but not the annotation or interface yet.
+    </p>
+
+    <h2>By topic</h2>
+    <div class="topic-index">
+      <section>
+        <h3>Pages and UI composition</h3>
+        <ul>
+          <li><a href="/docs/guide/annotations.html#class-annotations">@Page</a>, <a href="/docs/guide/annotations.html#class-annotations">@WelcomePage</a>, <a href="/docs/guide/annotations.html#class-annotations">@Frontlet</a>, <a href="/docs/guide/annotations.html#class-annotations">@Modal</a></li>
+          <li><a href="/docs/guide/annotations.html#class-annotations">@Include</a>, <a href="/docs/guide/annotations.html#class-annotations">@Router</a>, <a href="/docs/guide/annotations.html#class-annotations">@Route</a>, <a href="/docs/guide/annotations.html#class-annotations">@Title</a></li>
+          <li><a href="/docs/guide/navigation.html#navigation-and-responses">PageResponse</a>, <a href="/docs/guide/navigation.html#navigation-and-responses">PageUrlResponse</a>, <a href="/docs/guide/navigation.html#navigation-and-responses">FrontletResponse</a>, <a href="/docs/guide/modals.html#open-or-close-from-java">ModalResponse</a></li>
+        </ul>
+      </section>
+      <section>
+        <h3>Actions, model data, and forms</h3>
+        <ul>
+          <li><a href="/docs/guide/annotations.html#method-annotations">@ModelData</a>, <a href="/docs/guide/annotations.html#method-annotations">@Action</a>, <a href="/docs/guide/annotations.html#method-annotations">@ActionParameter</a>, <a href="/docs/guide/annotations.html#method-annotations">@FormData</a></li>
+          <li><a href="/docs/guide/annotations.html#browser-storage-parameters">@SharedValue</a>, <a href="/docs/guide/annotations.html#browser-storage-parameters">@ClientState</a>, <a href="/docs/guide/annotations.html#browser-storage-parameters">@LocalStorage</a>, <a href="/docs/guide/annotations.html#browser-storage-parameters">@SessionStorage</a></li>
+          <li><a href="/docs/guide/forms-and-validation.html#validation">@Mandatory</a>, <a href="/docs/guide/forms-and-validation.html#validation">@MinLength</a>, <a href="/docs/guide/forms-and-validation.html#validation">@RegExpr</a>, <a href="/docs/guide/forms-and-validation.html#validation">@Validate</a>, <a href="/docs/guide/forms-and-validation.html#validation">Validator</a></li>
+        </ul>
+      </section>
+      <section>
+        <h3>Dependency injection and extension points</h3>
+        <ul>
+          <li><a href="/docs/guide/runtime-and-dependencies.html#runtime-and-dependency-model">@Component</a>, <a href="/docs/guide/runtime-and-dependencies.html#runtime-and-dependency-model">@Service</a>, <a href="/docs/guide/runtime-and-dependencies.html#runtime-and-dependency-model">@Bean</a>, <a href="/docs/guide/runtime-and-dependencies.html#runtime-and-dependency-model">@Inject</a>, <a href="/docs/guide/runtime-and-dependencies.html#runtime-and-dependency-model">@Init</a></li>
+          <li><a href="/docs/guide/advanced/aspects.html">Advice</a>, <a href="/docs/guide/advanced/aspects.html">AdviceInvocation</a>, <a href="/docs/guide/advanced/aspects.html">@UseAdvice</a></li>
+          <li><a href="/docs/guide/advanced/custom-proxies.html">ProxyFactory</a>, <a href="/docs/guide/advanced/custom-proxies.html">@Proxy</a></li>
+        </ul>
+      </section>
+      <section>
+        <h3>Persistence</h3>
+        <ul>
+          <li><a href="/docs/guide/sql.html#entity-mapping">@Entity</a>, <a href="/docs/guide/sql.html#entity-mapping">@Column</a>, <a href="/docs/guide/sql.html#entity-mapping">@JsonColumn</a>, <a href="/docs/guide/sql.html#entity-mapping">@NoColumn</a></li>
+          <li><a href="/docs/guide/sql.html#repositories">CrudRepository</a>, <a href="/docs/guide/sql.html#repositories">@Repository</a>, <a href="/docs/guide/sql.html#select">@Select</a>, <a href="/docs/guide/sql.html#transactions">@Transactional</a></li>
+          <li><a href="/docs/guide/sql.html#ddl-builder-and-change-sets">DDL</a>, <a href="/docs/guide/sql.html#ddl-builder-and-change-sets">Table</a>, <a href="/docs/guide/sql.html#ddl-builder-and-change-sets">Column</a>, <a href="/docs/guide/sql.html#ddl-builder-and-change-sets">PrimaryKey</a></li>
+          <li><a href="/docs/guide/mongodb.html#documents">@MongoDocument</a>, <a href="/docs/guide/mongodb.html#repositories">MongoCrudRepository</a>, <a href="/docs/guide/mongodb.html#repositories">@MongoRepository</a>, <a href="/docs/guide/mongodb.html#change-streams">@MongoWatch</a></li>
+        </ul>
+      </section>
+      <section>
+        <h3>Security, users, and refresh events</h3>
+        <ul>
+          <li><a href="/docs/guide/security.html#page-and-action-roles">@Roles</a>, <a href="/docs/guide/security.html#ownership-checks">@OwnedBy</a>, <a href="/docs/guide/security.html#local-authentication">@Authenticated</a></li>
+          <li><a href="/docs/guide/annotations.html#parameter-field-and-record-component-annotations">@UserId</a>, <a href="/docs/guide/annotations.html#parameter-field-and-record-component-annotations">@ClientId</a>, <a href="/docs/guide/annotations.html#parameter-field-and-record-component-annotations">@BearerToken</a></li>
+          <li><a href="/docs/guide/events.html">RefreshEventPublisher</a>, <a href="/docs/guide/events.html">@RefreshOnUpdateEvents</a>, <a href="/docs/guide/events.html">@EventListener</a></li>
+        </ul>
+      </section>
+      <section>
+        <h3>Plain HTTP, tests, and operations</h3>
+        <ul>
+          <li><a href="/docs/architecture/http-controller-api.html">HttpRequest</a>, <a href="/docs/architecture/http-controller-api.html">HttpResponse</a>, <a href="/docs/architecture/http-controller-api.html">HttpFilter</a>, <a href="/docs/architecture/http-controller-api.html">FilterChain</a>, <a href="/docs/architecture/http-controller-api.html">ResponseEntity</a></li>
+          <li><a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">@Get</a>, <a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">@Post</a>, <a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">@Put</a>, <a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">@Delete</a>, <a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">@Produces</a></li>
+          <li><a href="/docs/guide/examples-and-tests.html">@XisBootTest</a>, <a href="/docs/guide/examples-and-tests.html">@Mock</a>, <a href="/docs/guide/examples-and-tests.html">@Spy</a>, <a href="/docs/guide/examples-and-tests.html">@InTestContext</a></li>
+          <li><a href="/docs/guide/cloud-native.html">@XISBootApplication</a>, <a href="/docs/guide/cloud-native.html">@XISHttpApplication</a>, <a href="/docs/guide/scheduled-jobs.html">@Scheduled</a></li>
+        </ul>
+      </section>
+    </div>
+
+    <h2>Alphabetical index</h2>
+    <table class="symbol-table">
+      <thead>
+      <tr>
+        <th>Symbol</th>
+        <th>Kind</th>
+        <th>Where to read</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr><td><code>@Action</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#method-annotations">Model data and actions</a></td></tr>
+      <tr><td><code>@ActionParameter</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#method-annotations">Action parameters</a></td></tr>
+      <tr><td><code>Advice</code></td><td><span class="symbol-kind">interface</span></td><td><a href="/docs/guide/advanced/aspects.html">Aspects and interface advice</a></td></tr>
+      <tr><td><code>AdviceInvocation</code></td><td><span class="symbol-kind">interface</span></td><td><a href="/docs/guide/advanced/aspects.html">Aspects and interface advice</a></td></tr>
+      <tr><td><code>@AllElementsMandatory</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/forms-and-validation.html#validation">Forms and validation</a></td></tr>
+      <tr><td><code>@Authenticated</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/security.html#local-authentication">Local authentication</a></td></tr>
+      <tr><td><code>@Bean</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/runtime-and-dependencies.html#runtime-and-dependency-model">Runtime and dependencies</a></td></tr>
+      <tr><td><code>@BearerToken</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#parameter-field-and-record-component-annotations">Current user and request values</a></td></tr>
+      <tr><td><code>@Captor</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/examples-and-tests.html#build-the-test-context">Examples and tests</a></td></tr>
+      <tr><td><code>@Change</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#ddl-builder-and-change-sets">DDL builder and change sets</a></td></tr>
+      <tr><td><code>@ChangeSet</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#ddl-builder-and-change-sets">DDL builder and change sets</a></td></tr>
+      <tr><td><code>@ClientId</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#parameter-field-and-record-component-annotations">Current user and request values</a></td></tr>
+      <tr><td><code>@ClientState</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#browser-storage-parameters">Browser state and values</a></td></tr>
+      <tr><td><code>@Column</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#entity-mapping">Entity mapping</a></td></tr>
+      <tr><td><code>Column</code></td><td><span class="symbol-kind">class</span></td><td><a href="/docs/guide/sql.html#ddl-builder-and-change-sets">DDL builder and change sets</a></td></tr>
+      <tr><td><code>@Component</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/runtime-and-dependencies.html#runtime-and-dependency-model">Runtime and dependencies</a></td></tr>
+      <tr><td><code>@CookieValue</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">Plain HTTP endpoint annotations</a></td></tr>
+      <tr><td><code>CrudRepository</code></td><td><span class="symbol-kind">interface</span></td><td><a href="/docs/guide/sql.html#repositories">SQL repositories</a></td></tr>
+      <tr><td><code>@DefaultComponent</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/runtime-and-dependencies.html#runtime-and-dependency-model">Runtime and dependencies</a></td></tr>
+      <tr><td><code>@DefaultHtmlFile</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/template-location-and-mapping.html">Template location and mapping</a></td></tr>
+      <tr><td><code>@Delete</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#delete">SQL delete</a> / <a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">HTTP delete</a></td></tr>
+      <tr><td><code>DDL</code></td><td><span class="symbol-kind">class</span></td><td><a href="/docs/guide/sql.html#ddl-builder-and-change-sets">DDL builder and change sets</a></td></tr>
+      <tr><td><code>@EMail</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/forms-and-validation.html#validation">Forms and validation</a></td></tr>
+      <tr><td><code>@Entity</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#entity-mapping">Entity mapping</a></td></tr>
+      <tr><td><code>@EventListener</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/events.html">Events</a></td></tr>
+      <tr><td><code>FilterChain</code></td><td><span class="symbol-kind">interface</span></td><td><a href="/docs/architecture/http-controller-api.html">HTTP Controller API</a></td></tr>
+      <tr><td><code>@FormData</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/forms-and-validation.html">Forms and validation</a></td></tr>
+      <tr><td><code>Formatter</code></td><td><span class="symbol-kind">interface</span></td><td><a href="/docs/guide/forms-and-validation.html#type-conversion">Forms and validation</a></td></tr>
+      <tr><td><code>@Frontlet</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#class-annotations">Page and frontlet controllers</a></td></tr>
+      <tr><td><code>@FrontletParameter</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#ui-parameters">UI parameters</a></td></tr>
+      <tr><td><code>FrontletResponse</code></td><td><span class="symbol-kind">class</span></td><td><a href="/docs/guide/navigation.html#navigation-and-responses">Navigation response types</a></td></tr>
+      <tr><td><code>@Function</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#functions-and-stored-procedures">SQL functions and stored procedures</a></td></tr>
+      <tr><td><code>@Get</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">Plain HTTP endpoint annotations</a></td></tr>
+      <tr><td><code>@Head</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">Plain HTTP endpoint annotations</a></td></tr>
+      <tr><td><code>@HtmlFile</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/template-location-and-mapping.html">Template location and mapping</a></td></tr>
+      <tr><td><code>HttpFilter</code></td><td><span class="symbol-kind">interface</span></td><td><a href="/docs/architecture/http-controller-api.html">HTTP Controller API</a></td></tr>
+      <tr><td><code>HttpRequest</code></td><td><span class="symbol-kind">interface</span></td><td><a href="/docs/architecture/http-controller-api.html">HTTP Controller API</a></td></tr>
+      <tr><td><code>HttpResponse</code></td><td><span class="symbol-kind">interface</span></td><td><a href="/docs/architecture/http-controller-api.html">HTTP Controller API</a></td></tr>
+      <tr><td><code>@Ignore</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#advanced-and-rarely-needed-annotations">Rare and specialized annotations</a></td></tr>
+      <tr><td><code>@ImportInstances</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/examples-and-tests.html#build-the-test-context">Examples and tests</a></td></tr>
+      <tr><td><code>@Include</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#class-annotations">Includes</a></td></tr>
+      <tr><td><code>@Init</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/runtime-and-dependencies.html#runtime-and-dependency-model">Runtime and dependencies</a></td></tr>
+      <tr><td><code>@Inject</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/runtime-and-dependencies.html#runtime-and-dependency-model">Runtime and dependencies</a></td></tr>
+      <tr><td><code>@InTestContext</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/examples-and-tests.html#build-the-test-context">Examples and tests</a></td></tr>
+      <tr><td><code>@Insert</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#insert-and-update">SQL insert/update/save/delete</a></td></tr>
+      <tr><td><code>@JsonColumn</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#entity-mapping">Entity mapping</a></td></tr>
+      <tr><td><code>@LabelKey</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/forms-and-validation.html#validation">Forms and validation</a></td></tr>
+      <tr><td><code>@LocalStorage</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#browser-storage-parameters">Browser state and values</a></td></tr>
+      <tr><td><code>@Mandatory</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/forms-and-validation.html#validation">Forms and validation</a></td></tr>
+      <tr><td><code>@MinLength</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/forms-and-validation.html#validation">Forms and validation</a></td></tr>
+      <tr><td><code>@Modal</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/modals.html">Modals</a></td></tr>
+      <tr><td><code>@ModalParameter</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#ui-parameters">UI parameters</a></td></tr>
+      <tr><td><code>ModalResponse</code></td><td><span class="symbol-kind">class</span></td><td><a href="/docs/guide/modals.html#open-or-close-from-java">Modals</a></td></tr>
+      <tr><td><code>@Mock</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/examples-and-tests.html#build-the-test-context">Examples and tests</a></td></tr>
+      <tr><td><code>@ModelData</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#method-annotations">Model data and actions</a></td></tr>
+      <tr><td><code>MongoCrudRepository</code></td><td><span class="symbol-kind">interface</span></td><td><a href="/docs/guide/mongodb.html#repositories">MongoDB repositories</a></td></tr>
+      <tr><td><code>@MongoDocument</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/mongodb.html#documents">MongoDB documents</a></td></tr>
+      <tr><td><code>@MongoField</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/mongodb.html#documents">MongoDB documents</a></td></tr>
+      <tr><td><code>@MongoId</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/mongodb.html#documents">MongoDB documents</a></td></tr>
+      <tr><td><code>@MongoIgnore</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/mongodb.html#documents">MongoDB documents</a></td></tr>
+      <tr><td><code>@MongoQuery</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/mongodb.html#repositories">MongoDB repositories</a></td></tr>
+      <tr><td><code>@MongoRepository</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/mongodb.html#repositories">MongoDB repositories</a></td></tr>
+      <tr><td><code>@MongoWatch</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/mongodb.html#change-streams">MongoDB change streams</a></td></tr>
+      <tr><td><code>@NoColumn</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#entity-mapping">Entity mapping</a></td></tr>
+      <tr><td><code>@NullAllowed</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/forms-and-validation.html#validation">Forms and validation</a></td></tr>
+      <tr><td><code>@Options</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/forms-and-validation.html#forms-and-validation">Forms and validation</a></td></tr>
+      <tr><td><code>@OptionalColumn</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#entity-mapping">Entity mapping</a></td></tr>
+      <tr><td><code>@OwnedBy</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/security.html#ownership-checks">Ownership checks</a></td></tr>
+      <tr><td><code>@Page</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#class-annotations">Page and frontlet controllers</a></td></tr>
+      <tr><td><code>PageResponse</code></td><td><span class="symbol-kind">class</span></td><td><a href="/docs/guide/navigation.html#navigation-and-responses">Navigation response types</a></td></tr>
+      <tr><td><code>PageUrlResponse</code></td><td><span class="symbol-kind">class</span></td><td><a href="/docs/guide/navigation.html#navigation-and-responses">Navigation response types</a></td></tr>
+      <tr><td><code>@Param</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#select">SQL query methods</a></td></tr>
+      <tr><td><code>@PathVariable</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/navigation.html#deep-linking">XIS path variables</a> / <a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">HTTP path variables</a></td></tr>
+      <tr><td><code>@Post</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">Plain HTTP endpoint annotations</a></td></tr>
+      <tr><td><code>PrimaryKey</code></td><td><span class="symbol-kind">class</span></td><td><a href="/docs/guide/sql.html#ddl-builder-and-change-sets">DDL builder and change sets</a></td></tr>
+      <tr><td><code>@Produces</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">Plain HTTP endpoint annotations</a></td></tr>
+      <tr><td><code>@Proxy</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/advanced/custom-proxies.html">Custom proxies</a></td></tr>
+      <tr><td><code>ProxyFactory</code></td><td><span class="symbol-kind">interface</span></td><td><a href="/docs/guide/advanced/custom-proxies.html">Custom proxies</a></td></tr>
+      <tr><td><code>@PublicResources</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/runtime-and-dependencies.html#static-resources">Runtime and dependencies</a></td></tr>
+      <tr><td><code>@Put</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">Plain HTTP endpoint annotations</a></td></tr>
+      <tr><td><code>@QueryParameter</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">Plain HTTP endpoint annotations</a></td></tr>
+      <tr><td><code>@RefreshOnUpdateEvents</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/events.html">Events</a></td></tr>
+      <tr><td><code>RefreshEventPublisher</code></td><td><span class="symbol-kind">interface</span></td><td><a href="/docs/guide/events.html">Events</a></td></tr>
+      <tr><td><code>@RegExpr</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/forms-and-validation.html#validation">Forms and validation</a></td></tr>
+      <tr><td><code>@Repository</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#repositories">SQL repositories</a></td></tr>
+      <tr><td><code>@RequestBody</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">Plain HTTP endpoint annotations</a></td></tr>
+      <tr><td><code>@RequestHeader</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">Plain HTTP endpoint annotations</a></td></tr>
+      <tr><td><code>ResponseEntity</code></td><td><span class="symbol-kind">class</span></td><td><a href="/docs/architecture/http-controller-api.html">HTTP Controller API</a></td></tr>
+      <tr><td><code>@ResponseHeader</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#plain-http-endpoint-annotations">Plain HTTP endpoint annotations</a></td></tr>
+      <tr><td><code>@Roles</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/security.html#page-and-action-roles">Page and action roles</a></td></tr>
+      <tr><td><code>@Route</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/routers.html">Routers</a></td></tr>
+      <tr><td><code>@Router</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/routers.html">Routers</a></td></tr>
+      <tr><td><code>@Save</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#insert-and-update">SQL insert/update/save/delete</a></td></tr>
+      <tr><td><code>@Scheduled</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/scheduled-jobs.html">Scheduled jobs</a></td></tr>
+      <tr><td><code>@Select</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#select">SQL query methods</a></td></tr>
+      <tr><td><code>@Service</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/runtime-and-dependencies.html#runtime-and-dependency-model">Runtime and dependencies</a></td></tr>
+      <tr><td><code>@SessionStorage</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#browser-storage-parameters">Browser state and values</a></td></tr>
+      <tr><td><code>@SharedValue</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#browser-storage-parameters">Browser state and values</a></td></tr>
+      <tr><td><code>@Spy</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/examples-and-tests.html#build-the-test-context">Examples and tests</a></td></tr>
+      <tr><td><code>@StoredProcedure</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#functions-and-stored-procedures">SQL functions and stored procedures</a></td></tr>
+      <tr><td><code>Table</code></td><td><span class="symbol-kind">class</span></td><td><a href="/docs/guide/sql.html#ddl-builder-and-change-sets">DDL builder and change sets</a></td></tr>
+      <tr><td><code>@Title</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#class-annotations">Page and frontlet controllers</a></td></tr>
+      <tr><td><code>@Transactional</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#transactions">SQL transactions</a></td></tr>
+      <tr><td><code>@Update</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/sql.html#insert-and-update">SQL insert/update/save/delete</a></td></tr>
+      <tr><td><code>@Upload</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/forms-and-validation.html#file-uploads">File uploads</a></td></tr>
+      <tr><td><code>@UrlParameter</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/navigation.html#deep-linking">Navigation and responses</a></td></tr>
+      <tr><td><code>@UseAdvice</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/advanced/aspects.html">Aspects and interface advice</a></td></tr>
+      <tr><td><code>@UseFormatter</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/forms-and-validation.html#type-conversion">Forms and validation</a></td></tr>
+      <tr><td><code>@UserId</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#parameter-field-and-record-component-annotations">Current user and request values</a></td></tr>
+      <tr><td><code>@Validate</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/forms-and-validation.html#validation">Forms and validation</a></td></tr>
+      <tr><td><code>Validator</code></td><td><span class="symbol-kind">interface</span></td><td><a href="/docs/guide/forms-and-validation.html#validation">Forms and validation</a></td></tr>
+      <tr><td><code>@Value</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#configuration-values">Runtime and dependencies</a></td></tr>
+      <tr><td><code>@WelcomePage</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/annotations.html#class-annotations">Page and frontlet controllers</a></td></tr>
+      <tr><td><code>@XISBootApplication</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/cloud-native.html">Cloud native</a></td></tr>
+      <tr><td><code>@XISHttpApplication</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/cloud-native.html">Cloud native</a></td></tr>
+      <tr><td><code>@XisBootTest</code></td><td><span class="symbol-kind">annotation</span></td><td><a href="/docs/guide/examples-and-tests.html">Examples and tests</a></td></tr>
+      </tbody>
+    </table>
+  </main>
+</div>
+</body>
+</html>

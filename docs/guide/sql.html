@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SQL - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>SQL</span></div>
+    <h1>SQL</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="sql">SQL</h2>
+<p><code>xis-sql</code> provides a small repository layer for applications that want direct SQL instead of a full ORM.</p>
+<p>The module is intentionally close to the database model: entities are mapped from rows, repositories are interfaces, and SQL annotations are used when the generated CRUD methods are not enough.</p>
+<p>XIS SQL is not a persistence context like JPA. Reading a row creates an object, but changing that object never changes the database by itself, not even inside a transaction. Database writes happen only when repository methods such as <code>@Insert</code>, <code>@Update</code>, <code>@Save</code>, or <code>@Delete</code> are invoked. This keeps write behavior explicit and avoids hidden flushes.</p>
+<h3 id="dependency">Dependency</h3>
+<p><code>build.gradle</code></p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation &quot;one.xis:xis-boot&quot; // or xis-spring
+    implementation &quot;one.xis:xis-sql&quot;
+    runtimeOnly &quot;com.h2database:h2:2.2.224&quot; // or another JDBC driver
+}</code></pre>
+<p>When the XIS Gradle plugin is used, omit the XIS version as usual.</p>
+<h3 id="datasource">DataSource</h3>
+<p>In XIS Boot applications, <code>xis-sql</code> creates a simple default <code>DataSource</code> when no other <code>DataSource</code> exists:</p>
+<pre><code class="language-properties">xis.sql.url=jdbc:h2:file:./data/app
+xis.sql.user=sa
+xis.sql.password=
+xis.sql.driver-class-name=org.h2.Driver</code></pre>
+<p>Only <code>xis.sql.url</code> is required for the default <code>DataSource</code>. The other properties are optional. The default implementation is deliberately small and does not pool connections unless pooling is explicitly enabled. Production applications can provide their own <code>DataSource</code>; it automatically replaces the default one.</p>
+<h4 id="optional-connection-pool">Optional Connection Pool</h4>
+<p>XIS can create a HikariCP-backed pool when HikariCP is on the application classpath and pooling is enabled:</p>
+<p><code>build.gradle</code></p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation &quot;one.xis:xis-boot&quot; // or xis-spring
+    implementation &quot;one.xis:xis-sql&quot;
+    runtimeOnly &quot;org.postgresql:postgresql:42.7.11&quot; // or another JDBC driver
+    runtimeOnly &quot;com.zaxxer:HikariCP:5.1.0&quot;
+}</code></pre>
+<pre><code class="language-properties">xis.sql.url=jdbc:postgresql://localhost:5432/app
+xis.sql.user=app
+xis.sql.password=secret
+xis.sql.pool.enabled=true</code></pre>
+<p>If <code>xis.sql.pool.enabled=true</code> is set and HikariCP is missing, startup fails with a clear error message. Missing pool values use defaults:</p>
+<pre><code class="language-properties">xis.sql.pool.maximum-pool-size=10
+xis.sql.pool.minimum-idle=2
+xis.sql.pool.connection-timeout=30000
+xis.sql.pool.idle-timeout=600000
+xis.sql.pool.max-lifetime=1800000</code></pre>
+<p>Invalid pool values fail fast. <code>minimum-idle</code> must not be greater than <code>maximum-pool-size</code>, and all numeric pool values must be greater than zero.</p>
+<p>In Spring applications, a Spring-managed <code>DataSource</code> is imported into the XIS context. XIS does not create a second <code>DataSource</code> in that case.</p>
+<h3 id="ddl-builder-and-change-sets">DDL Builder And Change Sets</h3>
+<p><code>xis-sql</code> also contains a small DDL API in <code>one.xis.ddl</code>. It can create portable schema changes for H2, MariaDB, and PostgreSQL without writing dialect-specific SQL for common table, column, primary-key, index, unique-constraint, foreign-key, generated-identity, and raw SQL operations.</p>
+<p>For one-off setup code, create a <code>DDL</code> object and execute it against the configured <code>DataSource</code>:</p>
+<pre><code class="language-java">import one.xis.ddl.DDL;
+
+import javax.sql.DataSource;
+
+class SchemaSetup {
+
+    void createSchema(DataSource dataSource) {
+        var ddl = new DDL(dataSource);
+        var customers = ddl.createTableIfNotExists(&quot;customers&quot;);
+        customers.addColumn(&quot;id&quot;).bigint().generatedIdentity().primaryKey();
+        customers.addColumn(&quot;name&quot;).varchar(100).notNull();
+        customers.addColumn(&quot;email&quot;).varchar(200).unique();
+        ddl.execute();
+    }
+}</code></pre>
+<p>For application schema evolution, prefer change sets. A change set class is annotated with <code>@ChangeSet</code>. Each change method is annotated with <code>@Change</code>, returns <code>void</code>, and receives exactly one <code>DDL</code> parameter. The change-set id and change id are persisted and should be treated as stable identifiers. <code>@ChangeSet</code> is a component stereotype for XIS and Spring applications. There is no need to add <code>@Component</code>, <code>@Service</code>, or a Spring component annotation to the same class.</p>
+<pre><code class="language-java">import one.xis.ddl.Change;
+import one.xis.ddl.ChangeSet;
+import one.xis.ddl.DDL;
+
+@ChangeSet(&quot;base&quot;)
+class BaseSchema {
+
+    @Change(&quot;001-create-customers&quot;)
+    void createCustomers(DDL ddl) {
+        var customers = ddl.createTableIfNotExists(&quot;customers&quot;);
+        customers.addColumn(&quot;id&quot;).bigint().generatedIdentity().primaryKey();
+        customers.addColumn(&quot;name&quot;).varchar(100).notNull();
+        customers.addColumn(&quot;email&quot;).varchar(200).unique();
+    }
+}
+
+@ChangeSet(value = &quot;customer-status&quot;, previous = BaseSchema.class)
+class CustomerStatusSchema {
+
+    @Change(&quot;001-add-status&quot;)
+    void addStatus(DDL ddl) {
+        ddl.sql(&quot;alter table customers add column status varchar(20) not null&quot;);
+    }
+}</code></pre>
+<p>XIS discovers change-set classes as normal application components and executes them automatically during context startup when <code>xis-sql</code> and a <code>DataSource</code> are present. The internal runner creates and uses the history table <code>__xis_schema_change</code>. It runs only changes that are not yet recorded there. Change sets form one linear chain: exactly one <code>@ChangeSet</code> has no <code>previous</code>, every following change set points to its predecessor, and forks or cycles fail fast. Inside one change set, methods are executed alphabetically by their <code>@Change</code> id. If a previously executed <code>(changeSetId, changeId)</code> no longer exists in the discovered change sets, startup fails so accidental refactoring does not silently create a second migration history.</p>
+<h3 id="entity-mapping">Entity Mapping</h3>
+<p>Annotate entities with <code>@Entity</code>. Field names map directly to column names, and camel-case field names also map to underscore column names.</p>
+<pre><code class="language-java">@Entity(&quot;customers&quot;)
+record Customer(long id, String firstName, String lastName) {
+}</code></pre>
+<p>Use <code>@Column</code> when the database column name does not follow those conventions. Use <code>@NoColumn</code> or <code>transient</code> for fields that are not backed by a column. <code>@NoColumn</code> is explicit SQL documentation: the property is never read from or written to SQL, even if a matching column exists. <code>@Ignore</code> is still supported as an older equivalent.</p>
+<p>XIS distinguishes three mapped property kinds:</p>
+<p>values.</p>
+<p>or collections of values that belong to the owning row and should not become their own table.</p>
+<ul>
+<li>SQL-simple values such as strings, numbers, booleans, enums, UUIDs, and date/time values are mapped as normal JDBC</li>
+<li><code>@Entity</code> fields and <code>List&lt;EntityType&gt;</code> fields are mapped as SQL relations through database foreign-key metadata.</li>
+<li>Properties annotated with <code>@JsonColumn</code> are mapped to one SQL column containing JSON. Use this for small value objects</li>
+</ul>
+<p>XIS does not need an <code>@Id</code> annotation or another primary-key marker. XIS does not generate tables, so the database is already the source of truth for table structure. Its metadata tells XIS which columns form the primary key, and that information does not have to be repeated in Java. Generated <code>CrudRepository</code> methods are intentionally limited to tables with exactly one primary-key column. For composite primary keys, define the needed repository methods explicitly with <code>@Select</code>, <code>@Insert</code>, <code>@Update</code>, <code>@Save</code>, or <code>@Delete</code>.</p>
+<p>Records can be annotated with <code>@Entity</code> too. This is useful for immutable read models or for inserts and saves where all primary-key values are already present. Records cannot receive generated primary-key values after an insert, because record components are not writable. Use a normal class when XIS should write generated keys back to the entity instance.</p>
+<p><code>@OptionalColumn</code> marks a property as mapped only when the column exists. It is mainly intended for reusable entities: for example a library class may expose roles as a JSON column while one application persists them in the same table and another loads them from a separate role table in its <code>UserAccountService</code>.</p>
+<pre><code class="language-java">@Entity(&quot;employees&quot;)
+class Employee extends UserAccountImpl {
+    long id;
+    String password;
+}</code></pre>
+<p><code>UserAccountImpl</code> already marks its OpenID Connect profile fields as optional SQL columns. Its <code>roles</code> property is both <code>@OptionalColumn</code> and <code>@JsonColumn</code>: if <code>employees.roles</code> exists, XIS reads and writes it as JSON. If the column is missing, generated <code>@Insert</code>, <code>@Update</code>, and <code>@Save</code> statements omit it and result mapping leaves the property unchanged. <code>userId</code> is not optional because it is the stable local user id used for authentication tokens. This is intentionally explicit: <code>@OptionalColumn</code> is for cross-project entity reuse, not for hiding ordinary spelling mistakes in column names.</p>
+<h3 id="example-with-relations">Example With Relations</h3>
+<p>This example maps one customer with many orders. The Java model follows the database model: the <code>orders.customer_id</code> foreign key points to <code>customers.id</code>.</p>
+<p>Keep relation graphs small and intentional. XIS does not support lazy loading, and it is usually a better design to load only the aggregate you actually need. Relations such as invoice and invoice item are natural candidates for one loaded object graph. Broad models such as <code>Customer</code> with every <code>Order</code>, every contact, and every secondary object hanging off it are usually harder to reason about and easier to break. Prefer separate repositories and explicit queries when objects are not tightly coupled.</p>
+<pre><code class="language-sql">create table customers (
+    id bigint primary key,
+    first_name varchar(100),
+    last_name varchar(100)
+);
+
+create table orders (
+    id bigint primary key,
+    customer_id bigint not null,
+    total decimal(12, 2),
+    constraint fk_orders_customer foreign key (customer_id) references customers(id)
+);</code></pre>
+<pre><code class="language-java">import one.xis.sql.Entity;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Entity(&quot;customers&quot;)
+class Customer {
+    long id;
+    String firstName;
+    String lastName;
+    List&lt;Order&gt; orders;
+}
+
+@Entity(&quot;orders&quot;)
+class Order {
+    long id;
+    BigDecimal total;
+}</code></pre>
+<p>The repository can combine generated CRUD methods with explicit SQL:</p>
+<pre><code class="language-java">import one.xis.sql.CrudRepository;
+import one.xis.sql.Delete;
+import one.xis.sql.Param;
+import one.xis.sql.Repository;
+import one.xis.sql.Save;
+import one.xis.sql.Select;
+import one.xis.sql.Update;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+interface CustomerRepository extends CrudRepository&lt;Customer, Long&gt; {
+
+    @Select(&quot;&quot;&quot;
+            select c.id, c.first_name, c.last_name,
+                   o.id as orders_id, o.total as orders_total
+            from customers c
+            left join orders o on o.customer_id = c.id
+            where c.id = {id}
+            &quot;&quot;&quot;)
+    Optional&lt;Customer&gt; findWithOrders(@Param(&quot;id&quot;) long id);
+
+    @Select(&quot;select * from customers where last_name = {lastName}&quot;)
+    List&lt;Customer&gt; findByLastName(@Param(&quot;lastName&quot;) String lastName);
+
+    @Save
+    Customer saveCustomer(Customer customer);
+
+    @Update(&quot;update customers set last_name = {lastName} where id = {id}&quot;)
+    boolean rename(@Param(&quot;id&quot;) long id, @Param(&quot;lastName&quot;) String lastName);
+
+    @Delete
+    boolean deleteCustomer(Customer customer);
+
+    @Delete(&quot;delete from customers where id = {id}&quot;)
+    int deleteOnlyCustomerRow(@Param(&quot;id&quot;) long id);
+}</code></pre>
+<p><code>findWithOrders</code> returns one <code>Customer</code> whose <code>orders</code> list is assembled from the joined rows. <code>@Save</code> stores the customer row and then inserts or updates the order rows, setting <code>orders.customer_id</code> from the customer primary key. <code>@Delete</code> without SQL deletes the object graph from the leaves toward the root so foreign-key constraints are respected. The explicit <code>@Delete(&quot;...&quot;)</code> method is just a normal SQL statement and does not perform entity cascade handling.</p>
+<h3 id="repositories">Repositories</h3>
+<p>A repository is an interface annotated with <code>@Repository</code>. Generic CRUD repositories are available for entities with a single-column primary key.</p>
+<pre><code class="language-java">@Repository
+interface CustomerRepository extends CrudRepository&lt;Customer, Long&gt; {
+
+    @Select(&quot;select * from customers where last_name = {lastName}&quot;)
+    List&lt;Customer&gt; findByLastName(@Param(&quot;lastName&quot;) String lastName);
+}</code></pre>
+<p><code>CrudRepository</code> provides:</p>
+<ul>
+<li><code>findById</code></li>
+<li><code>findAll</code></li>
+<li><code>save</code></li>
+<li><code>delete</code></li>
+<li><code>deleteById</code></li>
+<li><code>count</code></li>
+</ul>
+<p>Custom methods can use <code>@Select</code>, <code>@Insert</code>, <code>@Update</code>, <code>@Save</code>, <code>@Delete</code>, <code>@Function</code>, <code>@StoredProcedure</code>, and <code>@Transactional</code>. Named SQL parameters are bound from method parameters annotated with <code>@Param</code>. If a method has one unannotated entity parameter, named placeholders can also refer directly to its properties, for example <code>{firstName}</code>. For annotated entity parameters, use dotted property names such as <code>{customer.firstName}</code>.</p>
+<h3 id="select">Select</h3>
+<p><code>@Select</code> maps query results to one of three return shapes:</p>
+<ul>
+<li>a single value or entity</li>
+<li><code>Optional&lt;T&gt;</code></li>
+<li><code>List&lt;T&gt;</code> or another collection type</li>
+</ul>
+<p>Simple return types are read from the first result column. Entity return types are mapped by column names. Joined rows can populate nested entity fields and collection fields. For collections, repeated parent columns are collapsed into one parent object and the child values are collected.</p>
+<p>Relationships are resolved through database foreign-key metadata and <code>@Entity</code> table names. A collection field such as <code>List&lt;Order&gt;</code> requires the element type to be an entity and the child table to have a foreign key to the parent table. One-to-one entity fields are supported when the current table has a foreign key to the referenced table. Bidirectional relations are rejected.</p>
+<h3 id="insert-and-update">Insert And Update</h3>
+<p><code>@Insert</code> and <code>@Update</code> can either execute explicit SQL or derive SQL from one entity parameter.</p>
+<p>With explicit SQL, parameters can be bound with JDBC <code>?</code> placeholders or with named placeholders:</p>
+<pre><code class="language-java">@Insert(&quot;insert into customers (id, first_name, last_name) values ({id}, {firstName}, {lastName})&quot;)
+int insert(@Param(&quot;id&quot;) long id,
+           @Param(&quot;firstName&quot;) String firstName,
+           @Param(&quot;lastName&quot;) String lastName);</code></pre>
+<p>Entity parameters can be used directly:</p>
+<pre><code class="language-java">@Insert(&quot;insert into customers (id, first_name, last_name) values ({id}, {firstName}, {lastName})&quot;)
+Customer insert(Customer customer);</code></pre>
+<p>If the annotation value is empty, the method must have exactly one entity parameter. XIS reads the table metadata and builds the statement:</p>
+<pre><code class="language-java">@Insert
+int insert(Customer customer);
+
+@Update
+boolean update(Customer customer);</code></pre>
+<p>For generated primary-key columns, <code>@Insert</code> without SQL omits each generated key column whose current value is unset (<code>null</code> for wrapper types, <code>0</code> for primitive numeric types), reads the JDBC generated keys, and writes them back to the entity. This also works when only one part of a composite primary key is generated and the other key values are supplied by the entity. Explicit SQL statements are not modified this way.</p>
+<p>For <code>@Update</code>, all non-primary-key columns are written and all primary-key columns are used in the <code>where</code> clause. This works for single-column and composite primary keys.</p>
+<p>Valid return values for <code>@Insert</code>, <code>@Update</code>, <code>@Save</code>, and <code>@Delete</code> are:</p>
+<p><code>BigInteger</code></p>
+<ul>
+<li><code>void</code></li>
+<li><code>boolean</code>, true when at least one row was changed</li>
+<li>an integer number containing the JDBC update count: <code>byte</code>, <code>short</code>, <code>int</code>, <code>long</code>, their wrapper types, or</li>
+<li>one of the method parameter types, usually to return the changed entity</li>
+</ul>
+<p>When a method returns one of its parameter types, that returned parameter does not need to be referenced by the SQL statement. If no parameter matches the return type, startup fails with an exception. If the returned parameter is an entity parameter and the SQL uses its properties, those properties are still bound normally.</p>
+<h3 id="save">Save</h3>
+<p><code>@Save</code> has two modes.</p>
+<p>Without SQL, <code>@Save</code> is metadata-driven. It has exactly one entity parameter. XIS reads the table primary key from database metadata, checks whether a row with that key already exists, and then inserts or updates. Single-column and composite primary keys are supported for the saved root entity.</p>
+<p>For generated primary-key columns, unset key values (<code>null</code> for wrapper types, <code>0</code> for primitive numeric types) mean that <code>@Save</code> inserts without those generated columns, reads the JDBC generated keys, and writes them back to the entity before saving child collections. If all key values are set, <code>@Save</code> checks for an existing row and updates it when present.</p>
+<p>Single entity fields are stored through foreign-key columns on the saved table. Collection fields are saved as child rows: the parent row is saved first, then each collection element is inserted or updated and receives the parent&#x27;s primary key in its foreign-key column.</p>
+<p><code>@Save</code> does not delete collection elements that are no longer present in memory. Use <code>@Delete</code> or explicit SQL for delete semantics.</p>
+<p>With SQL, <code>@Save</code> behaves like a normal modification statement:</p>
+<pre><code class="language-java">@Save(&quot;insert into customers (id, first_name, last_name) values ({id}, {firstName}, {lastName})&quot;)
+Customer insert(Customer customer);</code></pre>
+<p>This form does not inspect foreign-key metadata and does not cascade through object relations.</p>
+<h3 id="delete">Delete</h3>
+<p><code>@Delete</code> has two modes.</p>
+<p>Without SQL, <code>@Delete</code> deletes one entity instance:</p>
+<pre><code class="language-java">@Delete
+boolean deleteCustomer(Customer customer);</code></pre>
+<p>XIS reads primary-key and foreign-key metadata from the database. It deletes child collections from the leaves toward the root and then deletes the root row. If a foreign key declares <code>ON DELETE CASCADE</code>, XIS skips the redundant direct delete for that child table, but still evaluates deeper child relations first because those deeper constraints may not cascade. For composite primary keys, <code>@Delete</code> deletes the root entity by all primary-key columns. Object graph cascade handling is available for single-column primary-key relations.</p>
+<p>With SQL, <code>@Delete</code> behaves like <code>@Insert</code> or <code>@Update</code>:</p>
+<pre><code class="language-java">@Delete(&quot;delete from customers where id = {id}&quot;)
+int deleteOnlyCustomerRow(@Param(&quot;id&quot;) long id);</code></pre>
+<p>This form does not inspect entity metadata and does not cascade through object relations.</p>
+<h3 id="transactions">Transactions</h3>
+<p>XIS Boot uses interface-based advice for cross-cutting behavior. It does not modify concrete classes and does not use bytecode generation. This keeps the runtime simple, fast, easy to debug, and friendly to native-image builds.</p>
+<p>**<code>@Transactional</code>, like other XIS AOP annotations, only works when the component has an application interface and is called through that interface. XIS intentionally avoids bytecode enhancement.**</p>
+<p><code>@Transactional</code> is <code>one.xis.sql.Transactional</code>. It is advice, not a marker that repository handlers inspect directly. That is important: XIS can only apply it when it creates an interface proxy. Calling a concrete implementation directly is just a normal Java method call and will not open a transaction.</p>
+<p>For application code, the most common shape is the Spring-like one: put <code>@Transactional</code> on the implementing service method, but inject and call the service through its interface:</p>
+<pre><code class="language-java">import one.xis.sql.Transactional;
+
+@Service
+class CustomerServiceImpl implements CustomerService {
+    private final CustomerRepository customers;
+    private final AuditLogRepository auditLog;
+
+    CustomerServiceImpl(CustomerRepository customers, AuditLogRepository auditLog) {
+        this.customers = customers;
+        this.auditLog = auditLog;
+    }
+
+    @Override
+    @Transactional
+    public void createCustomer(Customer customer) {
+        customers.save(customer);
+        auditLog.insert(&quot;created customer &quot; + customer.id());
+    }
+}</code></pre>
+<p>You may also put the annotation on the interface method:</p>
+<pre><code class="language-java">interface CustomerService {
+
+    @Transactional
+    void createCustomer(Customer customer);
+}</code></pre>
+<p>The same type-level variant also works on the service interface itself.</p>
+<p>If every method of a service should run in a transaction, annotate the implementing class:</p>
+<pre><code class="language-java">@Transactional
+@Service
+class CustomerServiceImpl implements CustomerService {
+
+    public void createCustomer(Customer customer) {
+        customers.save(customer);
+        auditLog.insert(&quot;created customer &quot; + customer.id());
+    }
+}</code></pre>
+<p>Type-level <code>@Transactional</code> applies to all methods called through the proxied interface. In all cases, inject and call the service through the interface. Injecting <code>CustomerServiceImpl</code> instead of <code>CustomerService</code> bypasses interface advice.</p>
+<p>The JDBC connection is opened lazily. Entering a transactional method only marks the current request/thread as transactional. The connection is opened when the first repository method actually needs it.</p>
+<p>If the method completes normally, XIS commits the transaction. If it throws, XIS rolls it back. Nested transactional calls join the already active transaction. XIS intentionally keeps the rule simple: there are no JPA-style rollback rules for checked versus unchecked exceptions.</p>
+<p><code>@Transactional</code> is still available for repository default methods. It is useful when the transaction boundary is truly a repository operation:</p>
+<pre><code class="language-java">@Repository
+interface CustomerRepository {
+
+    @Insert(&quot;insert into customers (id, first_name, last_name) values ({id}, {firstName}, {lastName})&quot;)
+    int insertCustomer(@Param(&quot;id&quot;) long id,
+                       @Param(&quot;firstName&quot;) String firstName,
+                       @Param(&quot;lastName&quot;) String lastName);
+
+    @Insert(&quot;insert into audit_log (message) values ({message})&quot;)
+    int insertAuditLog(@Param(&quot;message&quot;) String message);
+
+    @Transactional
+    default void createCustomer(long id, String firstName, String lastName) {
+        insertCustomer(id, firstName, lastName);
+        insertAuditLog(&quot;created customer &quot; + id);
+    }
+}</code></pre>
+<p>During an HTTP request, an open transaction is completed automatically when request processing ends:</p>
+<ul>
+<li>normal request completion commits the transaction</li>
+<li>request failure rolls the transaction back</li>
+<li>a failing repository call marks the transaction for rollback even if the exception is caught later</li>
+</ul>
+<h3 id="functions-and-stored-procedures">Functions And Stored Procedures</h3>
+<p><code>@Function</code> calls a database function. The Java method return value is the function return value:</p>
+<pre><code class="language-java">@Function(&quot;calculate_discount&quot;)
+BigDecimal calculateDiscount(@Param(&quot;customerId&quot;) long customerId);</code></pre>
+<p>XIS calls it through JDBC as a callable statement with a function return slot:</p>
+<pre><code class="language-text">{ ? = call calculate_discount(?) }</code></pre>
+<p><code>@StoredProcedure</code> calls a database procedure. Without an OUT parameter, it behaves like a modifying statement and can return <code>void</code>, <code>boolean</code>, a number, or one of the method parameter types:</p>
+<pre><code class="language-java">@StoredProcedure(&quot;archive_customer&quot;)
+int archiveCustomer(@Param(&quot;customerId&quot;) long customerId);</code></pre>
+<p>A stored procedure may also expose exactly one OUT parameter as the Java return value. The OUT parameter is declared on the annotation and is appended after all Java method parameters:</p>
+<pre><code class="language-java">@StoredProcedure(value = &quot;calculate_discount&quot;, out = &quot;discount&quot;)
+BigDecimal calculateDiscount(@Param(&quot;customerId&quot;) long customerId);</code></pre>
+<p>This maps to a callable statement shaped like:</p>
+<pre><code class="language-text">call calculate_discount(?, ?)</code></pre>
+<p>The first placeholder is the <code>customerId</code> IN parameter. The second placeholder is the registered OUT parameter. The <code>out</code> name documents the database procedure parameter and must not duplicate a method <code>@Param</code> name.</p>
+<p>H2 supports Java functions registered with <code>CREATE ALIAS</code>, and these functions can also be called as stored procedures. However, H2 does not model JDBC OUT parameters like server databases such as PostgreSQL or MariaDB. A procedure call that registers an OUT parameter can therefore fail on H2 with an invalid parameter-index error. Use <code>@Function</code> for H2 aliases that return a value, or test real OUT-parameter procedures with the target DBMS.</p>
+  </main>
+</div>
+</body>
+</html>

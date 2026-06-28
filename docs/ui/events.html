@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Events And Refresh - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">UI Composition / <span data-current-page>Events and refresh</span></div>
+    <h1>Events and refresh</h1>
+    <p class="lead">
+      XIS refresh events are invalidation signals, not a second business API. The browser receives a key and reloads the
+      affected page or frontlet through the normal XIS flow.
+    </p>
+
+    <h2>Refresh, not data push</h2>
+    <p>
+      The event should usually say what is stale, not carry the full replacement model. This keeps the model source on
+      the server and prevents a second client-side synchronization protocol from growing beside the normal page and
+      frontlet lifecycle.
+    </p>
+    <pre><code class="language-java">import one.xis.Action;
+import one.xis.ModelData;
+import one.xis.Page;
+import one.xis.RefreshEventPublisher;
+import one.xis.RefreshOnUpdateEvents;
+
+@Page("/cart.html")
+@RefreshOnUpdateEvents("cart-updated")
+class CartPage {
+    private final RefreshEventPublisher refreshEvents;
+
+    CartPage(RefreshEventPublisher refreshEvents) {
+        this.refreshEvents = refreshEvents;
+    }
+
+    @ModelData("cart")
+    CartView cart() {
+        return cartService.currentCart();
+    }
+
+    @Action("addToCart")
+    void addToCart(long productId) {
+        cartService.add(productId);
+        refreshEvents.publishToAll("cart-updated");
+    }
+}</code></pre>
+
+    <h2>Targets</h2>
+    <p>
+      Events can be broad or narrow. Some events are useful for all connected clients, some only for one authenticated
+      user, and some only for one browser session. Choosing the narrowest useful target keeps the browser calm and avoids
+      unnecessary refreshes.
+    </p>
+    <pre><code class="language-java">refreshEvents.publishToAll("cart-updated");
+refreshEvents.publishToClient("cart-updated", clientId);
+refreshEvents.publishToUser("cart-updated", userId);
+refreshEvents.publishToAllUsers("account-notice-updated");</code></pre>
+
+    <h2>SSE transport</h2>
+    <p>
+      Server-sent events are a good fit for XIS refresh signals because they are one-way, HTTP-friendly, and simpler to
+      operate than a bidirectional socket when the application only needs server-to-browser notifications. The event
+      channel should stay small. Business data is still loaded by the normal XIS request that follows the event.
+    </p>
+
+    <h2>Consistency model</h2>
+    <p>
+      A refresh event is allowed to be slightly late. It should not make the browser invent state. If the browser misses
+      an event, the next explicit navigation, action, or refresh request must still reconstruct the correct state from
+      the server.
+    </p>
+  </main>
+</div>
+</body>
+</html>

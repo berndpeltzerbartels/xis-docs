@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Examples and Tests - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Examples and Tests</span></div>
+    <h1>Examples and Tests</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="examples-and-tests">Examples and Tests</h2>
+<p>XIS documentation examples are part of the public API. A user should be able to copy a documented example into an application and use it as a starting point.</p>
+<p>XIS also provides fast integration tests. These tests create a lightweight XIS application context, render pages through the same controller/template lifecycle as the runtime, and let you inspect and interact with the resulting document.</p>
+<p>If your build uses the <a href="/docs/guide/gradle-plugin.html">XIS Gradle plugin and tools</a>, the XIS test starter and the JUnit 5 test platform are configured for you. Do not add <code>xis-test</code> or <code>xis-boot-starter-test</code> yourself in that case; the plugin keeps the test dependency on the same version as the plugin.</p>
+<h3 id="generate-starter-tests">Generate Starter Tests</h3>
+<p>If your build uses the XIS Gradle plugin, the <code>xisTests</code> task can generate missing integration-test skeletons for page controllers:</p>
+<pre><code class="language-bash">./gradlew xisTests</code></pre>
+<p>For a page controller such as:</p>
+<pre><code class="language-text">src/main/java/example/dashboard/DashboardPage.java</code></pre>
+<p>the task creates:</p>
+<pre><code class="language-text">src/test/java/example/dashboard/DashboardPageTest.java</code></pre>
+<p>The generated test uses <code>@XisBootTest</code>, registers the page controller in the XIS test context, opens the page URL from <code>@Page</code>, and starts with a minimal document assertion. It does not overwrite an existing test file:</p>
+<pre><code class="language-java">package example.dashboard;
+
+import one.xis.boot.test.XisBootTest;
+import one.xis.context.IntegrationTestContext;
+import one.xis.test.InTestContext;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+@XisBootTest
+class DashboardPageTest {
+
+    private IntegrationTestContext context;
+
+    @InTestContext
+    private DashboardPage dashboardPage;
+
+    @Test
+    void test() {
+        var client = context.openPage(&quot;/dashboard.html&quot;);
+
+        assertNotNull(client.getDocument());
+    }
+}</code></pre>
+<p>When the XIS Gradle plugin generated this test, the required <code>xis-boot-starter-test</code> dependency has already been added by the plugin.</p>
+<p>This works well with the template generator:</p>
+<pre><code class="language-bash">./gradlew xisTemplates xisTests</code></pre>
+<p>A practical TDD workflow is:</p>
+<ol>
+<li>Create the page class with <code>@Page</code>.</li>
+<li>Sketch the <code>@ModelData</code>, <code>@FormData</code>, and <code>@Action</code> methods that define the page contract.</li>
+<li>Run <code>./gradlew xisTemplates xisTests</code>.</li>
+<li>Edit the generated test so it describes the UI behavior.</li>
+<li>Implement the controller, services, and HTML template until the test passes.</li>
+</ol>
+<p>Because these tests mostly interact with the rendered UI document, the generated test normally compiles even while the page still has missing behavior.</p>
+<h3 id="test-a-page">Test A Page</h3>
+<p>For plugin-based builds, the most compact style is <code>@XisBootTest</code>. The extension creates the XIS integration-test context, injects it into an <code>IntegrationTestContext</code> field, and supports XIS context annotations on the test class. This test style is independent of the application runtime: generated tests use the XIS test context for XIS Boot and Spring Boot applications alike.</p>
+<pre><code class="language-java">package example.products;
+
+import one.xis.boot.test.XisBootTest;
+import one.xis.context.IntegrationTestContext;
+import one.xis.test.InTestContext;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+@XisBootTest
+class ProductPageTest {
+
+    private IntegrationTestContext context;
+
+    @InTestContext
+    private ProductService productService;
+
+    @Test
+    void opensProductPage() {
+        var client = context.openPage(&quot;/products/42.html&quot;);
+        var document = client.getDocument();
+
+        assertNotNull(document);
+        assertEquals(&quot;Desk&quot;, document.getElementByTagName(&quot;h1&quot;).getInnerText());
+    }
+}</code></pre>
+<p>Test fields annotated with <code>one.xis.test.@InTestContext</code> are created once, registered in the XIS context, and injected into the test instance. Use this when the test needs a real, inspectable collaborator instead of a mock.</p>
+<pre><code class="language-java">@XisBootTest
+class ProductPageTest {
+
+    private IntegrationTestContext context;
+
+    @InTestContext
+    private ProductService productService;
+
+    @Test
+    void savesProduct() {
+        var client = context.openPage(&quot;/products.html&quot;);
+
+        client.getDocument().getInputElementById(&quot;name&quot;).setValue(&quot;Desk&quot;);
+        client.getDocument().getElementById(&quot;save&quot;).click();
+
+        assertEquals(&quot;Desk&quot;, productService.savedName());
+    }
+}</code></pre>
+<p>Use <code>one.xis.test.@Mock</code>, <code>@Spy</code>, and <code>@Captor</code> for Mockito-style test doubles. <code>@InTestContext</code>, <code>@Mock</code>, and <code>@Spy</code> all register their field value in the XIS context, so constructor injection in controllers and services sees the same instance as the test.</p>
+<p>If the test needs an object produced by a factory method, register a configuration class in the scanned test package and use XIS <code>one.xis.context.Bean</code> methods. The generated test runs against the XIS integration-test context, not a Spring <code>ApplicationContext</code>, so Spring <code>org.springframework.context.annotation.Bean</code> methods are not picked up here unless you configure that annotation explicitly on a manually built context. The test class itself is part of the XIS context, and scanned test components participate in normal constructor injection and bean creation.</p>
+<pre><code class="language-java">package example.products;
+
+import one.xis.boot.test.XisBootTest;
+import one.xis.context.Bean;
+import one.xis.context.Component;
+import one.xis.context.IntegrationTestContext;
+import org.junit.jupiter.api.Test;
+
+@XisBootTest
+class ProductPageTest {
+
+    private IntegrationTestContext context;
+
+    @Test
+    void opensProductPage() {
+        var client = context.openPage(&quot;/products.html&quot;);
+        // assertions here
+    }
+
+    @Component
+    static class ProductTestConfig {
+
+        @Bean
+        ProductCatalog productCatalog() {
+            return ProductCatalog.inMemory();
+        }
+    }
+}</code></pre>
+<p>If the application already has a small Spring-style test configuration that you want to reuse, build the test context explicitly and tell XIS which annotations should mark configuration classes and factory methods:</p>
+<pre><code class="language-java">package example.products;
+
+import one.xis.context.IntegrationTestContext;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class ProductPageTest {
+
+    private IntegrationTestContext context;
+
+    @BeforeEach
+    void setUp() {
+        context = IntegrationTestContext.builder()
+                .withBasePackageClass(ProductPageTest.class)
+                .withComponentAnnotation(Configuration.class)
+                .withBeanMethodAnnotation(Bean.class)
+                .build();
+    }
+
+    @Test
+    void opensProductPage() {
+        var client = context.openPage(&quot;/products.html&quot;);
+
+        assertEquals(&quot;Desk&quot;, client.getDocument().getElementById(&quot;name&quot;).getInnerText());
+    }
+
+    @Configuration
+    static class ProductTestConfig {
+
+        @Bean
+        ProductCatalog productCatalog() {
+            return ProductCatalog.inMemory();
+        }
+    }
+}</code></pre>
+<p>For small explicit tests, or for builds that do not use the plugin test starter, create an <code>IntegrationTestContext</code> yourself with the page controller and the services it needs. You can pass classes, which XIS will instantiate, or ready-made instances such as mocks, test containers, or objects that cannot be created by a no-argument constructor or an ordinary XIS <code>@Bean</code> method.</p>
+<pre><code class="language-java">package example.products;
+
+import one.xis.context.IntegrationTestContext;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class ProductPageTest {
+
+    private IntegrationTestContext context;
+    private ProductService productService;
+
+    @BeforeEach
+    void setUp() {
+        productService = new ProductService() {
+            @Override
+            public Product findById(long id) {
+                return new Product(id, &quot;Desk&quot;, &quot;129.00&quot;);
+            }
+        };
+        context = IntegrationTestContext.builder()
+                .withSingleton(ProductPage.class)
+                .withSingleton(productService)
+                .build();
+    }
+
+    @Test
+    void rendersProductFromUrl() {
+        var result = context.openPage(&quot;/products/42.html&quot;);
+        var document = result.getDocument();
+
+        assertEquals(&quot;Desk&quot;, document.getElementByTagName(&quot;h1&quot;).getInnerText());
+        assertEquals(&quot;129.00&quot;, document.getElementById(&quot;price&quot;).getInnerText());
+    }
+}</code></pre>
+<p>The matching controller can be ordinary application code:</p>
+<pre><code class="language-java">package example.products;
+
+import one.xis.ModelData;
+import one.xis.Page;
+import one.xis.PathVariable;
+
+@Page(&quot;/products/{id}.html&quot;)
+class ProductPage {
+
+    private final ProductService productService;
+
+    ProductPage(ProductService productService) {
+        this.productService = productService;
+    }
+
+    @ModelData(&quot;product&quot;)
+    Product product(@PathVariable(&quot;id&quot;) long id) {
+        return productService.findById(id);
+    }
+}</code></pre>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html xmlns:xis=&quot;https://xis.one/xsd&quot; lang=&quot;en&quot;&gt;
+&lt;head&gt;&lt;title&gt;${product.name}&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;${product.name}&lt;/h1&gt;
+    &lt;p id=&quot;price&quot;&gt;${product.price}&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p>Prefer opening pages by URL when the URL matters. It tests the <code>@Page</code> mapping, path variables, and query parameters. Opening by class is useful for very small tests where the URL is not part of the behavior.</p>
+<h3 id="interact-with-the-document">Interact With The Document</h3>
+<p>The rendered document supports DOM-style lookup and interaction. After opening a page, navigate by clicking links or buttons instead of calling <code>openPage</code> again in the same flow.</p>
+<pre><code class="language-java">@Test
+void actionUpdatesThePage() {
+    var result = context.openPage(&quot;/counter.html&quot;);
+    var document = result.getDocument();
+
+    assertEquals(&quot;0&quot;, document.getElementById(&quot;count&quot;).getInnerText());
+
+    document.getElementById(&quot;increment&quot;).click();
+
+    assertEquals(&quot;1&quot;, document.getElementById(&quot;count&quot;).getInnerText());
+}</code></pre>
+<p>Forms can be tested the same way: set form control values, click the submit button, and assert the rendered validation or navigation result.</p>
+<h3 id="test-drag-and-drop">Test Drag And Drop</h3>
+<p>Use <code>DragAndDrop</code> from <code>xis-test</code> for XIS drag and drop actions. The helper sends <code>dragstart</code>, <code>dragover</code>, and <code>drop</code> with one shared <code>DataTransfer</code> object, so the test follows the same public interaction model as the browser feature.</p>
+<pre><code class="language-java">import one.xis.test.dom.DragAndDrop;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@Test
+void dropCallsTheAction() {
+    var result = context.openPage(&quot;/drag-drop.html&quot;);
+    var document = result.getDocument();
+
+    new DragAndDrop(
+            document.getElementById(&quot;source&quot;),
+            document.getElementById(&quot;target&quot;)
+    ).doDragAndDrop();
+
+    assertEquals(&quot;a2&quot;, boardService.lastFrom());
+    assertEquals(&quot;a4&quot;, boardService.lastTo());
+}</code></pre>
+<p>The matching template can use normal <code>xis:drag</code> and <code>xis:drop</code> attributes:</p>
+<pre><code class="language-html">&lt;div id=&quot;source&quot; xis:drag=&quot;from:${source}&quot;&gt;Source&lt;/div&gt;
+&lt;div id=&quot;target&quot; xis:drop=&quot;move(from, to=&#x27;${target}&#x27;)&quot;&gt;Target&lt;/div&gt;</code></pre>
+<p>See <a href="/docs/guide/drag-and-drop.html">Drag and drop</a> for the template syntax.</p>
+<h3 id="build-the-test-context">Build The Test Context</h3>
+<p>Register individual classes or instances when you want a small, explicit test:</p>
+<pre><code class="language-java">context = IntegrationTestContext.builder()
+        .withSingleton(ProductPage.class)
+        .withSingleton(productService)
+        .build();</code></pre>
+<p>Use package scanning when the test should load a larger slice:</p>
+<pre><code class="language-java">context = IntegrationTestContext.builder()
+        .withBasePackageClass(Application.class)
+        .build();</code></pre>
+<p>You can also include and exclude packages explicitly:</p>
+<pre><code class="language-java">context = IntegrationTestContext.builder()
+        .withPackage(&quot;example.products&quot;)
+        .withoutPackage(&quot;example.external&quot;)
+        .build();</code></pre>
+<p>The XIS test context recognizes XIS context annotations and common Spring stereotypes for component discovery, but it is not a real Spring application context. It is deliberately smaller and faster.</p>
+<h3 id="authentication-in-tests">Authentication In Tests</h3>
+<p>For protected pages, provide a logged-in user in the test context:</p>
+<pre><code class="language-java">@BeforeEach
+void setUp() {
+    var user = new UserAccountImpl();
+    user.setUserId(&quot;u-1&quot;);
+    user.setName(&quot;Ada&quot;);
+    user.setRoles(Set.of(&quot;USER&quot;, &quot;ADMIN&quot;));
+
+    context = IntegrationTestContext.builder()
+            .withSingleton(AccountPage.class)
+            .withLoggedInUser(user, &quot;test-password&quot;)
+            .build();
+}</code></pre>
+<p>Use this for pages that inject <code>@UserId</code> or require <code>@Roles</code>.</p>
+<h3 id="test-dependencies-without-the-plugin">Test Dependencies Without The Plugin</h3>
+<p>With the XIS Gradle plugin, the generated-test dependency is automatic. Without the plugin, add the starter explicitly:</p>
+<p><code>build.gradle</code></p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation &quot;one.xis:xis-boot-starter-test:0.18.0&quot;
+}</code></pre>
+<p>Use this for <code>@XisBootTest</code>, generated-test style, and JUnit Jupiter. If you only use the lower-level <code>IntegrationTestContext</code> builder and configure JUnit yourself, <code>one.xis:xis-test</code> is enough.</p>
+<h3 id="what-to-test-where">What To Test Where</h3>
+<p>Use <code>xis-test</code> for fast checks of controller behavior, template rendering, forms, validation, navigation decisions, and frontlet composition.</p>
+<p>Use browser E2E tests when browser behavior itself matters: real CSS layout, asset loading, OpenID Connect redirects, SSE refresh events, or JavaScript behavior that cannot be represented well by the integration-test DOM.</p>
+<h3 id="rule">Rule</h3>
+<p>Use this shape for examples that describe public behavior:</p>
+<pre><code class="language-text">documented API
+        |
+        +-- copyable Java example
+        +-- matching HTML template example
+        +-- test or example project that exercises the behavior</code></pre>
+<p>Examples are most useful when they show the Java type, the matching template, and the test that proves the behavior.</p>
+<h3 id="what-makes-a-good-example">What Makes a Good Example</h3>
+<p>A good XIS example names the files:</p>
+<pre><code class="language-text">src/main/java/example/products/ProductPage.java
+src/main/java/example/products/ProductPage.html</code></pre>
+<p>It shows the complete public API interaction:</p>
+<pre><code class="language-java">@Page(&quot;/products/{id}.html&quot;)
+class ProductPage {
+
+    @ModelData
+    Product product(@PathVariable(&quot;id&quot;) long id) {
+        return productService.findById(id);
+    }
+}</code></pre>
+<pre><code class="language-html">&lt;h1&gt;${product.name}&lt;/h1&gt;</code></pre>
+<p>It avoids pseudocode for annotation names, template attributes, binding names, and URL shapes.</p>
+<h3 id="test-coupling">Test Coupling</h3>
+<p>When an API is stable, prefer one of these approaches:</p>
+<ul>
+<li>Put a small executable example under an <code>examples/</code> directory and test it.</li>
+<li>Add an integration test that mirrors the documented Java and HTML.</li>
+<li>Extract code blocks from Markdown only if the extraction workflow is reliable enough to maintain.</li>
+</ul>
+<p>The first practical default is to write real example files and reference them from docs. Markdown extraction can come later if it proves useful.</p>
+<h3 id="change-discipline">Change Discipline</h3>
+<p>When changing public behavior:</p>
+<ul>
+<li>update the implementation</li>
+<li>update or add tests</li>
+<li>update the user docs</li>
+<li>update examples so copied code still works</li>
+</ul>
+<p>If the documentation and the tests disagree, treat that as a bug in the project, not as a cosmetic documentation issue.</p>
+  </main>
+</div>
+</body>
+</html>

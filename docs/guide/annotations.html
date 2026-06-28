@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Annotation Reference - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Annotation Reference</span></div>
+    <h1>Annotation Reference</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="annotation-reference">Annotation Reference</h2>
+<p>This page is the compact map of the public annotations a XIS user can meet while building an application. The workflow chapters explain the details; this page makes sure class, method, field, record-component, and parameter annotations are findable in one place.</p>
+<p>Most applications start with <code>@Page</code>, <code>@ModelData</code>, <code>@Action</code>, <code>@FormData</code>, <code>@PathVariable</code>, and <code>@QueryParameter</code>. Use <a href="/docs/guide/core-model.html">Core model</a>, <a href="/docs/guide/navigation.html">Navigation and responses</a>, <a href="/docs/guide/routers.html">Routers</a>, <a href="/docs/guide/forms-and-validation.html">Forms and validation</a>, and <a href="/docs/guide/security.html">Security</a> for complete examples.</p>
+<h3 id="class-annotations">Class Annotations</h3>
+<table><thead><tr><th>Annotation</th><th>Use</th></tr></thead><tbody><tr><td><code>@Page(&quot;/path.html&quot;)</code></td><td>Marks a class as a page controller and maps it to a browser URL.</td></tr><tr><td><code>@Router(&quot;/path&quot;)</code></td><td>Marks an optional route-only controller. A router has no template and delegates matching URLs to pages from <code>@Route</code> methods. See <a href="/docs/guide/routers.html">Routers</a>.</td></tr><tr><td><code>@WelcomePage</code></td><td>Marks the page or single router route that should be used for <code>/</code>.</td></tr><tr><td><code>@Frontlet</code></td><td>Marks a reusable UI controller that renders a replaceable HTML fragment.</td></tr><tr><td><code>@Modal</code></td><td>Marks a modal dialog controller. See <a href="/docs/guide/modals.html">Modals</a>.</td></tr><tr><td><code>@Include(&quot;name&quot;)</code></td><td>Registers a reusable HTML fragment that can be inserted with <code>xis:include</code> or <code>&lt;xis:include&gt;</code>.</td></tr><tr><td><code>@HtmlFile</code></td><td>Uses a template file whose name does not follow the default class-name convention.</td></tr><tr><td><code>@DefaultHtmlFile</code></td><td>Defines a default template file for a package or type.</td></tr><tr><td><code>@Authenticated</code></td><td>Protects a page, frontlet, action, or action DTO by login without requiring a named role. See <a href="/docs/guide/security.html">Security</a>.</td></tr><tr><td><code>@Roles</code></td><td>Protects a page or frontlet by role. See <a href="/docs/guide/security.html">Security</a>.</td></tr><tr><td><code>@OwnedBy</code></td><td>Runs an application-defined ownership guard for a submitted DTO. See <a href="/docs/guide/security.html#ownership-checks">Security</a>.</td></tr><tr><td><code>@RefreshOnUpdateEvents</code></td><td>Refreshes a page or frontlet when one of the configured update events is fired. See <a href="/docs/guide/events.html">Events</a>.</td></tr><tr><td><code>@XISBootApplication</code></td><td>Marks the application entry point for standalone XIS Boot applications. The main reason is build-time generation: the annotation processor uses this class to generate the <code>one.xis.boot.Runner</code> entry point needed by the Gradle plugin&#x27;s <code>xisJar</code> task.</td></tr><tr><td><code>@XISHttpApplication</code></td><td>Marks the application entry point for the advanced HTTP-controller-only runtime. Use it only for applications that deliberately skip the XIS page/frontend layer; the annotation processor uses this class to generate the <code>one.xis.http.Runner</code> entry point for <code>xisJar</code>.</td></tr><tr><td><code>@Component</code>, <code>@Service</code></td><td>Registers ordinary application services in the XIS context.</td></tr><tr><td><code>@DefaultComponent</code></td><td>Registers a replaceable default component, mostly useful for libraries and framework extensions.</td></tr></tbody></table>
+<h3 id="method-annotations">Method Annotations</h3>
+<table><thead><tr><th>Annotation</th><th>Use</th></tr></thead><tbody><tr><td><code>@ModelData</code></td><td>Exposes a value to the template. The default key is the method/property name.</td></tr><tr><td><code>@FormData</code></td><td>Loads form data for a named form binding.</td></tr><tr><td><code>@Action</code></td><td>Marks a method that can be called from an action link, action button, or form submit. May be combined with <code>@ModelData</code> or <code>@FormData</code> when the action return value should be rendered in the current response. The method still runs only when that action is triggered.</td></tr><tr><td><code>@Route</code></td><td>Marks a method on a <code>@Router</code>. Route methods run before a page controller is selected and must return a navigation value.</td></tr><tr><td><code>@WelcomePage</code></td><td>Can mark one <code>@Route</code> method as the application&#x27;s welcome route.</td></tr><tr><td><code>@Title</code></td><td>Supplies a page or frontlet title from Java.</td></tr><tr><td><code>@SharedValue</code></td><td>Provides a named value for other controller methods during the same request/action processing flow.</td></tr><tr><td><code>@Bean</code></td><td>Creates a XIS context bean from a method.</td></tr><tr><td><code>@Init</code></td><td>Runs initialization code after dependency injection.</td></tr><tr><td><code>@EventListener</code></td><td>Handles XIS context events.</td></tr><tr><td><code>@Scheduled</code></td><td>Runs scheduled work in the XIS context. See <a href="/docs/guide/scheduled-jobs.html">Scheduled jobs</a>.</td></tr></tbody></table>
+<h4 id="shared-values">Shared Values</h4>
+<p>Use <code>@SharedValue</code> when one controller processing flow needs the same object in several methods. A typical case is loading an aggregate once and then using it for display and for an action without duplicating the lookup code. The provider method must not be annotated with <code>@Action</code>: XIS calls shared-value providers when another method needs their value, not because a user triggered them directly.</p>
+<pre><code class="language-java">@Page(&quot;/products/{id}.html&quot;)
+class ProductPage {
+
+    private final ProductService productService;
+
+    ProductPage(ProductService productService) {
+        this.productService = productService;
+    }
+
+    @SharedValue(&quot;product&quot;)
+    Product product(@PathVariable(&quot;id&quot;) long id) {
+        return productService.findById(id);
+    }
+
+    @ModelData(&quot;product&quot;)
+    Product productModel(@SharedValue(&quot;product&quot;) Product product) {
+        return product;
+    }
+
+    @Action
+    void rename(@SharedValue(&quot;product&quot;) Product product,
+                @ActionParameter(&quot;name&quot;) String name) {
+        product.renameTo(name);
+        productService.save(product);
+    }
+}</code></pre>
+<p>The shared value is only a controller execution context for the current request or action. It is not session state, application state, or browser storage.</p>
+<h4 id="action-results-as-model-data">Action Results As Model Data</h4>
+<p>Use <code>@Action</code> and <code>@ModelData</code> on the same method when a user action should produce a value that is rendered immediately on the current page or frontlet.</p>
+<pre><code class="language-java">@Page(&quot;/quote.html&quot;)
+class QuotePage {
+
+    @Action
+    @ModelData(&quot;calculationResult&quot;)
+    String calculate(@ActionParameter(&quot;productId&quot;) long productId) {
+        return quoteService.calculate(productId).displayText();
+    }
+}</code></pre>
+<p>The method is still an action: it is only called by an action link, action button, or form submit. <code>@ModelData</code> only says where the return value should be placed in the response model.</p>
+<p>For normal model methods, <code>@ModelData(varName = &quot;customer&quot;)</code> is equivalent to <code>@ModelData(&quot;customer&quot;)</code>. The explicit <code>varName</code> form can make examples easier to read when the value names a template variable.</p>
+<h3 id="parameter-field-and-record-component-annotations">Parameter, Field, And Record Component Annotations</h3>
+<p>These annotations can appear on action/model/form parameters, DTO fields, or record components depending on their purpose.</p>
+<table><thead><tr><th>Annotation</th><th>Use</th></tr></thead><tbody><tr><td><code>@PathVariable(&quot;name&quot;)</code></td><td>Reads a value from a <code>@Page</code> path such as <code>/orders/{id}.html</code>.</td></tr><tr><td><code>@QueryParameter(&quot;name&quot;)</code></td><td>Reads a query parameter from the current page URL, such as <code>/orders.html?status=open</code>.</td></tr><tr><td><code>@ActionParameter(&quot;name&quot;)</code></td><td>Reads a one-shot parameter submitted by the action element that triggered the current action.</td></tr><tr><td><code>@FrontletParameter(&quot;name&quot;)</code></td><td>Reads a stable parameter of the current frontlet instance, supplied by a frontlet target URL, <code>&lt;xis:parameter&gt;</code> on a frontlet link/container, or <code>FrontletResponse</code>.</td></tr><tr><td><code>@ModalParameter(&quot;name&quot;)</code></td><td>Reads a stable parameter of the current modal instance, supplied by a modal target URL, <code>&lt;xis:parameter&gt;</code> on the opener, or <code>ModalResponse</code>.</td></tr><tr><td><code>@FormData(&quot;name&quot;)</code></td><td>Initializes form data on methods or injects submitted form data into <code>@Action</code> method parameters. Method usage supports <code>load</code>.</td></tr><tr><td><code>@Upload</code></td><td>Binds an uploaded multipart file to a form field or controller parameter.</td></tr><tr><td><code>@SharedValue(&quot;name&quot;)</code></td><td>Injects a value produced by another <code>@SharedValue</code> method in the same controller processing flow.</td></tr><tr><td><code>@LocalStorage</code>, <code>@SessionStorage</code>, <code>@ClientState</code></td><td>Injects browser-side state into an action method parameter.</td></tr><tr><td><code>@ClientId</code></td><td>Injects the browser client id.</td></tr><tr><td><code>@UserId</code></td><td>Injects the authenticated user id.</td></tr><tr><td><code>@OwnedBy</code></td><td>Runs an application-defined ownership guard for a submitted DTO, parameter, field, or record component. See <a href="/docs/guide/security.html#ownership-checks">Security</a>.</td></tr><tr><td><code>@UseFormatter</code></td><td>Selects a formatter for converting form values between strings and Java values.</td></tr><tr><td><code>@Mandatory</code></td><td>Requires a value.</td></tr><tr><td><code>@AllElementsMandatory</code></td><td>Requires all elements of an array or collection value.</td></tr><tr><td><code>@EMail</code></td><td>Requires an email-like value.</td></tr><tr><td><code>@MinLength</code></td><td>Requires a minimum string length or collection size.</td></tr><tr><td><code>@RegExpr</code></td><td>Requires a value to match a regular expression.</td></tr><tr><td><code>@LabelKey</code></td><td>Supplies a context-specific label for validation messages, for example &quot;total price&quot; or &quot;VAT&quot;.</td></tr><tr><td><code>@Validate</code></td><td>Builds a custom validation annotation by connecting it to a validator class.</td></tr><tr><td><code>@NullAllowed</code></td><td>Allows <code>null</code> for values that would otherwise be rejected during deserialization or validation.</td></tr><tr><td><code>@Inject</code></td><td>Injects a XIS context bean into a field or constructor.</td></tr><tr><td><code>@Value</code></td><td>Injects a property value into a field.</td></tr></tbody></table>
+<p>Controller methods may also receive framework objects without an annotation: <code>UserContext</code> for the current browser, authentication, and role state, plus <code>HttpRequest</code>, <code>HttpResponse</code>, and <code>RequestContext</code> for lower-level request access.</p>
+<h4 id="ui-parameters">UI Parameters</h4>
+<p>XIS keeps action, frontlet, and modal parameters separate because they have different lifetimes. Use <code>@ActionParameter</code> for values submitted by the exact action element the user clicked. Use <code>@FrontletParameter</code> for the stable context of the currently loaded frontlet. Use <code>@ModalParameter</code> for the stable context of the currently open modal. These annotations are for simple values such as strings, numbers, booleans, dates, and enums. Use <code>@FormData</code> for complex objects.</p>
+<pre><code class="language-html">&lt;button xis:action=&quot;delete&quot;&gt;
+    &lt;xis:parameter name=&quot;productId&quot; value=&quot;${product.id}&quot;/&gt;
+    Delete
+&lt;/button&gt;
+
+&lt;button xis:modal=&quot;/customers/edit?customerId=${customer.id}&quot;&gt;Edit&lt;/button&gt;</code></pre>
+<pre><code class="language-java">@Action
+void delete(@ActionParameter(&quot;productId&quot;) long productId) {
+    productService.delete(productId);
+}
+
+@FormData(&quot;customer&quot;)
+CustomerForm customer(@ModalParameter(&quot;customerId&quot;) long customerId) {
+    return customerService.form(customerId);
+}</code></pre>
+<p>Frontlet and modal target URLs may contain query strings. Those values are still frontlet or modal parameters and are therefore read with <code>@FrontletParameter</code> or <code>@ModalParameter</code>. <code>@QueryParameter</code> is only for the query string of the current page URL. Use <code>@PathVariable</code> for values embedded in a page, frontlet, or modal path. Use <code>@SharedValue</code>, <code>@LocalStorage</code>, <code>@SessionStorage</code>, and <code>@ClientState</code> when the value comes from a different source than the current UI parameter set.</p>
+<p>Action parameters never implicitly fall back to frontlet or modal parameters. If a method needs both values, name both parameters explicitly. Positional action parameters are also supported:</p>
+<pre><code class="language-java">@Action
+void move(@ActionParameter(index = 1) String from, @ActionParameter(index = 2) String to) {
+}</code></pre>
+<p>Use indexes for positional action values, for example function-style template expressions such as drag-and-drop arguments. The explicit index is 1-based and counts only action values, not Java method parameters. Every <code>@ActionParameter</code> must set either <code>value</code> or <code>index</code>. An unnamed <code>@FrontletParameter Map&lt;String, Integer&gt;</code> or <code>@ModalParameter Map&lt;String, T&gt;</code> receives all current frontlet or modal parameters when <code>T</code> is a simple value type. Map keys must be <code>String</code>; values may be strings, numbers, booleans, dates, or enums. <code>@ActionParameter</code> does not support an unnamed map because action parameters are scoped to one triggering element.</p>
+<h4 id="configuration-values">Configuration Values</h4>
+<p>Use <code>@Value</code> on a field when a component needs a property from <code>application.properties</code> or a profile-specific properties file:</p>
+<pre><code class="language-java">@Component
+class MailSettings {
+
+    @Value(&quot;mail.host&quot;)
+    String host;
+
+    @Value(value = &quot;mail.sender&quot;, mandatory = false)
+    String sender;
+}</code></pre>
+<p>By default, a missing property is an error. Set <code>mandatory = false</code> when the value is genuinely optional; the field then keeps its Java default value when the property is absent.</p>
+<h4 id="browser-storage-parameters">Browser Storage Parameters</h4>
+<p><code>@LocalStorage</code>, <code>@SessionStorage</code>, and <code>@ClientState</code> do not send the whole browser state to the server. XIS scans the controller methods, collects the storage keys used by annotated parameters, and writes those keys into the client configuration for the page or frontlet. The browser then sends those configured keys with requests for that page or frontlet.</p>
+<p>Use storage parameters for values that intentionally live in the browser:</p>
+<pre><code class="language-java">class CartPage {
+
+    @Action(&quot;addToCart&quot;)
+    void addToCart(@LocalStorage(&quot;cart&quot;) Cart cart,
+                   @ActionParameter(&quot;productId&quot;) String productId) {
+        cart.add(productId);
+    }
+}</code></pre>
+<p>After the action finishes, XIS writes the storage parameter value back to the browser. This is most useful for mutable DTO-like values. Do not use browser storage as the default place for application state; server-side state is usually simpler and easier to control.</p>
+<p><code>@ClientState</code> is intentionally lighter than browser storage. It is useful for short-lived UI state such as selected items, expanded panels, temporary form context, or other values that would otherwise force extra controller plumbing. It is not XIS&#x27;s default model for variables. Prefer model data, frontlet parameters, modal parameters, action parameters, and shared values when those describe the flow directly. In particular, do not copy the usual pattern from pure frontend frameworks and put every variable into client state. XIS is not a frontend-only framework; controller model data and server-side flow are first-class parts of the programming model.</p>
+<p>Template expressions can read the same storage values, usually inside a storage binding:</p>
+<pre><code class="language-html">&lt;section xis:storage-binding=&quot;localStorage&quot;&gt;
+    &lt;span&gt;${defaultValue(localStorage.cart.count, &#x27;0&#x27;)}&lt;/span&gt;
+&lt;/section&gt;</code></pre>
+<h3 id="plain-http-endpoint-annotations">Plain HTTP Endpoint Annotations</h3>
+<p>**Normal XIS pages, frontlets, modals, forms, and actions do not need these annotations.** XIS already handles their browser/server communication. Use these annotations only when you create plain HTTP endpoints for external non-XIS clients, webhooks, scripts, or integration partners.</p>
+<table><thead><tr><th>Annotation</th><th>Use</th></tr></thead><tbody><tr><td><code>@Controller</code></td><td>Marks a class as a plain HTTP controller.</td></tr><tr><td><code>@Get</code>, <code>@Post</code>, <code>@Put</code>, <code>@Delete</code>, <code>@Head</code>, <code>@Options</code>, <code>@Trace</code></td><td>Maps an HTTP method and path.</td></tr><tr><td><code>@RequestBody</code></td><td>Injects the request body.</td></tr><tr><td><code>@RequestHeader</code>, <code>@ResponseHeader</code>, <code>@CookieValue</code>, <code>@BearerToken</code></td><td>Reads or writes HTTP metadata.</td></tr><tr><td><code>@UrlParameter</code>, <code>one.xis.http.PathVariable</code></td><td>Reads URL/query data for plain HTTP controllers.</td></tr><tr><td><code>@Upload</code></td><td>Reads a multipart file from a plain HTTP controller request.</td></tr><tr><td><code>@Produces</code></td><td>Declares the response content type.</td></tr><tr><td><code>@PublicResources</code></td><td>Exposes public static resources.</td></tr></tbody></table>
+<p>Plain HTTP controllers are still XIS components, so constructor injection works as usual. They do not render templates and they do not participate in page/frontlet model loading. The method return value is written as the HTTP response body.</p>
+<pre><code class="language-java">package example.api;
+
+import one.xis.http.Controller;
+import one.xis.http.ContentType;
+import one.xis.http.Get;
+import one.xis.http.PathVariable;
+import one.xis.http.Post;
+import one.xis.http.Produces;
+import one.xis.http.RequestBody;
+import one.xis.http.RequestHeader;
+import one.xis.http.ResponseEntity;
+
+@Controller
+class CustomerApi {
+    private final CustomerService customers;
+
+    CustomerApi(CustomerService customers) {
+        this.customers = customers;
+    }
+
+    @Get(&quot;/api/customers/{id}&quot;)
+    @Produces(ContentType.JSON)
+    CustomerDto find(@PathVariable(&quot;id&quot;) long id,
+                     @RequestHeader(&quot;Accept-Language&quot;) String language) {
+        return customers.findDto(id, language);
+    }
+
+    @Post(&quot;/api/customers&quot;)
+    @Produces(ContentType.JSON)
+    ResponseEntity&lt;CustomerDto&gt; create(@RequestBody CustomerForm form) {
+        var customer = customers.create(form);
+        return ResponseEntity.created(customer)
+                .addHeader(&quot;Location&quot;, &quot;/api/customers/&quot; + customer.id());
+    }
+}</code></pre>
+<p>Use <code>@UrlParameter(&quot;name&quot;)</code> for query parameters, <code>one.xis.http.PathVariable</code> for placeholders in the HTTP route, and <code>@RequestBody</code> for JSON-like request bodies. <code>@CookieValue</code> and <code>@BearerToken</code> are convenience annotations for common metadata. Use <code>ResponseEntity</code> when the endpoint needs a specific status or dynamic response headers. Use <code>@ResponseHeader(name = &quot;...&quot;, value = &quot;...&quot;)</code> only for fixed headers declared on a method. The action/page <code>one.xis.PathVariable</code> annotation is a different type and should not be imported for plain HTTP controllers.</p>
+<h3 id="persistence-annotation-index">Persistence Annotation Index</h3>
+<p>SQL and MongoDB annotations live in their own modules. They are listed here so text search finds them from the central annotation reference; the full behavior belongs in the persistence chapters.</p>
+<h4 id="sql">SQL</h4>
+<table><thead><tr><th>Annotation</th><th>Use</th></tr></thead><tbody><tr><td><code>@Entity</code></td><td>Maps a class or record to a database table. See <a href="/docs/guide/sql.html#entity-mapping">SQL entity mapping</a>.</td></tr><tr><td><code>@Column</code></td><td>Maps a property to a differently named database column.</td></tr><tr><td><code>@JsonColumn</code></td><td>Stores a property as JSON in one SQL column.</td></tr><tr><td><code>@NoColumn</code>, <code>@Ignore</code></td><td>Excludes a property from SQL mapping.</td></tr><tr><td><code>@OptionalColumn</code></td><td>Maps a reusable property only when the column exists.</td></tr><tr><td><code>@Repository</code></td><td>Marks a SQL repository interface. See <a href="/docs/guide/sql.html#repositories">SQL repositories</a>.</td></tr><tr><td><code>@Select</code></td><td>Executes a query and maps the result.</td></tr><tr><td><code>@Insert</code>, <code>@Update</code>, <code>@Save</code>, <code>one.xis.sql.@Delete</code></td><td>Execute or derive write operations.</td></tr><tr><td><code>@Param</code></td><td>Names a repository method parameter for SQL placeholders.</td></tr><tr><td><code>@Transactional</code></td><td>Opens a transaction through XIS interface advice. See <a href="/docs/guide/sql.html#transactions">Transactions</a>.</td></tr><tr><td><code>@Function</code>, <code>@StoredProcedure</code></td><td>Calls database functions and stored procedures.</td></tr><tr><td><code>one.xis.ddl.@ChangeSet</code></td><td>Defines a stable, persisted DDL migration group and marks the class as a XIS/Spring component. See <a href="/docs/guide/sql.html#ddl-builder-and-change-sets">DDL builder and change sets</a>.</td></tr><tr><td><code>one.xis.ddl.@Change</code></td><td>Marks one DDL migration method inside a change set. See <a href="/docs/guide/sql.html#ddl-builder-and-change-sets">DDL builder and change sets</a>.</td></tr></tbody></table>
+<h4 id="mongodb">MongoDB</h4>
+<table><thead><tr><th>Annotation</th><th>Use</th></tr></thead><tbody><tr><td><code>@MongoDocument</code></td><td>Maps a class or record to a MongoDB collection. See <a href="/docs/guide/mongodb.html#documents">MongoDB documents</a>.</td></tr><tr><td><code>@MongoId</code></td><td>Marks a property as the MongoDB <code>_id</code> when it is not named <code>id</code>.</td></tr><tr><td><code>@MongoField</code></td><td>Maps a property to a differently named document field.</td></tr><tr><td><code>@MongoIgnore</code></td><td>Excludes a property from MongoDB mapping.</td></tr><tr><td><code>@MongoRepository</code></td><td>Marks a MongoDB repository interface. See <a href="/docs/guide/mongodb.html#repositories">MongoDB repositories</a>.</td></tr><tr><td><code>@MongoQuery</code></td><td>Defines an explicit MongoDB JSON query.</td></tr><tr><td><code>@MongoWatch</code></td><td>Registers a MongoDB change-stream listener.</td></tr></tbody></table>
+<h3 id="test-annotation-index">Test Annotation Index</h3>
+<p>These annotations belong to XIS integration tests, not application runtime code. See <a href="/docs/guide/examples-and-tests.html">Examples and tests</a> for complete setup examples.</p>
+<table><thead><tr><th>Annotation</th><th>Use</th></tr></thead><tbody><tr><td><code>@XisBootTest</code></td><td>Creates a JUnit integration-test context for a XIS page test.</td></tr><tr><td><code>one.xis.test.@InTestContext</code></td><td>Registers a real field value in the XIS test context and injects it into the test.</td></tr><tr><td><code>one.xis.test.@Mock</code></td><td>Creates a Mockito mock and registers it in the XIS test context.</td></tr><tr><td><code>one.xis.test.@Spy</code></td><td>Creates a Mockito-style spy and registers it in the XIS test context.</td></tr><tr><td><code>one.xis.test.@Captor</code></td><td>Creates a Mockito argument captor for assertions.</td></tr></tbody></table>
+<h3 id="advanced-and-rarely-needed-annotations">Advanced And Rarely Needed Annotations</h3>
+<p>These are public because framework extensions or specialized applications may need them. They are not part of the normal first application path.</p>
+<table><thead><tr><th>Annotation</th><th>Use</th></tr></thead><tbody><tr><td><code>@ImportInstances</code></td><td>Imports component instances into the XIS runtime.</td></tr><tr><td><code>@Proxy</code></td><td>Marks an annotation as a context proxy annotation. See <a href="/docs/guide/advanced/custom-proxies.html">Custom proxies</a>.</td></tr><tr><td><code>@UseAdvice</code></td><td>Marks an annotation as an interface advice annotation. See <a href="/docs/guide/advanced/aspects.html">Aspects and interface advice</a>.</td></tr></tbody></table>
+<h3 id="include-syntax">Include Syntax</h3>
+<p>An include always has an annotation and a template:</p>
+<pre><code class="language-java">@Include(&quot;header&quot;)
+class Header {
+}</code></pre>
+<pre><code class="language-html">&lt;xis:include name=&quot;header&quot;/&gt;</code></pre>
+<p>The attribute form is equivalent:</p>
+<pre><code class="language-html">&lt;header xis:include=&quot;header&quot;&gt;&lt;/header&gt;</code></pre>
+<p>The string is an include key. It may contain path-like characters if you choose keys such as <code>layout/header</code>, but it is not resolved as a resource path from the template. Only classes annotated with <code>@Include</code> are available. This keeps includes explicit by design: the application decides which fragments may be reused, and templates cannot include arbitrary files by walking through resource directories.</p>
+<p>An include is for markup reuse, not for its own controller state. The included markup is still initialized as part of the surrounding page or frontlet, so it may use model expressions, XIS links, action buttons, and parameters that belong to that surrounding controller.</p>
+  </main>
+</div>
+</body>
+</html>

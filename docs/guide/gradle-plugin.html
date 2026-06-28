@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gradle Plugin And Tools - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Gradle Plugin And Tools</span></div>
+    <h1>Gradle Plugin And Tools</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="gradle-plugin-and-tools">Gradle Plugin And Tools</h2>
+<p>The XIS Gradle plugin keeps the normal project workflow small. It adds the annotation processor, copies HTML templates that live next to Java controllers into the application resources, configures the XIS integration-test starter, and provides comfortable tools for scaffolding, validation, local runs, and CI pipelines.</p>
+<p>Use the plugin when you want the usual XIS layout:</p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+}</code></pre>
+<p>You still choose the runtime dependency yourself:</p>
+<pre><code class="language-groovy">dependencies {
+    implementation &quot;one.xis:xis-spring&quot;
+}</code></pre>
+<p>or:</p>
+<pre><code class="language-groovy">dependencies {
+    implementation &quot;one.xis:xis-boot&quot; // or xis-spring
+}</code></pre>
+<h3 id="what-the-plugin-configures">What The Plugin Configures</h3>
+<p>The plugin applies the Java plugin and configures the normal XIS build support:</p>
+<table><thead><tr><th>Area</th><th>What happens</th></tr></thead><tbody><tr><td>HTML templates</td><td><code>.html</code> files under <code>src/main/java</code> are copied into the runtime resources.</td></tr><tr><td>Annotation processing</td><td><code>xis-apt</code> is added as annotation processor with the same version as the plugin.</td></tr><tr><td>Integration tests</td><td><code>xis-boot-starter-test</code> is added for tests and JUnit Platform is enabled. The starter brings <code>xis-test</code>, <code>@XisBootTest</code>, and JUnit Jupiter.</td></tr><tr><td>Dependency versions</td><td>XIS dependencies used by the plugin are aligned to the plugin version.</td></tr><tr><td>XIS catalogs</td><td>The plugin generates component catalogs for reusable XIS libraries. Projects that also declare <code>xis-boot-native</code> generate native catalogs.</td></tr><tr><td>XIS validation</td><td><code>xisValidate</code> runs XIS validation checks. The task is intended for local development and CI pipelines.</td></tr><tr><td>XIS Boot jars</td><td>Projects that use <code>xis-boot</code> or <code>xis-boot-http</code> get <code>xisJar</code> and <code>xisRun</code> tasks.</td></tr></tbody></table>
+<p>This means a normal application does not need to wire the XIS annotation processor, <code>xis-test</code>, or <code>xis-boot-starter-test</code> manually. It also means XIS runtime dependencies can normally be declared without a version. The plugin version selects the matching XIS artifact version.</p>
+<h3 id="xis-catalogs-for-libraries">XIS Catalogs For Libraries</h3>
+<p>Applying <code>one.xis.plugin</code> marks the project as a XIS artifact. The plugin therefore generates catalog resources for framework-managed classes such as components, pages, frontlets, modals, repositories, and proxy interfaces.</p>
+<p>Those catalogs are especially important for XIS Boot Native. A native application can consume a reusable XIS library without source access when the library jar contains the generated XIS catalog resources. If the library contributes XIS components to a native executable, it must also declare <code>xis-boot-native</code>; that explicit dependency opts the library into native catalog generation.</p>
+<p>A plain Java library without the XIS plugin does not automatically contribute XIS components to a native application. That is fine for ordinary helper classes. If the library contains classes that XIS should manage on the JVM, build it as a XIS artifact by applying <code>one.xis.plugin</code>. If those classes should also be available in a native executable, add <code>xis-boot-native</code> as well.</p>
+<h3 id="xistemplates"><code>xisTemplates</code></h3>
+<p>The <code>xisTemplates</code> task generates missing HTML templates for page and frontlet controllers:</p>
+<pre><code class="language-bash">./gradlew xisTemplates</code></pre>
+<p>The task is most useful when you write the controller, or at least its public shape, before writing the template. Add the page or frontlet annotation, sketch the <code>@ModelData</code>, <code>@FormData</code>, and <code>@Action</code> methods, and then run <code>xisTemplates</code>. The generated HTML tries to reflect that controller shape instead of only creating an empty file. This keeps binding names, form names, and action names close to the Java code and removes a large part of the repetitive template boilerplate.</p>
+<p>If you create this class:</p>
+<pre><code class="language-java">package example.dashboard;
+
+import one.xis.Page;
+
+@Page(&quot;/dashboard.html&quot;)
+class DashboardPage {
+}</code></pre>
+<p>the task creates:</p>
+<pre><code class="language-text">src/main/java/example/dashboard/DashboardPage.html</code></pre>
+<p>The generated file is only a starting point. It is written next to the Java controller so the controller and template can be edited together. Existing templates are not overwritten.</p>
+<p>When the controller already exposes <code>@ModelData</code>, <code>@FormData</code>, or <code>@Action</code> methods, the generated template uses them as a starter sketch:</p>
+<table><thead><tr><th>Controller member</th><th>Generated template sketch</th></tr></thead><tbody><tr><td>scalar <code>@ModelData</code></td><td>A simple expression such as <code>${title}</code>.</td></tr><tr><td>iterable <code>@ModelData</code></td><td>A small <code>xis:foreach</code> block with one repeated item.</td></tr><tr><td><code>@FormData</code></td><td>A form with <code>xis:binding</code>, labels, inputs, <code>xis:message-for</code>, and error styling hooks.</td></tr><tr><td><code>@Action</code> with matching form data</td><td>A form submit button using <code>xis:action</code>.</td></tr><tr><td>standalone <code>@Action</code></td><td>A button with <code>type=&quot;button&quot;</code> and <code>xis:action</code>.</td></tr></tbody></table>
+<p>Form fields are derived from record components or non-static fields. The generator uses simple input type hints: booleans become checkboxes, numeric values become number inputs, date-like values become date inputs, and other values become text inputs. If a form action has a <code>@FormData(&quot;name&quot;)</code> parameter, the generated form uses that action. Otherwise the form gets a neutral <code>save</code> action name that you can edit.</p>
+<p>The generator intentionally produces plain HTML. It does not try to design the page, choose domain wording, or decide the final layout for you. Treat the result as a first executable template that already knows the controller contract.</p>
+<p>When the project also applies the Groovy or Kotlin plugin, <code>xisTemplates</code> scans those page and frontlet controllers too. For Groovy and Kotlin controllers, generated templates are written under <code>src/main/resources</code> with the controller package path.</p>
+<h3 id="xistests"><code>xisTests</code></h3>
+<p>The <code>xisTests</code> task generates missing starter integration tests for page controllers:</p>
+<pre><code class="language-bash">./gradlew xisTests</code></pre>
+<p>For the same page controller, the task creates:</p>
+<pre><code class="language-text">src/test/java/example/dashboard/DashboardPageTest.java</code></pre>
+<p>The generated test uses <code>@XisBootTest</code>, registers the page controller in the XIS test context, and opens the page through its <code>@Page</code> URL. The generator does not need separate Spring Boot and XIS Boot variants because the generated test runs against the XIS integration-test context in both cases. It is meant as a first executable sketch, not as a finished test suite:</p>
+<pre><code class="language-java">import one.xis.boot.test.XisBootTest;
+import one.xis.context.IntegrationTestContext;
+import one.xis.test.InTestContext;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+@XisBootTest
+class DashboardPageTest {
+
+    private IntegrationTestContext context;
+
+    @InTestContext
+    private DashboardPage dashboardPage;
+
+    @Test
+    void test() {
+        var client = context.openPage(&quot;/dashboard.html&quot;);
+
+        assertNotNull(client.getDocument());
+    }
+}</code></pre>
+<p>The test starter needed for this generated code is added automatically by the plugin. Do not add <code>xis-test</code> or <code>xis-boot-starter-test</code> again in a normal plugin-based build.</p>
+<p>For additional collaborators, keep the generated style and add test fields with <code>@InTestContext</code>, <code>@Mock</code>, or <code>@Spy</code>. If a collaborator should be produced by a factory method, put a XIS <code>one.xis.context.Bean</code> method on a scanned test component. The generated test uses the XIS integration-test context; it does not start Spring and does not automatically use Spring <code>org.springframework.context.annotation.Bean</code> methods. For fully explicit object graphs, Spring-created objects, or prebuilt instances, use <code>IntegrationTestContext.builder()</code> manually instead. See <a href="/docs/guide/examples-and-tests.html#test-a-page">Test A Page</a> for copy/paste examples, including Spring <code>@Configuration</code> and Spring <code>@Bean</code> support in a manually built test context.</p>
+<p>When the project also applies the Groovy plugin, <code>xisTests</code> scans Groovy page controllers too and writes Groovy starter tests under <code>src/test/groovy</code>. Kotlin controllers are scanned for template validation and runtime catalogs; write Kotlin tests manually or use generated Java tests as a starting point.</p>
+<p>This supports a TDD-style workflow:</p>
+<pre><code class="language-bash">./gradlew xisTemplates xisTests</code></pre>
+<p>Then edit the generated test until it describes the page behavior you want, implement the template and Java code, and run the normal Gradle <code>test</code> task.</p>
+<h3 id="xisvalidate"><code>xisValidate</code></h3>
+<p>The <code>xisValidate</code> task runs XIS validation checks without starting the application:</p>
+<pre><code class="language-bash">./gradlew xisValidate</code></pre>
+<p>It is meant for the normal development loop and for CI pipelines. By default, it stops at the first validation error so CI logs stay short and the first problem is easy to see. To collect all validation errors in one run, use:</p>
+<pre><code class="language-bash">./gradlew xisValidate --all-errors</code></pre>
+<p>The task validates the HTML with the same XIS HTML parser that is used at runtime. A parser error here means the application would fail when the page or frontlet is loaded.</p>
+<p>The current checks cover the places where mistakes are easy to miss in a browser:</p>
+<table><thead><tr><th>Area</th><th>Examples</th></tr></thead><tbody><tr><td>Attribute dependencies</td><td><code>xis:error-class</code> and <code>xis:error-style</code> require <code>xis:binding</code> or <code>xis:error-binding</code>.</td></tr><tr><td>Mandatory attributes</td><td>Framework elements such as <code>&lt;xis:foreach&gt;</code>, <code>&lt;xis:if&gt;</code>, <code>&lt;xis:form&gt;</code>, <code>&lt;xis:input&gt;</code>, <code>&lt;xis:submit&gt;</code>, and <code>&lt;xis:parameter&gt;</code> must declare the attributes that identify their data, action, or target. See <a href="/docs/guide/tags-and-attributes.html#element-required-attributes">Element required attributes</a>.</td></tr><tr><td>Attribute syntax</td><td><code>xis:foreach</code>, <code>xis:repeat</code>, and <code>xis:drag</code> use <code>name:expression</code>; <code>xis:drop</code> uses <code>actionName(...)</code>.</td></tr><tr><td>Framework element syntax</td><td><code>&lt;xis:a&gt;</code> and <code>&lt;xis:button&gt;</code> need a navigation or action target; <code>&lt;xis:parameter&gt;</code> needs <code>name</code>; storage bindings need a supported store.</td></tr><tr><td>Unknown framework elements</td><td>Unknown <code>xis:*</code> elements fail validation so typos such as <code>&lt;xis:for-each&gt;</code> do not silently render as inert HTML.</td></tr><tr><td>Attribute placement</td><td>navigation attributes belong on links or buttons; form bindings belong on form controls or labels.</td></tr><tr><td>Selection styling</td><td><code>xis:selection-class</code> needs a surrounding <code>xis:selection-group</code>.</td></tr><tr><td>Template data</td><td>expressions such as <code>${customer.firstName}</code> must have matching <code>@ModelData</code>; exposed model/form data must be used by the template.</td></tr><tr><td>Template properties</td><td>property paths such as <code>${customer.address.city}</code> are checked against fields, record components, getters, setters, and inherited members where the type is known. Repeat variables are checked against the element type of the repeated model data.</td></tr><tr><td>Form fields</td><td>bindings inside <code>&lt;form xis:binding=&quot;...&quot;&gt;</code> or <code>&lt;xis:form binding=&quot;...&quot;&gt;</code> are checked against the matching <code>@FormData</code> object.</td></tr></tbody></table>
+<p>The validation is intentionally a preflight check, not a replacement for tests. It catches most common mistakes around template variables, form bindings, missing attributes, and misspelled properties before the application starts. A successful validation run does not prove that the page is behaviorally correct: dynamic expressions, custom JavaScript, EL function semantics, database state, permissions, and browser behavior still belong in integration and e2e tests.</p>
+<h3 id="xisjar"><code>xisJar</code></h3>
+<p>When the project declares <code>xis-boot</code> or <code>xis-boot-http</code>, the plugin adds:</p>
+<pre><code class="language-bash">./gradlew xisJar</code></pre>
+<p>The task creates an executable XIS Boot jar with the XIS Boot runner as main class. Spring Boot applications normally use the Spring Boot plugin tasks instead.</p>
+<p>For the advanced HTTP-controller-only runtime, the same task is available when the project declares <code>xis-http-controller</code> or <code>xis-http-controller-native</code>. In that case the generated main class uses the HTTP-controller runner instead of the XIS Boot page/frontend runner.</p>
+<p>The jar is written to <code>build/libs</code> and uses Gradle&#x27;s normal archive name:</p>
+<pre><code class="language-text">build/libs/&lt;project-name&gt;-&lt;version&gt;.jar</code></pre>
+<p>For example:</p>
+<pre><code class="language-bash">java -jar build/libs/my-app-1.0-SNAPSHOT.jar</code></pre>
+<p><code>xisJar</code> requires exactly one application class annotated with <code>@XISBootApplication</code> for XIS Boot projects, or exactly one <code>@XISHttpApplication</code> class for HTTP-controller-only projects. The XIS annotation processor uses that class to generate the executable entry point.</p>
+<p>When the project also applies the Groovy or Kotlin plugin, the <code>@XISBootApplication</code> class may be written in that language. The XIS plugin packages Java, Groovy, or Kotlin classes, templates, resources, and the generated runner into the XIS jar.</p>
+<h3 id="xisrun"><code>xisRun</code></h3>
+<p>When the project declares <code>xis-boot</code>, <code>xis-boot-http</code>, <code>xis-http-controller</code>, or <code>xis-http-controller-native</code>, the plugin also adds:</p>
+<pre><code class="language-bash">./gradlew xisRun</code></pre>
+<p><code>xisRun</code> always depends on <code>xisJar</code> and starts the jar created by that task. It runs the generated XIS runner with the XIS jar on the classpath, so Gradle and IDEs can treat it like a normal Java run task. You do not need to configure the jar dependency yourself.</p>
+<p>To run on a specific port, pass the port option:</p>
+<pre><code class="language-bash">./gradlew xisRun --port=9090</code></pre>
+<p>Additional application arguments can be passed as a single string:</p>
+<pre><code class="language-bash">./gradlew xisRun --args=&quot;9090&quot;</code></pre>
+<p>To debug the application from an IDE, use Gradle&#x27;s standard Java debug option and attach to port <code>5005</code>:</p>
+<pre><code class="language-bash">./gradlew xisRun --debug-jvm</code></pre>
+<h3 id="when-to-add-test-dependencies-yourself">When To Add Test Dependencies Yourself</h3>
+<p>If you use the XIS Gradle plugin, the test starter is already added for tests. Generated tests should compile without an explicit XIS test dependency in your <code>dependencies</code> block.</p>
+<p>Without the plugin, add the dependency that matches the style of test you want:</p>
+<pre><code class="language-groovy">dependencies {
+    testImplementation &quot;one.xis:xis-boot-starter-test:0.18.0&quot;
+}</code></pre>
+<p>Use this when you want <code>@XisBootTest</code>, generated-test style, and JUnit Jupiter. If you only want the lower-level <code>IntegrationTestContext</code> API and manage JUnit yourself, add <code>one.xis:xis-test</code> explicitly instead. In builds without the plugin, use the same XIS version for all XIS modules.</p>
+<p>See <a href="/docs/guide/examples-and-tests.html">Examples and tests</a> for the testing API and examples.</p>
+<h3 id="builds-without-the-plugin">Builds Without The Plugin</h3>
+<p>XIS can be used without the Gradle plugin, but then the build is explicit. You must add versions to XIS dependencies yourself and wire the parts that the plugin normally configures:</p>
+<ul>
+<li>the XIS annotation processor</li>
+<li>copying HTML templates from <code>src/main/java</code> into runtime resources, if you use that layout</li>
+<li>XIS test dependencies and JUnit Platform configuration</li>
+<li>executable XIS Boot jar or run tasks, if you want plugin-like convenience</li>
+</ul>
+<p>For normal JVM applications this is possible, just more verbose. It can be useful in builds that already have their own strict build conventions.</p>
+<p>For XIS Boot Native, the Gradle plugin is the supported path. Native images need generated component catalogs, native class catalogs, resource catalogs, reflection configuration, proxy configuration, and a generated native runner. Without the plugin, all of that metadata would have to be produced and wired into <code>native-image</code> manually. That is intentionally not documented as a normal user workflow.</p>
+  </main>
+</div>
+</body>
+</html>

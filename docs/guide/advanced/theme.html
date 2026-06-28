@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XIS Theme - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / Advanced / <span data-current-page>XIS Theme</span></div>
+    <h1>XIS Theme</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="xis-theme">XIS Theme</h2>
+<p><a href="/docs/guide/advanced/index.html">Advanced topics</a></p>
+<p><code>xis-theme</code> is the optional default design layer for XIS applications. It is meant for developers who want a presentable application quickly without designing navigation, forms, grid layout, labels, and validation messages by hand.</p>
+<p>The preferred path is:</p>
+<ul>
+<li>add one dependency</li>
+<li>write <code>xt:*</code> tags for standard pages</li>
+<li>customize colors, radius, spacing, or logo only when needed</li>
+</ul>
+<p>Write normal HTML only when the generated standard structure is not enough.</p>
+<h3 id="add-the-dependency">Add The Dependency</h3>
+<p>Add <code>xis-theme</code> next to your runtime dependency.</p>
+<p><code>build.gradle</code> for XIS Boot:</p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation &quot;one.xis:xis-boot&quot; // or xis-spring
+    implementation &quot;one.xis:xis-theme&quot;
+}</code></pre>
+<p><code>build.gradle</code> for Spring:</p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+    id &quot;org.springframework.boot&quot; version &quot;3.3.0&quot;
+    id &quot;io.spring.dependency-management&quot; version &quot;1.1.5&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation &quot;org.springframework.boot:spring-boot-starter-web&quot;
+    implementation &quot;one.xis:xis-spring&quot;
+    implementation &quot;one.xis:xis-theme&quot;
+}</code></pre>
+<p>You do not have to add <code>&lt;link rel=&quot;stylesheet&quot;&gt;</code> tags. XIS automatically adds CSS files from classpath <code>public</code> resources to the root page. XIS itself provides replaceable <code>public/default-main.css</code> with basic runtime styles such as modal layout, toast messages, and built-in login form layout.</p>
+<p>When you add <code>xis-theme</code>, the theme module contributes these additional public CSS resources:</p>
+<ul>
+<li><code>public/default-theme.css</code>: simple variables for colors, spacing, font sizes, and control sizes</li>
+<li><code>public/xis.css</code>: layout, navigation, forms, tables, messages, and component styling</li>
+</ul>
+<p>Applications that use <code>xis-theme</code> can additionally create <code>src/main/resources/public/theme.css</code> for small local overrides. The common order is:</p>
+<ol>
+<li><code>public/default-theme.css</code></li>
+<li><code>public/default-main.css</code></li>
+<li><code>public/xis.css</code></li>
+<li>other application CSS files</li>
+<li><code>public/theme.css</code></li>
+</ol>
+<p><code>default-main.css</code> is not part of the optional theme and is also present when <code>xis-theme</code> is not used. See <a href="/docs/guide/runtime-and-dependencies.html#static-resources">Runtime and dependencies</a> for the general public-resource rules.</p>
+<h3 id="navigation">Navigation</h3>
+<p>Use <code>xt:navigation</code> for the standard theme navigation. It creates the logo, <code>&lt;nav&gt;</code>, and list structure used by <code>xis.css</code>. Navigation supports two visible levels: top-level items and dropdown groups.</p>
+<p>Original:</p>
+<pre><code class="language-html">&lt;xt:navigation logo=&quot;/theme-logo.svg&quot; logo-alt=&quot;Acme CRM&quot;&gt;
+    &lt;xt:nav-item page=&quot;/dashboard.html&quot; label=&quot;Dashboard&quot;/&gt;
+    &lt;xt:nav-group label=&quot;Customers&quot;&gt;
+        &lt;xt:nav-item page=&quot;/customers.html&quot; label=&quot;All customers&quot;/&gt;
+        &lt;xt:nav-item page=&quot;/pipeline.html&quot; label=&quot;Pipeline&quot;/&gt;
+    &lt;/xt:nav-group&gt;
+    &lt;xt:nav-item modal=&quot;HelpModal&quot; label=&quot;Help&quot;/&gt;
+&lt;/xt:navigation&gt;</code></pre>
+<p>Generated:</p>
+<pre><code class="language-html">&lt;nav class=&quot;nav&quot;&gt;
+    &lt;div class=&quot;logo&quot;&gt;
+        &lt;img src=&quot;/theme-logo.svg&quot; alt=&quot;Acme CRM&quot;&gt;
+    &lt;/div&gt;
+    &lt;ul&gt;
+        &lt;li&gt;&lt;a xis:page=&quot;/dashboard.html&quot;&gt;Dashboard&lt;/a&gt;&lt;/li&gt;
+        &lt;li&gt;
+            &lt;a href=&quot;#&quot;&gt;Customers&lt;/a&gt;
+            &lt;ul&gt;
+                &lt;li&gt;&lt;a xis:page=&quot;/customers.html&quot;&gt;All customers&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a xis:page=&quot;/pipeline.html&quot;&gt;Pipeline&lt;/a&gt;&lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/li&gt;
+        &lt;li&gt;&lt;a xis:modal=&quot;HelpModal&quot;&gt;Help&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+&lt;/nav&gt;</code></pre>
+<p><code>xt:nav-item</code> supports <code>page</code>, <code>frontlet</code>, <code>modal</code>, and <code>href</code>. Use <code>xt:nav-group</code> for dropdowns.</p>
+<h3 id="standard-form-page">Standard Form Page</h3>
+<p>For a standard form page, write <code>xt:form-page</code>. It creates the wrapper, heading, form, fields, messages, and submit button.</p>
+<p><code>xt:input</code>, <code>xt:textarea</code>, <code>xt:checkbox</code>, <code>xt:radio</code>, and <code>xt:select</code> require <code>title</code>. <code>binding</code> stays a technical field name; <code>title</code> is the text shown to the user.</p>
+<p>Original:</p>
+<pre><code class="language-html">&lt;xt:form-page title=&quot;Edit customer&quot;
+                 binding=&quot;customer&quot;
+                 action=&quot;saveCustomer&quot;
+                 submit-label=&quot;Save&quot;&gt;
+    &lt;xt:input binding=&quot;firstName&quot; title=&quot;First name&quot;/&gt;
+    &lt;xt:input binding=&quot;lastName&quot; title=&quot;Last name&quot;/&gt;
+    &lt;xt:select binding=&quot;stage&quot; title=&quot;Stage&quot; options=&quot;stages&quot;/&gt;
+    &lt;xt:radio binding=&quot;preferredContact&quot; title=&quot;Preferred contact&quot; options=&quot;contactTypes&quot;/&gt;
+    &lt;xt:checkbox binding=&quot;newsletter&quot; title=&quot;Newsletter&quot;/&gt;
+    &lt;xt:textarea binding=&quot;notes&quot; title=&quot;Notes&quot;/&gt;
+&lt;/xt:form-page&gt;</code></pre>
+<p>Generated:</p>
+<pre><code class="language-html">&lt;main class=&quot;wrapper&quot;&gt;
+    &lt;h1&gt;Edit customer&lt;/h1&gt;
+    &lt;form xis:binding=&quot;customer&quot;&gt;
+        &lt;div class=&quot;form-field&quot;&gt;
+            &lt;label for=&quot;firstName&quot; xis:binding=&quot;firstName&quot; xis:error-class=&quot;error&quot;&gt;First name&lt;/label&gt;
+            &lt;input id=&quot;firstName&quot; type=&quot;text&quot; xis:binding=&quot;firstName&quot; xis:error-class=&quot;error&quot;&gt;
+            &lt;div xis:message-for=&quot;firstName&quot;&gt;&lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;form-field&quot;&gt;
+            &lt;label for=&quot;lastName&quot; xis:binding=&quot;lastName&quot; xis:error-class=&quot;error&quot;&gt;Last name&lt;/label&gt;
+            &lt;input id=&quot;lastName&quot; type=&quot;text&quot; xis:binding=&quot;lastName&quot; xis:error-class=&quot;error&quot;&gt;
+            &lt;div xis:message-for=&quot;lastName&quot;&gt;&lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;form-field&quot;&gt;
+            &lt;label for=&quot;stage&quot; xis:binding=&quot;stage&quot; xis:error-class=&quot;error&quot;&gt;Stage&lt;/label&gt;
+            &lt;select id=&quot;stage&quot; xis:binding=&quot;stage&quot; xis:error-class=&quot;error&quot;&gt;
+                &lt;option xis:repeat=&quot;option:stages&quot; value=&quot;${option}&quot;&gt;${option}&lt;/option&gt;
+            &lt;/select&gt;
+            &lt;div xis:message-for=&quot;stage&quot;&gt;&lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;button type=&quot;submit&quot; xis:action=&quot;saveCustomer&quot;&gt;Save&lt;/button&gt;
+    &lt;/form&gt;
+&lt;/main&gt;</code></pre>
+<p>The controller stays ordinary XIS code:</p>
+<pre><code class="language-java">@Page(&quot;/customers.html&quot;)
+class CustomersPage {
+
+    @FormData(&quot;customer&quot;)
+    CustomerForm customer() {
+        return new CustomerForm();
+    }
+
+    @ModelData(&quot;stages&quot;)
+    List&lt;CustomerStage&gt; stages() {
+        return List.of(CustomerStage.values());
+    }
+
+    @ModelData(&quot;contactTypes&quot;)
+    List&lt;ContactType&gt; contactTypes() {
+        return List.of(ContactType.values());
+    }
+
+    @Action
+    void saveCustomer(@FormData(&quot;customer&quot;) CustomerForm customer) {
+        // save
+    }
+}</code></pre>
+<h3 id="form-fragments">Form Fragments</h3>
+<p><code>xt:form</code> is the smaller variant of <code>xt:form-page</code>. Use it when the page already has its own surrounding structure and only the form itself should be generated. The field syntax is the same: <code>xt:input</code>, <code>xt:textarea</code>, <code>xt:checkbox</code>, <code>xt:radio</code>, <code>xt:select</code>, field messages, and the submit action are handled exactly like in a standard form page.</p>
+<p>Original:</p>
+<pre><code class="language-html">&lt;xt:form binding=&quot;customer&quot; action=&quot;saveCustomer&quot; submit-label=&quot;Save&quot;&gt;
+    &lt;xt:input binding=&quot;firstName&quot; title=&quot;First name&quot;/&gt;
+    &lt;xt:input binding=&quot;lastName&quot; title=&quot;Last name&quot;/&gt;
+&lt;/xt:form&gt;</code></pre>
+<p>Generated:</p>
+<pre><code class="language-html">&lt;form xis:binding=&quot;customer&quot;&gt;
+    &lt;div class=&quot;form-field&quot;&gt;
+        &lt;label for=&quot;firstName&quot; xis:binding=&quot;firstName&quot; xis:error-class=&quot;error&quot;&gt;First name&lt;/label&gt;
+        &lt;input id=&quot;firstName&quot; type=&quot;text&quot; xis:binding=&quot;firstName&quot; xis:error-class=&quot;error&quot;&gt;
+        &lt;div xis:message-for=&quot;firstName&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;form-field&quot;&gt;
+        &lt;label for=&quot;lastName&quot; xis:binding=&quot;lastName&quot; xis:error-class=&quot;error&quot;&gt;Last name&lt;/label&gt;
+        &lt;input id=&quot;lastName&quot; type=&quot;text&quot; xis:binding=&quot;lastName&quot; xis:error-class=&quot;error&quot;&gt;
+        &lt;div xis:message-for=&quot;lastName&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;button type=&quot;submit&quot; xis:action=&quot;saveCustomer&quot;&gt;Save&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<h3 id="input">Input</h3>
+<p>Use <code>xt:input</code> for a complete field with label, input, error class hook, and message.</p>
+<p>Original:</p>
+<pre><code class="language-html">&lt;xt:input binding=&quot;email&quot; title=&quot;E-mail address&quot; type=&quot;email&quot;/&gt;</code></pre>
+<p>Generated:</p>
+<pre><code class="language-html">&lt;div class=&quot;form-field&quot;&gt;
+    &lt;label for=&quot;email&quot; xis:binding=&quot;email&quot; xis:error-class=&quot;error&quot;&gt;E-mail address&lt;/label&gt;
+    &lt;input id=&quot;email&quot; type=&quot;email&quot; xis:binding=&quot;email&quot; xis:error-class=&quot;error&quot;&gt;
+    &lt;div xis:message-for=&quot;email&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+<p>Normal input attributes are kept:</p>
+<pre><code class="language-html">&lt;xt:input binding=&quot;amount&quot; title=&quot;Amount&quot; type=&quot;number&quot; min=&quot;0&quot; step=&quot;0.01&quot; placeholder=&quot;0.00&quot;/&gt;</code></pre>
+<p>Use <code>span</code> when the generated field wrapper should span several grid columns. The attribute is applied to the generated <code>div.form-field</code>, not to the input element.</p>
+<p>Original:</p>
+<pre><code class="language-html">&lt;xt:input binding=&quot;notes&quot; title=&quot;Notes&quot; span=&quot;2&quot;/&gt;</code></pre>
+<p>Generated:</p>
+<pre><code class="language-html">&lt;div class=&quot;form-field span2&quot;&gt;
+    &lt;label for=&quot;notes&quot; xis:binding=&quot;notes&quot; xis:error-class=&quot;error&quot;&gt;Notes&lt;/label&gt;
+    &lt;input id=&quot;notes&quot; type=&quot;text&quot; xis:binding=&quot;notes&quot; xis:error-class=&quot;error&quot;&gt;
+    &lt;div xis:message-for=&quot;notes&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+<h3 id="select">Select</h3>
+<p>Use <code>xt:select</code> for a complete select field. <code>options</code> names the <code>@ModelData</code> value used to create <code>&lt;option&gt;</code> elements.</p>
+<p>Original:</p>
+<pre><code class="language-html">&lt;xt:select binding=&quot;stage&quot; title=&quot;Stage&quot; options=&quot;stages&quot;/&gt;</code></pre>
+<p>Generated:</p>
+<pre><code class="language-html">&lt;div class=&quot;form-field&quot;&gt;
+    &lt;label for=&quot;stage&quot; xis:binding=&quot;stage&quot; xis:error-class=&quot;error&quot;&gt;Stage&lt;/label&gt;
+    &lt;select id=&quot;stage&quot; xis:binding=&quot;stage&quot; xis:error-class=&quot;error&quot;&gt;
+        &lt;option xis:repeat=&quot;option:stages&quot; value=&quot;${option}&quot;&gt;${option}&lt;/option&gt;
+    &lt;/select&gt;
+    &lt;div xis:message-for=&quot;stage&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+<p><code>xt:select</code> also supports <code>span</code> with the same wrapper behavior as <code>xt:input</code>.</p>
+<p>For option objects, use <code>option-value</code> and <code>option-label</code>.</p>
+<p>Original:</p>
+<pre><code class="language-html">&lt;xt:select binding=&quot;stage&quot; title=&quot;Stage&quot; options=&quot;stages&quot; option-value=&quot;code&quot; option-label=&quot;label&quot;/&gt;</code></pre>
+<p>Generated option:</p>
+<pre><code class="language-html">&lt;option xis:repeat=&quot;option:stages&quot; value=&quot;${option.code}&quot;&gt;${option.label}&lt;/option&gt;</code></pre>
+<p>Use <code>option-var</code> when another variable name reads better:</p>
+<pre><code class="language-html">&lt;xt:select binding=&quot;stage&quot;
+              title=&quot;Stage&quot;
+              options=&quot;stages&quot;
+              option-var=&quot;stage&quot;
+              option-value=&quot;code&quot;
+              option-label=&quot;label&quot;/&gt;</code></pre>
+<p>This becomes:</p>
+<pre><code class="language-html">&lt;option xis:repeat=&quot;stage:stages&quot; value=&quot;${stage.code}&quot;&gt;${stage.label}&lt;/option&gt;</code></pre>
+<h3 id="textarea-checkbox-and-radio">Textarea, Checkbox, And Radio</h3>
+<p>Use <code>xt:textarea</code> for longer text values. It creates the label, textarea, error class hook, and message in the same way as <code>xt:input</code>.</p>
+<p>Original:</p>
+<pre><code class="language-html">&lt;xt:textarea binding=&quot;notes&quot; title=&quot;Notes&quot; rows=&quot;5&quot; span=&quot;2&quot;/&gt;</code></pre>
+<p>Generated:</p>
+<pre><code class="language-html">&lt;div class=&quot;form-field span2&quot;&gt;
+    &lt;label for=&quot;notes&quot; xis:binding=&quot;notes&quot; xis:error-class=&quot;error&quot;&gt;Notes&lt;/label&gt;
+    &lt;textarea id=&quot;notes&quot; rows=&quot;5&quot; xis:binding=&quot;notes&quot; xis:error-class=&quot;error&quot;&gt;&lt;/textarea&gt;
+    &lt;div xis:message-for=&quot;notes&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+<p>Use <code>xt:checkbox</code> for boolean values:</p>
+<pre><code class="language-html">&lt;xt:checkbox binding=&quot;newsletter&quot; title=&quot;Newsletter&quot;/&gt;</code></pre>
+<p>Radio groups are intentionally closer to <code>xt:select</code> than to raw <code>&lt;input type=&quot;radio&quot;&gt;</code>. The options come from <code>@ModelData</code>, and labels are generated by the theme.</p>
+<p>Original:</p>
+<pre><code class="language-html">&lt;xt:radio binding=&quot;preferredContact&quot;
+             title=&quot;Preferred contact&quot;
+             options=&quot;contactTypes&quot;
+             option-value=&quot;code&quot;
+             option-label=&quot;label&quot;/&gt;</code></pre>
+<p>Generated choice:</p>
+<pre><code class="language-html">&lt;label xis:repeat=&quot;option:contactTypes&quot;&gt;
+    &lt;input type=&quot;radio&quot; xis:binding=&quot;preferredContact&quot; value=&quot;${option.code}&quot;&gt;
+    &lt;span&gt;${option.label}&lt;/span&gt;
+&lt;/label&gt;</code></pre>
+<p><code>xt:radio</code> also supports <code>option-var</code>, <code>option-value</code>, and <code>option-label</code> with the same meaning as <code>xt:select</code>.</p>
+<h3 id="grid">Grid</h3>
+<p>Use <code>xt:grid</code> when you only want to say how many columns the theme should use. <code>columns=&quot;3&quot;</code> generates the CSS class <code>col3</code>. In the default theme, <code>col3</code> means a CSS grid with three equal columns. Likewise, <code>columns=&quot;2&quot;</code> generates <code>col2</code>, <code>columns=&quot;4&quot;</code> generates <code>col4</code>, and so on up to <code>col11</code>.</p>
+<p>Original:</p>
+<pre><code class="language-html">&lt;xt:grid columns=&quot;3&quot;&gt;
+    &lt;xt:input binding=&quot;firstName&quot; title=&quot;First name&quot;/&gt;
+    &lt;xt:input binding=&quot;lastName&quot; title=&quot;Last name&quot;/&gt;
+    &lt;xt:select binding=&quot;stage&quot; title=&quot;Stage&quot; options=&quot;stages&quot; span=&quot;3&quot;/&gt;
+&lt;/xt:grid&gt;</code></pre>
+<p>Generated:</p>
+<pre><code class="language-html">&lt;section class=&quot;col3&quot;&gt;
+    &lt;div class=&quot;form-field&quot;&gt;
+        ...
+    &lt;/div&gt;
+    &lt;div class=&quot;form-field&quot;&gt;
+        ...
+    &lt;/div&gt;
+    &lt;div class=&quot;form-field span3&quot;&gt;
+        ...
+    &lt;/div&gt;
+&lt;/section&gt;</code></pre>
+<p><code>span=&quot;3&quot;</code> on a field generates <code>span3</code> on the field wrapper. In a <code>col3</code> grid, that field uses the full row.</p>
+<p><code>columns</code> accepts <code>2</code> through <code>11</code>. The generated element is a <code>&lt;section&gt;</code> by default. Use <code>as</code> for another element:</p>
+<pre><code class="language-html">&lt;xt:grid as=&quot;div&quot; columns=&quot;2&quot;&gt;
+    ...
+&lt;/xt:grid&gt;</code></pre>
+<h3 id="validation">Validation</h3>
+<p>The validator treats <code>xt:form-page</code>, <code>xt:form</code>, <code>xt:input</code>, <code>xt:textarea</code>, <code>xt:checkbox</code>, <code>xt:radio</code>, and <code>xt:select</code> as theme syntax, not as generated markup. The extension is loaded from <code>xis-theme</code>, so validation errors point to the <code>xt:*</code> line written by the user.</p>
+<p>Form field bindings are checked against the <code>@FormData</code> object. Theme field tags must have <code>title</code>, and the <code>options</code> value of <code>xt:select</code> and <code>xt:radio</code> is checked as model data usage.</p>
+<p>Theme tags and normal XIS markup can be mixed when that makes a page clearer:</p>
+<pre><code class="language-html">&lt;form xis:binding=&quot;customer&quot;&gt;
+    &lt;input xis:binding=&quot;id&quot; type=&quot;hidden&quot;&gt;
+    &lt;xt:input binding=&quot;firstName&quot; title=&quot;First name&quot;/&gt;
+    &lt;xt:input binding=&quot;lastName&quot; title=&quot;Last name&quot;/&gt;
+&lt;/form&gt;</code></pre>
+<h3 id="customize-the-theme">Customize The Theme</h3>
+<p>Create <code>src/main/resources/public/theme.css</code> in your application when you want to change the basic appearance.</p>
+<pre><code class="language-css">:root {
+  --accent: #2563eb;
+  --text: #111827;
+  --bg: #ffffff;
+  --bg-secondary: #f3f4f6;
+  --radius: 6px;
+}</code></pre>
+<p><code>theme.css</code> is loaded after the theme CSS, so it can override the variables. Keep this file small. It is intended for customizing the default theme, not for replacing it.</p>
+<p>Useful variables:</p>
+<table><thead><tr><th>Variable</th><th>Purpose</th></tr></thead><tbody><tr><td><code>--accent</code></td><td>Primary color for buttons, active navigation, focus borders, and highlights</td></tr><tr><td><code>--text</code></td><td>Main text color</td></tr><tr><td><code>--muted</code></td><td>Secondary text color</td></tr><tr><td><code>--bg</code></td><td>Main background color</td></tr><tr><td><code>--bg-secondary</code></td><td>Secondary background color for tables and panels</td></tr><tr><td><code>--border</code></td><td>General border color</td></tr><tr><td><code>--field-border</code></td><td>Input, select, textarea, and fieldset border color</td></tr><tr><td><code>--radius</code></td><td>Border radius for inputs, buttons, and panels</td></tr><tr><td><code>--base-font</code></td><td>Base page font size</td></tr><tr><td><code>--form-font</code></td><td>Form/control font size</td></tr><tr><td><code>--grid-gap</code></td><td>Gap between grid columns</td></tr></tbody></table>
+<p>Add your own logo here:</p>
+<pre><code class="language-text">src/main/resources/public/theme-logo.svg</code></pre>
+<p>Use it from <code>xt:navigation</code>:</p>
+<pre><code class="language-html">&lt;xt:navigation logo=&quot;/theme-logo.svg&quot; logo-alt=&quot;Acme CRM&quot;&gt;
+    ...
+&lt;/xt:navigation&gt;</code></pre>
+<p>If no custom logo is provided, use <code>/default-theme-logo.svg</code>.</p>
+<h3 id="manual-html-and-classes">Manual HTML And Classes</h3>
+<p>The generated theme tags cover standard pages. When the page needs a different structure, write normal HTML and use the same CSS classes directly.</p>
+<p>Manual navigation:</p>
+<pre><code class="language-html">&lt;nav class=&quot;nav&quot;&gt;
+    &lt;div class=&quot;logo&quot;&gt;
+        &lt;img src=&quot;/theme-logo.svg&quot; alt=&quot;Logo&quot;&gt;
+    &lt;/div&gt;
+    &lt;ul&gt;
+        &lt;li&gt;&lt;a xis:page=&quot;/dashboard.html&quot;&gt;Dashboard&lt;/a&gt;&lt;/li&gt;
+        &lt;li&gt;
+            &lt;a href=&quot;#&quot;&gt;Contacts&lt;/a&gt;
+            &lt;ul&gt;
+                &lt;li&gt;&lt;a xis:page=&quot;/contacts.html&quot;&gt;All contacts&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a xis:page=&quot;/contacts/new.html&quot;&gt;New contact&lt;/a&gt;&lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/li&gt;
+    &lt;/ul&gt;
+&lt;/nav&gt;</code></pre>
+<p>Manual grid:</p>
+<pre><code class="language-html">&lt;main class=&quot;wrapper&quot;&gt;
+    &lt;section class=&quot;col3&quot;&gt;
+        &lt;div&gt;First&lt;/div&gt;
+        &lt;div&gt;Second&lt;/div&gt;
+        &lt;div&gt;Third&lt;/div&gt;
+    &lt;/section&gt;
+&lt;/main&gt;</code></pre>
+<p>Use <code>span1</code> through <code>span9</code> when an item should span several columns:</p>
+<pre><code class="language-html">&lt;section class=&quot;col4&quot;&gt;
+    &lt;div class=&quot;span2&quot;&gt;Wide area&lt;/div&gt;
+    &lt;div&gt;Small area&lt;/div&gt;
+    &lt;div&gt;Small area&lt;/div&gt;
+&lt;/section&gt;</code></pre>
+<p>Manual form:</p>
+<pre><code class="language-html">&lt;form xis:binding=&quot;contact&quot;&gt;
+    &lt;div class=&quot;col2&quot;&gt;
+        &lt;div class=&quot;form-field&quot;&gt;
+            &lt;label for=&quot;firstName&quot; xis:binding=&quot;firstName&quot; xis:error-class=&quot;error&quot;&gt;First name&lt;/label&gt;
+            &lt;input id=&quot;firstName&quot; type=&quot;text&quot; xis:binding=&quot;firstName&quot; xis:error-class=&quot;error&quot;&gt;
+            &lt;div xis:message-for=&quot;firstName&quot;&gt;&lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;form-field&quot;&gt;
+            &lt;label for=&quot;lastName&quot; xis:binding=&quot;lastName&quot; xis:error-class=&quot;error&quot;&gt;Last name&lt;/label&gt;
+            &lt;input id=&quot;lastName&quot; type=&quot;text&quot; xis:binding=&quot;lastName&quot; xis:error-class=&quot;error&quot;&gt;
+            &lt;div xis:message-for=&quot;lastName&quot;&gt;&lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;span2&quot;&gt;
+            &lt;button xis:action=&quot;save&quot; type=&quot;submit&quot;&gt;Save&lt;/button&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/form&gt;</code></pre>
+<p>Use <code>button-secondary</code> for a secondary button style:</p>
+<pre><code class="language-html">&lt;button class=&quot;button-secondary&quot; xis:action=&quot;cancel&quot; type=&quot;button&quot;&gt;Cancel&lt;/button&gt;</code></pre>
+<p>The theme also includes simple panel and message classes:</p>
+<pre><code class="language-html">&lt;div class=&quot;message&quot;&gt;Saved successfully.&lt;/div&gt;
+&lt;div class=&quot;warning&quot;&gt;Check the entered values.&lt;/div&gt;
+&lt;div class=&quot;tipp&quot;&gt;Use the search field to narrow the list.&lt;/div&gt;</code></pre>
+<p>XIS validation global messages render with the <code>error</code> class on their generated list and list items, so the theme or your <code>theme.css</code> can style them.</p>
+  </main>
+</div>
+</body>
+</html>

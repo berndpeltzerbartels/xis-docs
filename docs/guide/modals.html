@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Modals - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Modals</span></div>
+    <h1>Modals</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="modals">Modals</h2>
+<p>Use a modal when the user should edit or confirm something without leaving the current page context. A modal is a normal XIS controller with its own template fragment, model data, form data, actions, validation, and parameters.</p>
+<h3 id="define-a-modal">Define A Modal</h3>
+<pre><code class="language-java">import one.xis.Action;
+import one.xis.ActionParameter;
+import one.xis.FormData;
+import one.xis.ModalParameter;
+import one.xis.Modal;
+import one.xis.ModalResponse;
+import one.xis.validation.Mandatory;
+
+@Modal(&quot;/customers/edit&quot;)
+class EditCustomerModal {
+
+    static class CustomerForm {
+        @Mandatory
+        public String name;
+    }
+
+    @FormData(&quot;customer&quot;)
+    CustomerForm customer() {
+        return new CustomerForm();
+    }
+
+    @Action
+    ModalResponse save(@FormData(&quot;customer&quot;) CustomerForm customer) {
+        customerService.save(customer);
+        return ModalResponse.close().reloadParent();
+    }
+}</code></pre>
+<p><code>EditCustomerModal.html</code></p>
+<pre><code class="language-html">&lt;div xmlns:xis=&quot;https://xis.one/xsd&quot;&gt;
+  &lt;h2&gt;Edit customer&lt;/h2&gt;
+
+  &lt;xis:form binding=&quot;customer&quot;&gt;
+    &lt;label for=&quot;customer-name&quot;&gt;Name&lt;/label&gt;
+    &lt;input id=&quot;customer-name&quot; xis:binding=&quot;name&quot; xis:error-class=&quot;error&quot;/&gt;
+    &lt;xis:message message-for=&quot;name&quot;/&gt;
+
+    &lt;button xis:action=&quot;save&quot;&gt;Save&lt;/button&gt;
+  &lt;/xis:form&gt;
+&lt;/div&gt;</code></pre>
+<p>The template is a fragment, not a full HTML document.</p>
+<h3 id="open-from-html">Open From HTML</h3>
+<p>Use <code>xis:modal</code> on a button or link when the click can open the modal directly. This is the normal case.</p>
+<pre><code class="language-html">&lt;button xis:modal=&quot;EditCustomerModal&quot;&gt;Edit&lt;/button&gt;</code></pre>
+<p>Pass modal parameters with <code>xis:parameter</code>. The modal receives them with <code>@ModalParameter</code>.</p>
+<pre><code class="language-html">&lt;button xis:modal=&quot;EditCustomerModal&quot;&gt;
+  &lt;xis:parameter name=&quot;customerId&quot; value=&quot;${customer.id}&quot;/&gt;
+  Edit
+&lt;/button&gt;</code></pre>
+<pre><code class="language-java">@FormData(&quot;customer&quot;)
+CustomerForm customer(@ModalParameter(&quot;customerId&quot;) long customerId) {
+    return customerService.form(customerId);
+}</code></pre>
+<p>You can also open a modal by a simple modal path such as <code>xis:modal=&quot;/customers/edit&quot;</code>. For dynamic values, prefer the modal id plus <code>xis:parameter</code>; it is easier to read and does not make the client guess route variables.</p>
+<p>Modal paths may also contain query parameters:</p>
+<pre><code class="language-html">&lt;button xis:modal=&quot;/customers/edit?customerId=${customer.id}&quot;&gt;Edit&lt;/button&gt;</code></pre>
+<p>These values are modal parameters, not page URL query parameters, so the modal reads them with <code>@ModalParameter</code>.</p>
+<h3 id="open-or-close-from-java">Open Or Close From Java</h3>
+<p>Actions can return <code>ModalResponse</code>. Use this when the server must decide which modal to open, when it must compute parameters first, or when an action inside a modal should close it. If a button or link only opens a known modal, prefer <code>xis:modal</code>; it keeps the template easier to read and avoids an unnecessary action method.</p>
+<pre><code class="language-java">@Action
+ModalResponse edit(@ActionParameter(&quot;customerId&quot;) long customerId) {
+    return ModalResponse.open(EditCustomerModal.class)
+            .parameter(&quot;customerId&quot;, customerId);
+}</code></pre>
+<p><code>ModalResponse.open(&quot;/customers/edit?customerId=42&quot;)</code> follows the same rule: the query string is available in the modal as <code>@ModalParameter(&quot;customerId&quot;)</code>.</p>
+<p>Return <code>void</code> when the action should stay in the modal and simply refresh its data. Return <code>ModalResponse</code> when the action should open another modal, close the current modal, or close it and reload the parent UI.</p>
+<p>Close without reloading the parent:</p>
+<pre><code class="language-java">@Action
+ModalResponse cancel() {
+    return ModalResponse.close();
+}</code></pre>
+<p>Close and reload the parent:</p>
+<pre><code class="language-java">@Action
+ModalResponse save(@FormData(&quot;customer&quot;) CustomerForm customer) {
+    customerService.save(customer);
+    return ModalResponse.close().reloadParent();
+}</code></pre>
+<p>If the modal was opened from a page, <code>reloadParent()</code> reloads that page. If it was opened from a frontlet, XIS reloads exactly the frontlet instance that opened the modal. This matters for lists where every row is the same frontlet type: saving one row dialog should not reload every row.</p>
+<h3 id="validation">Validation</h3>
+<p>Validation works like normal XIS forms. If validation fails, the modal stays open, the action method is not called, and the validation messages are rendered inside the modal.</p>
+<h3 id="when-to-use-events-instead">When To Use Events Instead</h3>
+<p><code>ModalResponse.close().reloadParent()</code> is for the current browser and the immediate parent UI. Use refresh events when a change should update other browsers, other users, or unrelated visible parts of the page.</p>
+<h3 id="tests">Tests</h3>
+<p>Modal behavior is covered in the E2E suite. See <code>ModalE2ETest</code> in the end-to-end test repository for examples that open a modal from HTML, open one from an action response, validate a modal form, close it, and reload only the opening frontlet instance.</p>
+  </main>
+</div>
+</body>
+</html>

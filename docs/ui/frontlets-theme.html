@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Frontlets And Theme - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">UI Composition / <span data-current-page>Frontlets and theme</span></div>
+    <h1>Frontlets and theme</h1>
+    <p class="lead">
+      Frontlets, containers, includes, reusable artifacts, replaceable templates, and the optional XIS theme belong
+      together: they are the composition layer before an application becomes distributed.
+    </p>
+
+    <h2>Frontlets</h2>
+    <p>
+      A frontlet should own a small, coherent part of the UI: navigation, a summary widget, a list fragment, a toolbar,
+      or a reusable edit block. It has its own model data and can refresh without replacing the whole page.
+    </p>
+
+    <h2>Includes and templates</h2>
+    <p>
+      Includes are useful for shared markup that does not need its own controller model. Frontlets are better when the
+      fragment has behavior, data, or refresh semantics. Keeping that distinction clear prevents small template helpers
+      from turning into hidden application modules.
+    </p>
+
+    <h2>Theme</h2>
+    <p>
+      XIS should provide enough theme structure that applications start with a coherent look, but applications must be
+      able to override styling. The theme is a default, not an ownership claim over every visual decision.
+    </p>
+
+    <h2>Drag and drop</h2>
+    <p>
+      Drag-and-drop interactions should still end in server actions. The browser can carry a small payload, but the
+      server decides whether the move is allowed and what must refresh afterwards. This keeps the interaction testable in
+      the same way as links and forms.
+    </p>
+
+    <h2>Example: product page as team boundary</h2>
+    <p>
+      A shop product page is a good example because everything revolves around the same product, but the data usually
+      belongs to different systems and teams. Catalog data, current stock, delivery price, discounts, store pickup, and
+      cart handling are not necessarily owned by the same service.
+    </p>
+    <p>
+      The page can still look like one product page. XIS can compose it from specialized frontlets that all read the
+      product id from the page URL with <code>@PathVariable("id")</code>. The product id is therefore not repeated as a
+      frontlet parameter.
+    </p>
+    <pre><code class="language-html">&lt;h1&gt;${product.name}&lt;/h1&gt;
+
+&lt;main xis:frontlet-container="description"
+      xis:default-frontlet="ProductDescriptionFrontlet"&gt;&lt;/main&gt;
+
+&lt;aside xis:frontlet-container="offer"
+       xis:default-frontlet="DeliveryAndDiscountFrontlet"&gt;&lt;/aside&gt;
+
+&lt;section xis:frontlet-container="stock"
+         xis:default-frontlet="StockAndPickupFrontlet"&gt;&lt;/section&gt;
+
+&lt;section xis:frontlet-container="cart"
+         xis:default-frontlet="AddToCartFrontlet"&gt;&lt;/section&gt;</code></pre>
+    <pre><code class="language-java">@Page("/products/{id}.html")
+class ProductPage {
+
+    @ModelData("product")
+    ProductHeader product(@PathVariable("id") long productId) {
+        return catalogService.header(productId);
+    }
+}
+
+@Frontlet
+class StockAndPickupFrontlet {
+
+    @ModelData("stock")
+    StockStatus stock(@PathVariable("id") long productId) {
+        return inventoryService.status(productId);
+    }
+}</code></pre>
+    <p>
+      The catalog team can own the product description. The logistics team can own stock and pickup. The pricing team
+      can own discounts and delivery price. The checkout team can own the add-to-cart workflow. This makes a frontlet an
+      organizational pattern as much as a UI pattern: it is a possible team slice.
+    </p>
+    <p>
+      This is optional. A XIS application can also be built from ordinary pages without frontlets and still behave like
+      an SPA. Frontlets become valuable when a screen naturally contains independently owned or independently refreshed
+      parts.
+    </p>
+  </main>
+</div>
+</body>
+</html>

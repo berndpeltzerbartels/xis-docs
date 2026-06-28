@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Explicit SQL Transactions - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / Advanced / <span data-current-page>Explicit SQL Transactions</span></div>
+    <h1>Explicit SQL Transactions</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="explicit-sql-transactions">Explicit SQL Transactions</h2>
+<p><a href="/docs/guide/advanced/index.html">Advanced topics</a></p>
+<p>Most application code should use <code>@Transactional</code> on a service interface method. That keeps the transaction boundary close to the business operation and lets XIS Boot open, commit, and roll back the transaction through interface advice.</p>
+<p>Explicit transactions are available for special cases: infrastructure code, code that does not naturally sit behind an interface, or code that must end a transaction before request processing ends.</p>
+<p>In ordinary application code, prefer <code>@Transactional</code>. It is the better default because the transaction boundary is declared on the business method and XIS opens, commits, or rolls back the transaction automatically through interface advice. Manual <code>SqlTransaction</code> use should be the exception, not the normal style.</p>
+<pre><code class="language-java">@Page(&quot;/customers.html&quot;)
+class CustomerPage {
+    private final CustomerRepository customers;
+    private final AuditLogRepository auditLog;
+    private final SqlTransaction transaction;
+
+    CustomerPage(CustomerRepository customers, AuditLogRepository auditLog, SqlTransaction transaction) {
+        this.customers = customers;
+        this.auditLog = auditLog;
+        this.transaction = transaction;
+    }
+
+    @Action(&quot;create&quot;)
+    void createCustomer(@FormData(&quot;customer&quot;) Customer customer) {
+        // Prefer @Transactional on a service method when the work fits that model.
+        // Manual begin() is for special cases that need an explicit request-scoped transaction.
+        transaction.begin();
+        customers.save(customer);
+        auditLog.insert(&quot;created customer &quot; + customer.id());
+        // In an HTTP request this open transaction is committed when request processing ends.
+    }
+}</code></pre>
+<p>The JDBC connection is opened lazily. Calling <code>transaction.begin()</code> only marks the current request/thread as transactional. The connection is opened when the first repository method actually needs it.</p>
+<p>During an HTTP request, an open explicit transaction is completed automatically when request processing ends:</p>
+<ul>
+<li>normal request completion commits the transaction</li>
+<li>request failure rolls the transaction back</li>
+<li>a failing repository call marks the transaction for rollback even if the exception is caught later</li>
+</ul>
+<p>Call <code>transaction.commit()</code> or <code>transaction.rollback()</code> only when the transaction must end before the request ends, or when using XIS SQL outside an HTTP request.</p>
+<pre><code class="language-java">transaction.begin();
+try {
+    customers.save(customer);
+    auditLog.insert(&quot;created customer &quot; + customer.id());
+    transaction.commit(); // Explicit early end of the transaction.
+} catch (RuntimeException e) {
+    transaction.rollback();
+    throw e;
+}</code></pre>
+  </main>
+</div>
+</body>
+</html>

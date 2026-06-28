@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tags and Attributes - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Tags and Attributes</span></div>
+    <h1>Tags and Attributes</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="tags-and-attributes">Tags and Attributes</h2>
+<p>XIS templates are HTML plus framework attributes, framework elements, and expression language. Most framework behavior has an attribute form and an element form.</p>
+<p>wrapper that does not become part of the final HTML.</p>
+<ul>
+<li>Attribute syntax adds an <code>xis:*</code> attribute to ordinary HTML. It keeps templates close to browser-previewable HTML.</li>
+<li>Element syntax uses explicit <code>xis:*</code> framework elements. It is useful when you prefer XML-like structure or need a</li>
+</ul>
+<p>Expression language also works in ordinary HTML attributes. For example, <code>data-id=&quot;${product.id}&quot;</code> writes a normal HTML <code>data-id</code> attribute. XIS does not interpret <code>data-*</code> attributes; they remain available for browser APIs, CSS, or your own JavaScript.</p>
+<p>For resource attributes that the browser would load immediately, use the XIS-prefixed form. This avoids requests such as <code>/img/${file}</code> before XIS has evaluated the template:</p>
+<pre><code class="language-html">&lt;img xis:src=&quot;/img/products/${product.image}&quot; alt=&quot;${product.name}&quot;/&gt;</code></pre>
+<p>During initialization XIS removes <code>xis:src</code> and sets the real <code>src</code> attribute.</p>
+<h3 id="conditions">Conditions</h3>
+<p>Use <code>xis:if</code> to conditionally render an element.</p>
+<p>Attribute syntax wraps the host element in the condition:</p>
+<pre><code class="language-html">&lt;section xis:if=&quot;notEmpty(products)&quot;&gt;
+    &lt;h2&gt;Products&lt;/h2&gt;
+&lt;/section&gt;</code></pre>
+<p>Element syntax renders the children only when the condition is true:</p>
+<pre><code class="language-html">&lt;xis:if condition=&quot;notEmpty(products)&quot;&gt;
+    &lt;section&gt;
+        &lt;h2&gt;Products&lt;/h2&gt;
+    &lt;/section&gt;
+&lt;/xis:if&gt;</code></pre>
+<p>The condition is an EL expression. You can write <code>${...}</code>, but attributes that expect an expression usually do not need the wrapper.</p>
+<h3 id="iteration">Iteration</h3>
+<p>Use <code>xis:foreach</code> to repeat the content of an element.</p>
+<pre><code class="language-html">&lt;ul xis:foreach=&quot;product:products&quot;&gt;
+    &lt;li&gt;${productIndex + 1}. ${product.name}&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+<p>The host element is created once; only its content is repeated. XIS adds an index variable by appending <code>Index</code> to the loop variable name. In the example above, the index is <code>productIndex</code>.</p>
+<p>Element syntax:</p>
+<pre><code class="language-html">&lt;ul&gt;
+    &lt;xis:foreach var=&quot;product&quot; array=&quot;products&quot;&gt;
+        &lt;li data-id=&quot;${product.id}&quot;&gt;${product.name}&lt;/li&gt;
+    &lt;/xis:foreach&gt;
+&lt;/ul&gt;</code></pre>
+<p>Use <code>xis:repeat</code> when the repeated element itself needs item-specific attributes:</p>
+<pre><code class="language-html">&lt;li xis:repeat=&quot;product:products&quot; data-id=&quot;${product.id}&quot;&gt;
+    ${product.name}
+&lt;/li&gt;</code></pre>
+<h3 id="page-navigation">Page Navigation</h3>
+<p>Use <code>xis:page</code> for client-side XIS page navigation.</p>
+<pre><code class="language-html">&lt;a xis:page=&quot;/products.html&quot;&gt;Products&lt;/a&gt;
+&lt;button xis:page=&quot;/products.html&quot;&gt;Products&lt;/button&gt;</code></pre>
+<p>Element syntax:</p>
+<pre><code class="language-html">&lt;xis:a page=&quot;/products.html&quot;&gt;Products&lt;/xis:a&gt;
+&lt;xis:button page=&quot;/products.html&quot;&gt;Products&lt;/xis:button&gt;</code></pre>
+<p>Plain page links and buttons navigate directly. They do not call a server-side action.</p>
+<h3 id="actions">Actions</h3>
+<p>Use <code>xis:action</code> to call an <code>@Action</code> method.</p>
+<pre><code class="language-html">&lt;a xis:action=&quot;delete&quot;&gt;Delete&lt;/a&gt;
+&lt;button xis:action=&quot;save&quot;&gt;Save&lt;/button&gt;</code></pre>
+<p>Action links and action buttons are standalone controls. They call an action directly; you do not have to wrap them in a <code>&lt;form&gt;</code> unless you want to submit form data.</p>
+<p>Element syntax for an action link:</p>
+<pre><code class="language-html">&lt;xis:action action=&quot;save&quot;&gt;Save&lt;/xis:action&gt;</code></pre>
+<p>Element syntax for an action button:</p>
+<pre><code class="language-html">&lt;xis:button action=&quot;save&quot;&gt;Save&lt;/xis:button&gt;</code></pre>
+<p><code>xis:action</code> is supported on action links and action buttons. Outside a form, the action is a page or frontlet action. Inside a form, it submits the form with that action.</p>
+<p>Pass action parameters with child tags:</p>
+<pre><code class="language-html">&lt;button xis:action=&quot;delete&quot;&gt;
+    &lt;xis:parameter name=&quot;productId&quot; value=&quot;${product.id}&quot;/&gt;
+    Delete
+&lt;/button&gt;</code></pre>
+<p>When <code>value</code> is omitted, XIS uses the text content of <code>&lt;xis:parameter&gt;</code> as the value. Use the <code>value</code> attribute for short expressions and the text form when the value is easier to read as element content.</p>
+<pre><code class="language-html">&lt;xis:action action=&quot;search&quot;&gt;
+    &lt;xis:parameter name=&quot;query&quot;&gt;${searchText}&lt;/xis:parameter&gt;
+    Search
+&lt;/xis:action&gt;</code></pre>
+<h4 id="drag-and-drop-actions">Drag and Drop Actions</h4>
+<p>Use <code>xis:drag</code> and <code>xis:drop</code> for simple drag-and-drop actions. The drag element defines one value and gives it a name. The drop element calls an action and can use that name as an action argument.</p>
+<pre><code class="language-html">&lt;span xis:drag=&quot;from:${field}&quot;&gt;Piece&lt;/span&gt;
+&lt;div xis:drop=&quot;move(from, target=&#x27;${targetField}&#x27;)&quot;&gt;Target&lt;/div&gt;</code></pre>
+<pre><code class="language-java">@Action
+void move(@ActionParameter(&quot;from&quot;) String from, @ActionParameter(&quot;target&quot;) String target) {}</code></pre>
+<p>Read <a href="/docs/guide/drag-and-drop.html">Drag and drop</a> for the full behavior, examples, and integration-test support.</p>
+<h3 id="modals">Modals</h3>
+<p>Use <code>xis:modal</code> on a button or link to open a modal dialog.</p>
+<pre><code class="language-html">&lt;button xis:modal=&quot;EditCustomerModal&quot;&gt;Edit&lt;/button&gt;</code></pre>
+<p>Pass modal parameters with child <code>xis:parameter</code> elements. The modal receives them with <code>@ModalParameter</code>.</p>
+<pre><code class="language-html">&lt;button xis:modal=&quot;EditCustomerModal&quot;&gt;
+    &lt;xis:parameter name=&quot;customerId&quot; value=&quot;${customer.id}&quot;/&gt;
+    Edit
+&lt;/button&gt;</code></pre>
+<p>Simple modal paths are also supported:</p>
+<pre><code class="language-html">&lt;a xis:modal=&quot;/customers/edit&quot;&gt;Edit customer&lt;/a&gt;</code></pre>
+<p>If a modal path contains a query string, the values are modal parameters and the modal reads them with <code>@ModalParameter</code>:</p>
+<pre><code class="language-html">&lt;a xis:modal=&quot;/customers/edit?customerId=${customer.id}&quot;&gt;Edit customer&lt;/a&gt;</code></pre>
+<p>For dynamic values, prefer the modal id plus <code>xis:parameter</code>. Read <a href="/docs/guide/modals.html">Modals</a> for validation, close behavior, and reloading the page or frontlet that opened the modal.</p>
+<h3 id="frontlets">Frontlets</h3>
+<p>Use frontlet containers to host replaceable frontlet content.</p>
+<pre><code class="language-html">&lt;main xis:frontlet-container=&quot;main&quot; xis:default-frontlet=&quot;ProductListFrontlet&quot;&gt;&lt;/main&gt;</code></pre>
+<p>Element syntax:</p>
+<pre><code class="language-html">&lt;xis:frontlet-container container-id=&quot;main&quot; default-frontlet=&quot;ProductListFrontlet&quot;/&gt;</code></pre>
+<p>Add <code>xis:scroll-to-top=&quot;true&quot;</code> to an attribute-style frontlet container when switching the container to another frontlet should scroll the browser window back to the top. The initial default-frontlet load does not scroll; the scroll happens when the user opens another frontlet in that container.</p>
+<pre><code class="language-html">&lt;main xis:frontlet-container=&quot;main&quot;
+      xis:default-frontlet=&quot;ProductListFrontlet&quot;
+      xis:scroll-to-top=&quot;true&quot;&gt;&lt;/main&gt;</code></pre>
+<p>With element syntax the same option is written as <code>scroll-to-top=&quot;true&quot;</code> on <code>&lt;xis:frontlet-container&gt;</code>.</p>
+<p>Short frontlet include syntax creates a container whose default frontlet is the given frontlet:</p>
+<pre><code class="language-html">&lt;xis:frontlet name=&quot;CartFrontlet&quot;/&gt;</code></pre>
+<p>Load another frontlet into a container with <code>xis:frontlet</code> and <code>xis:target-container</code>:</p>
+<pre><code class="language-html">&lt;a xis:frontlet=&quot;ProductDetailsFrontlet&quot; xis:target-container=&quot;main&quot;&gt;
+    Details
+&lt;/a&gt;
+
+&lt;button xis:frontlet=&quot;ProductDetailsFrontlet&quot; xis:target-container=&quot;main&quot;&gt;
+    Details
+&lt;/button&gt;</code></pre>
+<p>Element syntax:</p>
+<pre><code class="language-html">&lt;xis:a frontlet=&quot;ProductDetailsFrontlet&quot; target-container=&quot;main&quot;&gt;
+    Details
+&lt;/xis:a&gt;
+
+&lt;xis:button frontlet=&quot;ProductDetailsFrontlet&quot; target-container=&quot;main&quot;&gt;
+    Details
+&lt;/xis:button&gt;</code></pre>
+<p>Pass frontlet parameters with <code>xis:parameter</code>. The target frontlet receives them with <code>@FrontletParameter</code>.</p>
+<pre><code class="language-html">&lt;a xis:frontlet=&quot;ProductDetailsFrontlet&quot; xis:target-container=&quot;main&quot;&gt;
+    &lt;xis:parameter name=&quot;productId&quot; value=&quot;${product.id}&quot;/&gt;
+    Details
+&lt;/a&gt;</code></pre>
+<p>Frontlet targets can also carry query parameters, for example <code>xis:frontlet=&quot;/product-summary?productId=42&quot;</code>. These values are frontlet parameters and are also read with <code>@FrontletParameter</code>.</p>
+<p>A nested frontlet can read frontlet parameters from its containing frontlet as well as its own parameters. If both define the same key, the parameter supplied directly to the nested frontlet is used.</p>
+<p>For <code>xis:default-frontlet</code>, prefer query parameters such as <code>xis:default-frontlet=&quot;ProductDetailsFrontlet?productId=${product.id}&quot;</code>. This makes it clear that the parameters belong only to that default frontlet. Child <code>&lt;xis:parameter&gt;</code> elements are still supported, but they are interpreted as default frontlet parameters and are not reused when another frontlet is opened in the same container.</p>
+<h3 id="includes">Includes</h3>
+<p>Use includes for shared markup fragments when the fragment does not need its own frontlet controller.</p>
+<pre><code class="language-html">&lt;header xis:include=&quot;header&quot;&gt;&lt;/header&gt;</code></pre>
+<p>Element syntax:</p>
+<pre><code class="language-html">&lt;xis:include name=&quot;header&quot;/&gt;</code></pre>
+<p>The value is the key of an include registered with <code>@Include</code>, not an arbitrary resource path. Templates cannot include files by moving through resource directories; application code must explicitly expose each reusable fragment with the annotation.</p>
+<p>The included markup is initialized in the surrounding page or frontlet. It may contain XIS links, action buttons, parameters, and model expressions that belong to that surrounding controller. Use frontlets when the fragment needs its own controller, model data, or independently replaceable state.</p>
+<h3 id="forms">Forms</h3>
+<p>Use <code>xis:binding</code> on a form to load and submit form data. The standard HTML controls and the <code>xis:*</code> element syntax below are equivalent. Prefer the attribute syntax when you want good previews in HTML design tools; prefer the element syntax when you want stricter XIS-specific markup.</p>
+<pre><code class="language-html">&lt;form xis:binding=&quot;product&quot;&gt;
+    &lt;input type=&quot;text&quot; xis:binding=&quot;name&quot;/&gt;
+    &lt;textarea xis:binding=&quot;description&quot;&gt;&lt;/textarea&gt;
+    &lt;select xis:binding=&quot;categoryId&quot;&gt;
+        &lt;option value=&quot;${category.id}&quot; xis:repeat=&quot;category:categories&quot;&gt;${category.name}&lt;/option&gt;
+    &lt;/select&gt;
+    &lt;input type=&quot;file&quot; xis:binding=&quot;attachment&quot;/&gt;
+    &lt;input type=&quot;checkbox&quot; xis:binding=&quot;active&quot;/&gt;
+    &lt;input type=&quot;checkbox&quot; xis:binding=&quot;tags&quot; value=&quot;new&quot;/&gt;
+    &lt;input type=&quot;checkbox&quot; xis:binding=&quot;tags&quot; value=&quot;sale&quot;/&gt;
+    &lt;input type=&quot;radio&quot; xis:binding=&quot;status&quot; name=&quot;status&quot; value=&quot;DRAFT&quot;/&gt;
+    &lt;input type=&quot;radio&quot; xis:binding=&quot;status&quot; name=&quot;status&quot; value=&quot;PUBLISHED&quot;/&gt;
+    &lt;button xis:action=&quot;save&quot;&gt;Save&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<p>Element syntax:</p>
+<pre><code class="language-html">&lt;xis:form binding=&quot;product&quot;&gt;
+    &lt;xis:input type=&quot;text&quot; binding=&quot;name&quot;/&gt;
+    &lt;xis:textarea binding=&quot;description&quot;/&gt;
+    &lt;xis:select binding=&quot;categoryId&quot;&gt;
+        &lt;option value=&quot;${category.id}&quot; xis:repeat=&quot;category:categories&quot;&gt;${category.name}&lt;/option&gt;
+    &lt;/xis:select&gt;
+    &lt;xis:input type=&quot;file&quot; binding=&quot;attachment&quot;/&gt;
+    &lt;xis:checkbox binding=&quot;active&quot;/&gt;
+    &lt;xis:checkbox binding=&quot;tags&quot; value=&quot;new&quot;/&gt;
+    &lt;xis:checkbox binding=&quot;tags&quot; value=&quot;sale&quot;/&gt;
+    &lt;xis:radio binding=&quot;status&quot; name=&quot;status&quot; value=&quot;DRAFT&quot;/&gt;
+    &lt;xis:radio binding=&quot;status&quot; name=&quot;status&quot; value=&quot;PUBLISHED&quot;/&gt;
+    &lt;xis:submit action=&quot;save&quot;&gt;Save&lt;/xis:submit&gt;
+&lt;/xis:form&gt;</code></pre>
+<p><code>xis:submit</code> starts a form action without requiring a separate <code>xis:action</code> attribute. The action receives the submitted form object through <code>@FormData</code>.</p>
+<p>A file input is submitted as multipart form data. The matching Java form field or action parameter must be annotated with <code>@Upload</code>; see <a href="/docs/guide/forms-and-validation.html#file-uploads">File uploads</a> for supported Java types and upload limits.</p>
+<p>When multiple controls use the same binding, XIS submits all selected values for that binding. Use that for checkbox groups or any repeated form value that should arrive as a collection:</p>
+<pre><code class="language-html">&lt;input type=&quot;checkbox&quot; xis:binding=&quot;tags&quot; value=&quot;new&quot;/&gt;
+&lt;input type=&quot;checkbox&quot; xis:binding=&quot;tags&quot; value=&quot;sale&quot;/&gt;</code></pre>
+<p>Equivalent element syntax:</p>
+<pre><code class="language-html">&lt;xis:checkbox binding=&quot;tags&quot; value=&quot;new&quot;/&gt;
+&lt;xis:checkbox binding=&quot;tags&quot; value=&quot;sale&quot;/&gt;</code></pre>
+<pre><code class="language-java">class ProductForm {
+    private List&lt;String&gt; tags;
+
+    List&lt;String&gt; getTags() {
+        return tags;
+    }
+
+    void setTags(List&lt;String&gt; tags) {
+        this.tags = tags;
+    }
+}</code></pre>
+<h3 id="validation-messages">Validation Messages</h3>
+<p>Use <code>xis:message-for</code> for field messages.</p>
+<pre><code class="language-html">&lt;span xis:message-for=&quot;name&quot;&gt;&lt;/span&gt;</code></pre>
+<p>Element syntax:</p>
+<pre><code class="language-html">&lt;xis:message message-for=&quot;name&quot;/&gt;</code></pre>
+<p>Use global messages for validation errors that are not attached to one field. These are still validation messages from the current form result, not the general system-error area:</p>
+<pre><code class="language-html">&lt;xis:global-messages/&gt;</code></pre>
+<p>When messages are present, XIS inserts a generated <code>&lt;ul class=&quot;error&quot;&gt;</code> with one <code>&lt;li class=&quot;error&quot;&gt;</code> per message into the element. Style <code>.error</code> or use selectors such as <code>xis\:global-messages ul.error</code> when you want to target the generated list specifically.</p>
+<p>General server errors are rendered by the browser-side message handler into an element with <code>id=&quot;system-messages&quot;</code> when that element exists on the page.</p>
+<p>Use <code>xis:error-class</code> together with <code>xis:binding</code> when a field or label should receive a CSS class on validation error:</p>
+<pre><code class="language-html">&lt;input xis:binding=&quot;name&quot; xis:error-class=&quot;error&quot;/&gt;
+&lt;label for=&quot;name&quot; xis:binding=&quot;name&quot; xis:error-class=&quot;error&quot;&gt;Name&lt;/label&gt;</code></pre>
+<p>Use <code>xis:error-binding</code> when the element should react to a field error but is not itself bound as a form control. Use <code>xis:error-style</code> when an inline style should be applied instead of, or in addition to, a CSS class:</p>
+<pre><code class="language-html">&lt;label for=&quot;name&quot;
+       xis:error-binding=&quot;name&quot;
+       xis:error-class=&quot;error-label&quot;
+       xis:error-style=&quot;color: red; font-weight: bold&quot;&gt;
+    Name
+&lt;/label&gt;</code></pre>
+<p><code>xis:error-binding</code> is evaluated relative to the current form binding, just like <code>xis:message-for</code>. The style or class is applied while the last form action has a validation message for that field.</p>
+<h3 id="dynamic-classes">Dynamic Classes</h3>
+<p>Use <code>xis:selection-class</code> and <code>xis:selection-group</code> for selection styling when XIS should manage the selected CSS class. Put <code>xis:selection-group</code> on the surrounding element and <code>xis:selection-class</code> on each selectable child. XIS keeps one selected element per group.</p>
+<pre><code class="language-html">&lt;nav xis:selection-group&gt;
+    &lt;a xis:selection-class=&quot;active&quot; xis:page=&quot;/products.html&quot;&gt;Products&lt;/a&gt;
+    &lt;a xis:selection-class=&quot;active&quot; xis:page=&quot;/orders.html&quot;&gt;Orders&lt;/a&gt;
+&lt;/nav&gt;</code></pre>
+<p>For HTML preview tools you can also write the attributes without the <code>xis:</code> prefix. XIS normalizes both forms:</p>
+<pre><code class="language-html">&lt;nav selection-group&gt;
+    &lt;a selection-class=&quot;active&quot;&gt;Products&lt;/a&gt;
+    &lt;a selection-class=&quot;active&quot;&gt;Orders&lt;/a&gt;
+&lt;/nav&gt;</code></pre>
+<h3 id="client-state">Client State</h3>
+<p>Client-side storage binding is available, but it is not required for normal server-backed applications. Use it only when state should intentionally live in the browser.</p>
+<pre><code class="language-html">&lt;section xis:storage-binding=&quot;localStorage&quot;&gt;
+    &lt;span&gt;${defaultValue(localStorage.cart.count, &#x27;0&#x27;)}&lt;/span&gt;
+&lt;/section&gt;</code></pre>
+<p>Element syntax wraps the content that should be refreshed when that store changes:</p>
+<pre><code class="language-html">&lt;xis:storage-binding store=&quot;localStorage&quot;&gt;
+    &lt;span&gt;${defaultValue(localStorage.cart.count, &#x27;0&#x27;)}&lt;/span&gt;
+&lt;/xis:storage-binding&gt;</code></pre>
+<p>Supported stores are <code>localStorage</code>, <code>sessionStorage</code>, and <code>clientState</code>.</p>
+<p>XIS does not send the whole browser store to the server. It sends the keys that the current page or frontlet declares through controller parameters such as <code>@LocalStorage(&quot;cart&quot;)</code> or <code>@SessionStorage(&quot;wizard&quot;)</code>. Storage parameters are written back after an action, so mutable DTO-like values can be updated in the action and persisted in the browser.</p>
+<h3 id="raw-content">Raw Content</h3>
+<p><code>xis:raw</code> inserts its content without normal XIS handling. Use it rarely, for content that is already trusted and already prepared as HTML.</p>
+<pre><code class="language-html">&lt;xis:raw&gt;
+    &lt;strong&gt;Trusted HTML&lt;/strong&gt;
+&lt;/xis:raw&gt;</code></pre>
+<p>Use <code>text=&quot;true&quot;</code> to insert the raw content as plain text:</p>
+<pre><code class="language-html">&lt;xis:raw text=&quot;true&quot;&gt;&lt;strong&gt;Shown as text&lt;/strong&gt;&lt;/xis:raw&gt;</code></pre>
+<h3 id="element-required-attributes">Element Required Attributes</h3>
+<p>Some framework elements need one or more attributes so XIS can bind them to a controller method, model value, or target container. The template validator reports these cases during the build.</p>
+<table><thead><tr><th>Element</th><th>Required attributes</th></tr></thead><tbody><tr><td><code>&lt;xis:a&gt;</code></td><td>One of <code>page</code>, <code>frontlet</code>, or <code>modal</code></td></tr><tr><td><code>&lt;xis:action&gt;</code></td><td><code>action</code></td></tr><tr><td><code>&lt;xis:button&gt;</code></td><td>One of <code>page</code>, <code>frontlet</code>, <code>modal</code>, or <code>action</code></td></tr><tr><td><code>&lt;xis:checkbox&gt;</code></td><td><code>binding</code></td></tr><tr><td><code>&lt;xis:foreach&gt;</code></td><td><code>var</code> and <code>array</code></td></tr><tr><td><code>&lt;xis:form&gt;</code></td><td><code>binding</code></td></tr><tr><td><code>&lt;xis:frontlet&gt;</code></td><td><code>name</code></td></tr><tr><td><code>&lt;xis:frontlet-container&gt;</code></td><td><code>container-id</code></td></tr><tr><td><code>&lt;xis:if&gt;</code></td><td><code>condition</code></td></tr><tr><td><code>&lt;xis:include&gt;</code></td><td><code>name</code></td></tr><tr><td><code>&lt;xis:input&gt;</code></td><td><code>binding</code></td></tr><tr><td><code>&lt;xis:message&gt;</code></td><td><code>message-for</code></td></tr><tr><td><code>&lt;xis:parameter&gt;</code></td><td><code>name</code>; <code>value</code> is optional because the element text can be used as the value</td></tr><tr><td><code>&lt;xis:radio&gt;</code></td><td><code>binding</code></td></tr><tr><td><code>&lt;xis:select&gt;</code></td><td><code>binding</code></td></tr><tr><td><code>&lt;xis:storage-binding&gt;</code></td><td><code>store</code>, one of <code>localStorage</code>, <code>sessionStorage</code>, or <code>clientState</code></td></tr><tr><td><code>&lt;xis:submit&gt;</code></td><td><code>action</code></td></tr><tr><td><code>&lt;xis:textarea&gt;</code></td><td><code>binding</code></td></tr></tbody></table>
+<p><code>&lt;xis:global-messages&gt;</code> and <code>&lt;xis:raw&gt;</code> do not require attributes. <code>&lt;xis:raw&gt;</code> supports optional <code>text=&quot;true&quot;</code> when the content should be inserted as plain text instead of trusted HTML.</p>
+<h3 id="quick-reference">Quick Reference</h3>
+<table><thead><tr><th>Behavior</th><th>Attribute syntax</th><th>Element syntax</th></tr></thead><tbody><tr><td>Conditional rendering</td><td><code>xis:if=&quot;condition&quot;</code></td><td><code>&lt;xis:if condition=&quot;condition&quot;&gt;</code></td></tr><tr><td>Iterate content</td><td><code>xis:foreach=&quot;item:items&quot;</code></td><td><code>&lt;xis:foreach var=&quot;item&quot; array=&quot;items&quot;&gt;</code></td></tr><tr><td>Repeat element</td><td><code>xis:repeat=&quot;item:items&quot;</code></td><td>use <code>&lt;xis:foreach&gt;</code> around the element</td></tr><tr><td>Page link</td><td><code>&lt;a xis:page=&quot;/page.html&quot;&gt;</code></td><td><code>&lt;xis:a page=&quot;/page.html&quot;&gt;</code></td></tr><tr><td>Page button</td><td><code>&lt;button xis:page=&quot;/page.html&quot;&gt;</code></td><td><code>&lt;xis:button page=&quot;/page.html&quot;&gt;</code></td></tr><tr><td>Action link</td><td><code>&lt;a xis:action=&quot;save&quot;&gt;</code></td><td><code>&lt;xis:action action=&quot;save&quot;&gt;</code></td></tr><tr><td>Action button</td><td><code>&lt;button xis:action=&quot;save&quot;&gt;</code></td><td><code>&lt;xis:button action=&quot;save&quot;&gt;</code></td></tr><tr><td>Parameter</td><td><code>&lt;xis:parameter name=&quot;id&quot; value=&quot;${id}&quot;&gt;</code></td><td>same</td></tr><tr><td>Frontlet link</td><td><code>&lt;a xis:frontlet=&quot;DetailsFrontlet&quot;&gt;</code></td><td><code>&lt;xis:a frontlet=&quot;DetailsFrontlet&quot;&gt;</code></td></tr><tr><td>Frontlet button</td><td><code>&lt;button xis:frontlet=&quot;DetailsFrontlet&quot;&gt;</code></td><td><code>&lt;xis:button frontlet=&quot;DetailsFrontlet&quot;&gt;</code></td></tr><tr><td>Frontlet container</td><td><code>xis:frontlet-container=&quot;main&quot;</code></td><td><code>&lt;xis:frontlet-container container-id=&quot;main&quot;&gt;</code></td></tr><tr><td>Default frontlet</td><td><code>xis:default-frontlet=&quot;ListFrontlet&quot;</code></td><td><code>default-frontlet=&quot;ListFrontlet&quot;</code></td></tr><tr><td>Scroll frontlet container to top on frontlet switch</td><td><code>xis:scroll-to-top=&quot;true&quot;</code></td><td><code>scroll-to-top=&quot;true&quot;</code></td></tr><tr><td>Include</td><td><code>xis:include=&quot;header&quot;</code></td><td><code>&lt;xis:include name=&quot;header&quot;&gt;</code></td></tr><tr><td>Form</td><td><code>&lt;form xis:binding=&quot;product&quot;&gt;</code></td><td><code>&lt;xis:form binding=&quot;product&quot;&gt;</code></td></tr><tr><td>Input</td><td><code>&lt;input xis:binding=&quot;name&quot;&gt;</code></td><td><code>&lt;xis:input binding=&quot;name&quot;&gt;</code></td></tr><tr><td>Textarea</td><td><code>&lt;textarea xis:binding=&quot;text&quot;&gt;</code></td><td><code>&lt;xis:textarea binding=&quot;text&quot;&gt;</code></td></tr><tr><td>Select</td><td><code>&lt;select xis:binding=&quot;category&quot;&gt;</code></td><td><code>&lt;xis:select binding=&quot;category&quot;&gt;</code></td></tr><tr><td>Checkbox</td><td><code>&lt;input type=&quot;checkbox&quot; xis:binding=&quot;active&quot;&gt;</code></td><td><code>&lt;xis:checkbox binding=&quot;active&quot;&gt;</code></td></tr><tr><td>Radio</td><td><code>&lt;input type=&quot;radio&quot; xis:binding=&quot;status&quot;&gt;</code></td><td><code>&lt;xis:radio binding=&quot;status&quot;&gt;</code></td></tr><tr><td>Submit form</td><td><code>&lt;button xis:action=&quot;save&quot;&gt;</code></td><td><code>&lt;xis:submit action=&quot;save&quot;&gt;</code></td></tr><tr><td>Field message</td><td><code>xis:message-for=&quot;name&quot;</code></td><td><code>&lt;xis:message message-for=&quot;name&quot;&gt;</code></td></tr><tr><td>Global messages</td><td>none</td><td><code>&lt;xis:global-messages&gt;</code></td></tr><tr><td>Error class</td><td><code>xis:error-class=&quot;error&quot;</code></td><td>none</td></tr><tr><td>Error binding</td><td><code>xis:error-binding=&quot;name&quot;</code></td><td>none</td></tr><tr><td>Error style</td><td><code>xis:error-style=&quot;color: red&quot;</code></td><td>none</td></tr><tr><td>Selection group</td><td><code>xis:selection-group</code> or <code>selection-group</code></td><td>none</td></tr><tr><td>Selection class</td><td><code>xis:selection-class=&quot;active&quot;</code> or <code>selection-class=&quot;active&quot;</code></td><td>none</td></tr><tr><td>Storage binding</td><td><code>xis:storage-binding=&quot;localStorage&quot;</code></td><td><code>&lt;xis:storage-binding store=&quot;localStorage&quot;&gt;</code></td></tr><tr><td>Raw content</td><td>none</td><td><code>&lt;xis:raw&gt;</code></td></tr></tbody></table>
+  </main>
+</div>
+</body>
+</html>

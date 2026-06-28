@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://xis.one/sitemap.xml

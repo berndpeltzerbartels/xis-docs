@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>First Application - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Getting Started / <span data-current-page>First application</span></div>
+    <h1>First application</h1>
+    <p class="lead">
+      The first XIS page should show the complete rhythm: controller, template, run command, and a test. Testing belongs
+      here, not only in a late reference chapter.
+    </p>
+
+    <h2>Minimal page controller</h2>
+    <pre><code class="language-java">package example;
+
+import one.xis.Action;
+import one.xis.ModelData;
+import one.xis.Page;
+import one.xis.WelcomePage;
+
+@WelcomePage
+@Page("/hello.html")
+class HelloPage {
+
+    private int counter;
+
+    @ModelData
+    String greeting() {
+        return "Hello XIS";
+    }
+
+    @ModelData
+    int count() {
+        return counter;
+    }
+
+    @Action
+    void increment() {
+        counter++;
+    }
+}</code></pre>
+
+    <h2>Matching template</h2>
+    <pre><code class="language-html">&lt;!doctype html&gt;
+&lt;html xmlns:xis="https://xis.one/xsd" lang="en"&gt;
+&lt;body&gt;
+  &lt;h1&gt;${greeting}&lt;/h1&gt;
+  &lt;p&gt;Count: ${count}&lt;/p&gt;
+  &lt;button xis:action="increment"&gt;Increment&lt;/button&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <h2>Add the test immediately</h2>
+    <p>
+      XIS should feel TDD-friendly from the first page. Build a page, assert the rendered state, click the action, and
+      assert the updated state. The examples in this documentation are intended to come from executable sample projects,
+      so the code shown here stays tied to something that actually compiles and runs.
+    </p>
+
+    <div class="note">
+      Treat documentation examples as sample code, not as decoration. The closer they stay to executable projects, the
+      less likely the documentation is to drift away from the framework.
+    </div>
+
+    <p><a href="/docs/getting-started/testing-from-start.html">Continue with testing from the start</a></p>
+  </main>
+</div>
+</body>
+</html>

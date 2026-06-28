@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Core Model - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Core Model</span></div>
+    <h1>Core Model</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="core-model">Core Model</h2>
+<p>XIS applications are built from pages, frontlets, includes, model data, form data, and actions.</p>
+<p>For a complete map of class, method, field, record-component, and parameter annotations, see the <a href="/docs/guide/annotations.html">Annotation reference</a>.</p>
+<h3 id="pages">Pages</h3>
+<p>A page is a Java controller annotated with <code>@Page</code>. It maps to a browser URL and renders a complete HTML document. The programming model deliberately resembles older request/page models where a controller provides data and a template uses it directly. At runtime, however, XIS still runs as a SPA-style DOM application in the browser: navigation, action calls, DOM updates, and refresh behavior are handled by XIS instead of by handwritten REST clients or frontend state code.</p>
+<pre><code class="language-java">package example.products;
+
+import one.xis.ModelData;
+import one.xis.Page;
+import one.xis.PathVariable;
+
+@Page(&quot;/products/{id}.html&quot;)
+class ProductPage {
+
+    private final ProductService productService;
+
+    ProductPage(ProductService productService) {
+        this.productService = productService;
+    }
+
+    @ModelData
+    Product product(@PathVariable(&quot;id&quot;) long id) {
+        return productService.findById(id);
+    }
+}</code></pre>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html xmlns:xis=&quot;https://xis.one/xsd&quot; lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;title&gt;${product.name}&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;${product.name}&lt;/h1&gt;
+    &lt;p&gt;${product.description}&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p>Rules:</p>
+<ul>
+<li><code>@Page</code> paths start with <code>/</code>.</li>
+<li>User-facing page URLs should end with <code>.html</code>.</li>
+<li>Page templates are complete HTML documents.</li>
+<li>By convention, <code>ProductPage.java</code> uses <code>ProductPage.html</code> in the same package.</li>
+<li>Page classes are discovered as framework components by supported runtimes.</li>
+</ul>
+<h3 id="model-data">Model Data</h3>
+<p><code>@ModelData</code> exposes values to the template.</p>
+<pre><code class="language-java">@ModelData
+List&lt;Product&gt; products() {
+    return productService.findAll();
+}</code></pre>
+<pre><code class="language-html">&lt;ul xis:foreach=&quot;product:${products}&quot;&gt;
+    &lt;li&gt;${product.name}&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+<p>The model key can be chosen in three ways:</p>
+<pre><code class="language-java">@ModelData(&quot;customer&quot;)
+Customer selectedCustomer() {
+    return customerService.currentCustomer();
+}
+
+@ModelData(varName = &quot;customer&quot;)
+Customer selectedCustomer() {
+    return customerService.currentCustomer();
+}
+
+@ModelData
+Customer customer() {
+    return customerService.currentCustomer();
+}
+
+@ModelData
+Customer getCustomer() {
+    return customerService.currentCustomer();
+}</code></pre>
+<p>All four variants expose <code>${customer}</code>. <code>varName</code> is an explicit alias for <code>value</code> when you prefer a more readable attribute name in examples or application code. Do not set both to different values.</p>
+<p>With no explicit annotation value, XIS uses the method name as the key. If the method name starts with <code>get</code> followed by an uppercase character, XIS uses the property name instead, so <code>getCustomer()</code> becomes <code>customer</code>. This also applies when the controller method has XIS parameters such as <code>@SharedValue</code>, <code>@PathVariable</code>, or <code>@QueryParameter</code>.</p>
+<p><code>@ModelData</code> and <code>@FormData</code> methods may return <code>Optional&lt;T&gt;</code> or <code>Stream&lt;T&gt;</code>. XIS unwraps <code>Optional</code> values and materializes streams immediately as lists during controller processing; a stream is not transported lazily to the browser.</p>
+<p><code>@ModelData</code> and form-initializing <code>@FormData</code> methods are loaded both when a page or frontlet is opened and after actions by default. Use <code>load</code> when a value is only meaningful in one phase:</p>
+<pre><code class="language-java">@ModelData(value = &quot;selectedStepId&quot;, load = ModelDataLoad.INITIAL)
+Long selectedStepId() {
+    return pipelineService.firstStepId().orElse(null);
+}
+
+@ModelData(value = &quot;summary&quot;, load = ModelDataLoad.AFTER_ACTION)
+Summary summary() {
+    return pipelineService.currentSummary();
+}</code></pre>
+<p><code>INITIAL</code> is useful for default selections such as the first tab, first row, or first pipeline step. <code>AFTER_ACTION</code> is useful for values that should only be calculated after a user action. <code>ALWAYS</code> is the default. On <code>@FormData</code>, <code>load</code> only affects methods that initialize forms; action parameters still receive submitted form values normally.</p>
+<h3 id="actions">Actions</h3>
+<p><code>@Action</code> marks methods that can be called from the template.</p>
+<pre><code class="language-java">@Action
+Class&lt;?&gt; delete(@PathVariable(&quot;id&quot;) long id) {
+    productService.delete(id);
+    return ProductListPage.class;
+}</code></pre>
+<pre><code class="language-html">&lt;button xis:action=&quot;delete&quot;&gt;Delete&lt;/button&gt;</code></pre>
+<p>Common return behavior:</p>
+<ul>
+<li><code>void</code>: stay on the current page or frontlet and refresh model data</li>
+<li>page class: navigate to that page</li>
+<li>frontlet class or frontlet response: update a frontlet container</li>
+<li><code>ModalResponse</code>: open or close a modal dialog</li>
+</ul>
+<p>See <a href="/docs/guide/navigation.html">Navigation and responses</a> for the complete navigation model.</p>
+<h3 id="parameters">Parameters</h3>
+<p>Path variables from a page URL are available to model and action methods.</p>
+<pre><code class="language-java">@Page(&quot;/orders/{orderId}.html&quot;)
+class OrderPage {
+
+    @ModelData
+    Order order(@PathVariable(&quot;orderId&quot;) long orderId) {
+        return orderService.findById(orderId);
+    }
+}</code></pre>
+<p>Action-specific parameters can be passed from templates with <code>xis:parameter</code>.</p>
+<pre><code class="language-html">&lt;button xis:action=&quot;deleteLine&quot;&gt;
+    &lt;xis:parameter name=&quot;lineId&quot; value=&quot;${line.id}&quot;/&gt;
+    Delete line
+&lt;/button&gt;</code></pre>
+<h3 id="frontlets">Frontlets</h3>
+<p>A frontlet is a reusable UI controller annotated with <code>@Frontlet</code>. Frontlets render HTML fragments and can be embedded inside pages or other frontlets.</p>
+<pre><code class="language-java">package example.products;
+
+import one.xis.ModelData;
+import one.xis.Frontlet;
+
+@Frontlet
+class ProductSummaryFrontlet {
+
+    @ModelData
+    String headline() {
+        return &quot;Products&quot;;
+    }
+}</code></pre>
+<p><code>ProductSummaryFrontlet.html</code></p>
+<pre><code class="language-html">&lt;xis:template xmlns:xis=&quot;https://xis.one/xsd&quot;&gt;
+    &lt;h2&gt;${headline}&lt;/h2&gt;
+&lt;/xis:template&gt;</code></pre>
+<p>Embed it:</p>
+<pre><code class="language-html">&lt;xis:frontlet name=&quot;ProductSummaryFrontlet&quot;/&gt;</code></pre>
+<p>or with a named container:</p>
+<pre><code class="language-html">&lt;div xis:frontlet-container=&quot;summary&quot; xis:default-frontlet=&quot;ProductSummaryFrontlet&quot;&gt;&lt;/div&gt;</code></pre>
+<p>Frontlet IDs default to the simple class name. Use an explicit ID if two frontlets would otherwise have the same name:</p>
+<pre><code class="language-java">@Frontlet(&quot;AdminProductSummary&quot;)
+class ProductSummaryFrontlet {
+}</code></pre>
+<h3 id="frontlet-containers">Frontlet Containers</h3>
+<p>Frontlet containers allow parts of a page to be replaced independently.</p>
+<pre><code class="language-html">&lt;xis:frontlet-container container-id=&quot;main&quot; default-frontlet=&quot;ProductSummaryFrontlet&quot;/&gt;</code></pre>
+<p>Attribute syntax:</p>
+<pre><code class="language-html">&lt;div xis:frontlet-container=&quot;main&quot; xis:default-frontlet=&quot;ProductSummaryFrontlet&quot;&gt;&lt;/div&gt;</code></pre>
+<p>An action can target a container:</p>
+<pre><code class="language-html">&lt;button xis:action=&quot;showDetails&quot; target-container=&quot;main&quot;&gt;
+    &lt;xis:parameter name=&quot;productId&quot; value=&quot;${product.id}&quot;/&gt;
+    Show details
+&lt;/button&gt;</code></pre>
+<h3 id="includes">Includes</h3>
+<p>Includes are reusable HTML fragments. Use them for shared markup such as headers, footers, and navigation when the fragment does not need an independent frontlet controller.</p>
+<pre><code class="language-java">package example.layout;
+
+import one.xis.Include;
+
+@Include(&quot;header&quot;)
+class Header {
+}</code></pre>
+<p><code>Header.html</code></p>
+<pre><code class="language-html">&lt;header&gt;
+    &lt;a xis:page=&quot;/index.html&quot;&gt;Home&lt;/a&gt;
+    &lt;a xis:page=&quot;/products.html&quot;&gt;Products&lt;/a&gt;
+&lt;/header&gt;</code></pre>
+<p>Use it:</p>
+<pre><code class="language-html">&lt;xis:include name=&quot;header&quot;/&gt;</code></pre>
+<p>Attribute syntax is equivalent:</p>
+<pre><code class="language-html">&lt;header xis:include=&quot;header&quot;&gt;&lt;/header&gt;</code></pre>
+<p>The value is an include key, not a free resource path. A template can only include fragments that an application has explicitly registered with <code>@Include</code>. This is intentional: the annotation is the point where application code makes the conscious decision that a fragment may be included, instead of allowing templates to walk arbitrary resource paths.</p>
+<p>The included markup is initialized inside the surrounding page or frontlet. It may therefore contain XIS links, action buttons, parameters, and model expressions that belong to that surrounding controller. Choose frontlets when the fragment needs its own controller logic, independent model data, or dynamic updates.</p>
+  </main>
+</div>
+</body>
+</html>

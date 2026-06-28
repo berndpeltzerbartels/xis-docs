@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Groovy Support - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Groovy Support</span></div>
+    <h1>Groovy Support</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="groovy-support">Groovy Support</h2>
+<p>XIS supports Groovy 4+ for controller classes and form/data objects. The same server-driven programming model applies: controllers declare pages, model data, form data, and actions; HTML templates declare the UI.</p>
+<p>This can be useful when a team wants a lighter JVM syntax while keeping the XIS model: no separate client build, no hand-written REST layer for normal interactions, and the same validation and form handling used by Java applications.</p>
+<p>Groovy support does not change the runtime path for Java or Kotlin applications. For GraalVM native executables, use Java or Kotlin; Groovy is supported on the JVM path.</p>
+<h3 id="requirements">Requirements</h3>
+<p>Use Groovy 4 or newer:</p>
+<p><code>build.gradle</code></p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+    id &quot;groovy&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation &quot;one.xis:xis-boot&quot; // or xis-spring
+    implementation &quot;org.apache.groovy:groovy:4.0.24&quot;
+}</code></pre>
+<p>Groovy 3 is not supported for XIS annotations. Several XIS validation and formatting annotations also support Java record components. Groovy 3 can fail during compilation when it sees annotations with <code>ElementType.RECORD_COMPONENT</code>; Groovy 4 handles this correctly.</p>
+<h3 id="controller-example">Controller Example</h3>
+<p><code>src/main/groovy/example/GroovyPage.groovy</code></p>
+<pre><code class="language-groovy">package example
+
+import one.xis.Action
+import one.xis.FormData
+import one.xis.HtmlFile
+import one.xis.ModelData
+import one.xis.Page
+import one.xis.PathVariable
+import one.xis.QueryParameter
+import one.xis.validation.Mandatory
+
+@Page(&#x27;/groovy/{id}.html&#x27;)
+@HtmlFile(&#x27;GroovyPage.html&#x27;)
+class GroovyPage {
+
+    private GroovyForm saved = new GroovyForm(name: &#x27;initial&#x27;, amount: 3)
+
+    @ModelData(&#x27;headline&#x27;)
+    String headline(@PathVariable(&#x27;id&#x27;) Integer id, @QueryParameter(&#x27;mode&#x27;) String mode) {
+        &quot;Item ${id} ${mode}&quot;
+    }
+
+    @FormData(&#x27;form&#x27;)
+    GroovyForm form() {
+        saved
+    }
+
+    @ModelData(&#x27;saved&#x27;)
+    String saved() {
+        &quot;${saved.name}:${saved.amount}&quot;
+    }
+
+    @Action(&#x27;save&#x27;)
+    void save(@FormData(&#x27;form&#x27;) GroovyForm form) {
+        saved = form
+    }
+}
+
+class GroovyForm {
+    @Mandatory
+    String name
+
+    int amount
+}</code></pre>
+<p><code>src/main/resources/example/GroovyPage.html</code></p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html xmlns:xis=&quot;http://xis.one/html&quot;&gt;
+&lt;head&gt;
+    &lt;title&gt;Groovy&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h1&gt;${headline}&lt;/h1&gt;
+&lt;p&gt;${saved}&lt;/p&gt;
+
+&lt;form xis:binding=&quot;form&quot;&gt;
+    &lt;input xis:binding=&quot;name&quot; xis:error-class=&quot;error&quot;/&gt;
+    &lt;div xis:message-for=&quot;name&quot;&gt;&lt;/div&gt;
+
+    &lt;input xis:binding=&quot;amount&quot; xis:error-class=&quot;error&quot;/&gt;
+    &lt;div xis:message-for=&quot;amount&quot;&gt;&lt;/div&gt;
+
+    &lt;button xis:action=&quot;save&quot;&gt;Save&lt;/button&gt;
+&lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p>The action receives a deserialized <code>GroovyForm</code>. XIS validates the form before the action runs. If validation fails, the action is not called, the submitted values stay visible, and validation messages/classes are rendered like in Java controllers.</p>
+<h3 id="template-location-and-scaffolding">Template Location And Scaffolding</h3>
+<p>For Groovy controllers, you can place templates next to the controller under <code>src/main/groovy</code> or under <code>src/main/resources</code> using the controller package path. XIS copies <code>*.html</code> files from <code>src/main/groovy</code> to the runtime resources when the Gradle Groovy plugin is applied.</p>
+<p>You normally do not need <code>@HtmlFile</code> when the template follows the default name and package location. Use <code>@HtmlFile(&#x27;GroovyPage.html&#x27;)</code> only when you want to name the template explicitly; the file name is then resolved relative to the controller package in both source layouts.</p>
+<p>When the Gradle project applies both the Groovy plugin and the XIS plugin, the normal XIS scaffolding tasks also scan Groovy controllers:</p>
+<pre><code class="language-bash">./gradlew xisTemplates xisTests</code></pre>
+<p>For Groovy controllers, generated templates are written below <code>src/main/resources</code> using the controller package path. Generated starter integration tests are Groovy tests below <code>src/test/groovy</code>. They use <code>@XisBootTest</code>, register the Groovy page controller in the XIS test context, and use the test starter dependency that the XIS Gradle plugin adds automatically.</p>
+<p>The same controller-first workflow applies to Groovy: sketch the page or frontlet class and its <code>@ModelData</code>, <code>@FormData</code>, and <code>@Action</code> methods before running <code>xisTemplates</code>. The generated template then reflects that controller shape with expressions, repeated blocks, bound forms, validation placeholders, and action buttons.</p>
+<h3 id="xis-boot">XIS Boot</h3>
+<p>Standalone XIS Boot applications can also use <code>@XISBootApplication</code> on a Groovy class. The XIS Gradle plugin enables Java annotation processing for Groovy compilation when the Groovy plugin is present, so <code>xisJar</code> can generate and package the boot runner.</p>
+<p>The resulting jar contains Java classes, Groovy classes, resources, and the generated <code>one.xis.boot.Runner</code>.</p>
+<h3 id="native-images">Native Images</h3>
+<p>Groovy applications are currently supported on the JVM path, not on the XIS Boot Native path. Even statically compiled Groovy code brings parts of the Groovy runtime into the GraalVM native-image analysis, including Groovy&#x27;s meta-class and dynamic call-site infrastructure. That currently makes native builds fail before the application can be treated like a normal XIS native application.</p>
+<p>Use Java or Kotlin for applications that should be compiled with <code>xis-boot-native</code>. Groovy support may become possible later, but it needs dedicated Groovy/GraalVM work and is not part of the supported native workflow today.</p>
+<h3 id="tested-behavior">Tested Behavior</h3>
+<p>XIS has tests for these Groovy paths:</p>
+<ul>
+<li>component scanning and singleton creation</li>
+<li>constructor injection</li>
+<li>field injection</li>
+<li><code>@Bean</code> method invocation</li>
+<li><code>@Init</code> method invocation</li>
+<li>object deserialization from a controller method parameter</li>
+<li>page rendering with <code>@ModelData</code></li>
+<li>form initialization with <code>@FormData</code></li>
+<li>action invocation with deserialized <code>@FormData</code></li>
+<li>validation failures on Groovy form objects</li>
+</ul>
+<p>These tests run with Groovy 4.</p>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gradle Plugin - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Operations / <span data-current-page>Gradle plugin</span></div>
+    <h1>Gradle plugin and tooling</h1>
+    <p class="lead">
+      The Gradle plugin is part of the user-facing workflow: templates, tests, validation, runnable jars, native builds,
+      local runs, catalogs, and smoke tests belong here.
+    </p>
+
+    <h2>Why the plugin exists</h2>
+    <p>
+      XIS intentionally moves some work to build time. Templates can be validated, catalogs can be generated, JavaScript
+      resources can be bundled, and native-image metadata can be prepared before the application starts. The plugin
+      keeps that workflow repeatable and visible.
+    </p>
+    <pre><code class="language-groovy">plugins {
+    id "java"
+    id "one.xis.plugin" version "0.18.0"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "one.xis:xis-boot"
+}</code></pre>
+
+    <h2>Main tasks</h2>
+    <table>
+      <thead>
+      <tr><th>Task</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+      <tr><td><code>xisTemplates</code></td><td>Generate or prepare template-related build artifacts.</td></tr>
+      <tr><td><code>xisTests</code></td><td>Generate starter tests and test support where the project uses that workflow.</td></tr>
+      <tr><td><code>xisValidate</code></td><td>Validate templates and framework metadata early.</td></tr>
+      <tr><td><code>xisJar</code></td><td>Build a runnable XIS jar with the required runtime resources.</td></tr>
+      <tr><td><code>xisRun</code></td><td>Run the application locally in the development workflow.</td></tr>
+      <tr><td><code>xisNativeCompile</code></td><td>Build a GraalVM native executable with portable defaults.</td></tr>
+      <tr><td><code>xisNativeCompileForHost</code></td><td>Build a native executable optimized for the current host.</td></tr>
+      </tbody>
+    </table>
+    <pre><code class="language-bash">./gradlew xisTemplates xisTests
+./gradlew xisValidate
+./gradlew xisJar
+./gradlew xisRun</code></pre>
+
+    <h2>Validation belongs in the build</h2>
+    <p>
+      Template mistakes should fail before deployment. This includes missing bindings, invalid framework attributes, and
+      template structures that a browser would parse differently from what the framework expects. XIS should be strict
+      here because otherwise errors move from build time into user interactions.
+    </p>
+
+    <h2>Generated code and user code</h2>
+    <p>
+      Generated runners and catalogs are implementation details. Users should normally configure dependencies and tasks,
+      not call generated native runners directly. The public API is the Gradle task and the application class.
+    </p>
+
+    <h2>Without the plugin</h2>
+    <p>
+      The framework should remain understandable without Gradle magic, but advanced behavior is less convenient without
+      the plugin. Projects that bypass the plugin must take over the equivalent catalog, resource, validation, and native
+      metadata work themselves.
+    </p>
+  </main>
+</div>
+</body>
+</html>

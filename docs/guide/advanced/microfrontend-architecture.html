@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Microfrontend Architecture - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / Advanced / <span data-current-page>Microfrontend Architecture</span></div>
+    <h1>Microfrontend Architecture</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="microfrontend-architecture">Microfrontend Architecture</h2>
+<p>Microfrontend Architecture means that a service does not only own business logic and data access; it can also own the frontend fragment that presents that part of the domain. In XIS, those fragments are pages and frontlets. A browser application can therefore be composed from more than one XIS runtime, for example a shell application that renders the main page while selected pages or frontlets are served by another process.</p>
+<p>Most applications do not need this. The normal mode is same-origin: the page, its frontlets, and all XIS endpoints come from the same host.</p>
+<h3 id="dependencies">Dependencies</h3>
+<p>Add <code>xis-distributed</code> to each participating XIS application.</p>
+<p>For standalone XIS Boot:</p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation &quot;one.xis:xis-boot&quot;
+    implementation &quot;one.xis:xis-distributed&quot;
+}</code></pre>
+<p>For Spring Boot:</p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+    id &quot;org.springframework.boot&quot; version &quot;3.5.0&quot;
+    id &quot;io.spring.dependency-management&quot; version &quot;1.1.7&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation &quot;org.springframework.boot:spring-boot-starter-web&quot;
+    implementation &quot;one.xis:xis-spring&quot;
+    implementation &quot;one.xis:xis-distributed&quot;
+}</code></pre>
+<h3 id="routing-model">Routing Model</h3>
+<p>Each participating XIS runtime still exposes its normal <code>/xis/config</code>. The shell additionally asks its own runtime for the distributed host list and then loads <code>/xis/config</code> from every listed host. The browser merges those configs.</p>
+<p>After merging:</p>
+<ul>
+<li>local pages and frontlets still use same-origin requests</li>
+<li>pages and frontlets from a remote config use that remote host</li>
+<li>page and frontlet ownership comes from the runtime that exposes the config</li>
+</ul>
+<p>There are no page or frontlet mappings in <code>application.properties</code>.</p>
+<h3 id="properties-configuration">Properties Configuration</h3>
+<p>For simple XIS Boot and Spring Boot deployments, configure the remote host list in <code>application.properties</code>:</p>
+<pre><code class="language-properties">xis.distributed.hosts=https://components.example.com,https://checkout.example.com</code></pre>
+<p>Hosts must include protocol and host, for example <code>http://localhost:9000</code> or <code>https://checkout.example.com</code>.</p>
+<p>The host list is interpreted from the point of view of the current runtime. In a shell application it lists the remote runtimes whose <code>/xis/config</code> should be loaded. If no separate CORS origins are configured, the same list is also used as the list of browser origins that may call this runtime.</p>
+<p>Use <code>xis.distributed.allowed-origins</code> when config discovery and CORS are not the same list. A remote runtime commonly lists the shell as an allowed origin, even though the shell is not a remote component host for that runtime:</p>
+<pre><code class="language-properties">xis.distributed.hosts=https://components.example.com,https://checkout.example.com
+xis.distributed.allowed-origins=https://app.example.com</code></pre>
+<p>When <code>xis-distributed</code> is on the classpath, this property is required unless the application provides its own <code>XisDistributedConfig</code> implementation.</p>
+<h3 id="java-configuration">Java Configuration</h3>
+<p>For dynamic XIS Boot deployments, implement <code>XisDistributedConfig</code> as a normal XIS component:</p>
+<pre><code class="language-java">import one.xis.context.Component;
+import one.xis.distributed.XisDistributedConfig;
+
+import java.util.List;
+
+@Component
+class DistributedConfig implements XisDistributedConfig {
+
+    @Override
+    public List&lt;String&gt; getHosts() {
+        return List.of(&quot;https://components.example.com&quot;, &quot;https://checkout.example.com&quot;);
+    }
+}</code></pre>
+<p>For Spring Boot, provide <code>XisDistributedConfig</code> as a Spring bean:</p>
+<pre><code class="language-java">import one.xis.distributed.XisDistributedConfig;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
+
+@Configuration
+class DistributedConfiguration {
+
+    @Bean
+    XisDistributedConfig xisDistributedConfig() {
+        return () -&gt; List.of(&quot;https://components.example.com&quot;, &quot;https://checkout.example.com&quot;);
+    }
+}</code></pre>
+<p>Override <code>getAllowedOrigins()</code> when the browser origins allowed by CORS differ from the remote hosts used for config discovery:</p>
+<pre><code class="language-java">import one.xis.context.Component;
+import one.xis.distributed.XisDistributedConfig;
+
+import java.util.List;
+import java.util.Set;
+
+@Component
+class RemoteDistributedConfig implements XisDistributedConfig {
+
+    @Override
+    public List&lt;String&gt; getHosts() {
+        return List.of(&quot;https://components.example.com&quot;, &quot;https://checkout.example.com&quot;);
+    }
+
+    @Override
+    public Set&lt;String&gt; getAllowedOrigins() {
+        return Set.of(&quot;https://app.example.com&quot;);
+    }
+}</code></pre>
+<p>Return stable host values. Future versions may use the same contract for host selection or availability checks.</p>
+<h3 id="navigation-by-url">Navigation By URL</h3>
+<p>In same-origin applications, returning a page class or <code>PageResponse</code> is often the most convenient navigation style. In distributed applications, URLs and strings are usually the better boundary between applications. This applies to pages and frontlets.</p>
+<p>The reason is classpath ownership. If an action in the shell application returns a remote page class, the shell application must have that remote application class on its classpath. That couples the applications at Java level. If the action returns a URL string instead, the contract is only the public page URL. The browser resolves that URL to the page entry in the merged client config and uses the host that provided that page.</p>
+<pre><code class="language-java">import one.xis.Action;
+import one.xis.Page;
+
+@Page(&quot;/cart.html&quot;)
+class CartPage {
+
+    @Action
+    String checkout() {
+        return &quot;/checkout.html&quot;;
+    }
+}</code></pre>
+<p>If <code>/checkout.html</code> belongs to the config loaded from <code>https://checkout.example.com</code>, rendering and later page actions for that page go to <code>https://checkout.example.com</code>.</p>
+<p>Path variables stay part of the concrete URL returned by your action. The remote runtime exposes the normalized page path in its own config:</p>
+<pre><code class="language-java">@Page(&quot;/cart.html&quot;)
+class CartPage {
+
+    @Action
+    String openProductDetails() {
+        return &quot;/product/42/details.html&quot;;
+    }
+}</code></pre>
+<p>The browser resolves <code>/product/42/details.html</code> against the merged page config entry for <code>/product/*/details.html</code>.</p>
+<p>Use Java class returns or <code>PageResponse</code> when the target page belongs to the same application or when you deliberately share the target page classes. Use strings or <code>PageUrlResponse</code> when the target page belongs to another distributed application and the URL is the intended public contract.</p>
+<p>The same idea applies to frontlets. If an action should replace a frontlet that lives in another application, return a frontlet URL instead of a Java class:</p>
+<pre><code class="language-java">import one.xis.Action;
+import one.xis.FrontletResponse;
+
+@Action
+FrontletResponse openCartSummary() {
+    return new FrontletResponse(&quot;/cart-summary?mode=compact&quot;)
+            .targetContainer(&quot;header-cart&quot;);
+}</code></pre>
+<p>The client resolves <code>/cart-summary</code> to the configured frontlet entry from the merged remote config and then uses that entry&#x27;s host. The shell application therefore does not need the remote <code>CartSummaryFrontlet</code> class on its classpath.</p>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Request Lifecycle - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Request Lifecycle</span></div>
+    <h1>Request Lifecycle</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="request-lifecycle">Request Lifecycle</h2>
+<p>This chapter gives you the mental model for when XIS calls controller methods and how a browser interaction becomes a new rendered page or frontlet.</p>
+<h3 id="initial-page-load">Initial Page Load</h3>
+<p>When the browser opens a page URL, XIS matches the URL to a <code>@Page</code> controller.</p>
+<pre><code class="language-java">@Page(&quot;/products/{id}.html&quot;)
+class ProductPage {
+
+    @ModelData(&quot;product&quot;)
+    Product product(@PathVariable(&quot;id&quot;) long id) {
+        return productService.findById(id);
+    }
+}</code></pre>
+<p>The initial load runs the page data methods, evaluates template expressions, processes XIS tags and attributes, and renders the HTML document. If the page contains frontlet containers, the configured frontlets are loaded as part of that rendering flow.</p>
+<h3 id="navigation-without-actions">Navigation Without Actions</h3>
+<p>Normal page and frontlet links do not call an action method. They only tell XIS what should be displayed next.</p>
+<pre><code class="language-html">&lt;a xis:page=&quot;/products/42.html&quot;&gt;Open product&lt;/a&gt;
+
+&lt;xis:frontlet-container container-id=&quot;details&quot;
+                        default-frontlet=&quot;ProductDetails&quot;/&gt;</code></pre>
+<p>Use navigation links when no server-side business method needs to run.</p>
+<h3 id="actions">Actions</h3>
+<p>An action is a user-triggered call to a Java method annotated with <code>@Action</code>.</p>
+<pre><code class="language-html">&lt;button xis:action=&quot;delete&quot;&gt;
+    &lt;xis:parameter name=&quot;productId&quot; value=&quot;${product.id}&quot;/&gt;
+    Delete
+&lt;/button&gt;</code></pre>
+<pre><code class="language-java">@Action
+PageResponse delete(@ActionParameter(&quot;productId&quot;) long productId) {
+    productService.delete(productId);
+    return new PageResponse(ProductListPage.class);
+}</code></pre>
+<p>The action return type decides what happens next:</p>
+<table><thead><tr><th>Return type</th><th>Result</th></tr></thead><tbody><tr><td><code>void</code></td><td>Stay on the current page or frontlet and refresh its data.</td></tr><tr><td><code>Class&lt;?&gt;</code></td><td>Navigate to that page, or replace the current frontlet when the class is a frontlet.</td></tr><tr><td><code>String</code></td><td>Navigate to the URL string.</td></tr><tr><td><code>PageResponse</code> / <code>PageUrlResponse</code></td><td>Navigate to a page with explicit path variables, query parameters, or URL details.</td></tr><tr><td><code>FrontletResponse</code></td><td>Replace a frontlet, optionally in a specific container.</td></tr><tr><td><code>ModalResponse</code></td><td>Open or close a modal dialog.</td></tr></tbody></table>
+<p>For the full matrix, including container rules, frontlet-to-frontlet replacement, and modal responses, see <a href="/docs/guide/navigation.html">Navigation and responses</a>.</p>
+<p><code>@Action</code> is also a lifecycle filter. A method annotated with <code>@Action</code> runs only when that exact action is triggered, no matter which other XIS annotations are present on the same method. For example, <code>@Action @ModelData</code> is not part of the initial model load, and <code>@Action @FormData</code> is not a normal form initializer. The additional annotation only tells XIS how to use the return value after the action has actually run.</p>
+<p>An action method may also be annotated with <code>@ModelData</code>. In that case the action still runs because the user triggered it, and its return value is also written into the model data of the current response. This is useful for small UI results that should appear immediately without adding another model method.</p>
+<pre><code class="language-html">&lt;button xis:action=&quot;calculateDiscount&quot;&gt;
+    &lt;xis:parameter name=&quot;productId&quot; value=&quot;${product.id}&quot;/&gt;
+    Calculate discount
+&lt;/button&gt;
+
+&lt;p&gt;${discountMessage}&lt;/p&gt;</code></pre>
+<pre><code class="language-java">@Action
+@ModelData(&quot;discountMessage&quot;)
+String calculateDiscount(@ActionParameter(&quot;productId&quot;) long productId) {
+    return discountService.discountMessageFor(productId);
+}</code></pre>
+<p>If an action method and a regular model method both write the same model key, the action result is kept for the current response. This lets an action replace an initial default value without being overwritten by the default model method.</p>
+<pre><code class="language-java">@ModelData(varName = &quot;selectedStepId&quot;, load = ModelDataLoad.INITIAL)
+Long selectedStepId() {
+    return pipelineService.firstStepId().orElse(null);
+}
+
+@Action
+@ModelData(&quot;selectedStepId&quot;)
+Long selectStep(@ActionParameter(&quot;stepId&quot;) long stepId) {
+    return stepId;
+}</code></pre>
+<p>Use <code>ModelDataLoad.INITIAL</code> for values that should only be calculated when a page or frontlet is opened. Use <code>ModelDataLoad.AFTER_ACTION</code> for values that should only be calculated while rendering the same page or frontlet after an action. <code>ModelDataLoad.ALWAYS</code> is the default. The same <code>load</code> attribute is available on <code>@FormData</code> methods that initialize forms.</p>
+<h4 id="initial-model-data-for-default-selection">Initial Model Data For Default Selection</h4>
+<p>A common frontlet pattern is a list with a detail area: when the frontlet is opened, the first item should be selected. After the user clicks another item, that explicit choice must win and must not be replaced by the initial default again.</p>
+<pre><code class="language-html">&lt;button xis:repeat=&quot;step:pipelineSteps&quot;
+        xis:action=&quot;selectStep&quot;
+        type=&quot;button&quot;&gt;
+    &lt;xis:parameter name=&quot;stepId&quot; value=&quot;${step.id}&quot;/&gt;
+    ${step.name}
+&lt;/button&gt;
+
+&lt;section&gt;${selectedStep.name}&lt;/section&gt;</code></pre>
+<pre><code class="language-java">@Frontlet
+class PipelineFrontlet {
+    private final PipelineService pipelineService;
+
+    PipelineFrontlet(PipelineService pipelineService) {
+        this.pipelineService = pipelineService;
+    }
+
+    @SharedValue(&quot;pipelineSteps&quot;)
+    List&lt;PipelineStep&gt; pipelineSteps(@FrontletParameter(&quot;pipelineId&quot;) long pipelineId) {
+        return pipelineService.stepsForPipeline(pipelineId);
+    }
+
+    @ModelData(varName = &quot;pipelineSteps&quot;)
+    List&lt;PipelineStep&gt; pipelineStepsModel(@SharedValue(&quot;pipelineSteps&quot;) List&lt;PipelineStep&gt; pipelineSteps) {
+        return pipelineSteps;
+    }
+
+    @ModelData(varName = &quot;selectedStep&quot;, load = ModelDataLoad.INITIAL)
+    PipelineStep initiallySelectedStep(@SharedValue(&quot;pipelineSteps&quot;) List&lt;PipelineStep&gt; pipelineSteps) {
+        return pipelineSteps.isEmpty() ? null : pipelineSteps.get(0);
+    }
+
+    @Action
+    @ModelData(varName = &quot;selectedStep&quot;)
+    PipelineStep selectStep(@ActionParameter(&quot;stepId&quot;) long stepId,
+                            @SharedValue(&quot;pipelineSteps&quot;) List&lt;PipelineStep&gt; pipelineSteps) {
+        return pipelineSteps.stream()
+                .filter(step -&gt; step.id() == stepId)
+                .findFirst()
+                .orElseThrow();
+    }
+}</code></pre>
+<p>The shared value keeps the list loading in one place for the current request. <code>INITIAL</code> chooses the default only when the frontlet is opened. The action return value uses the same model key and therefore replaces the default selection in the current response.</p>
+<h3 id="forms">Forms</h3>
+<p>A form action adds binding and validation before the action method runs.</p>
+<pre><code class="language-html">&lt;form xis:binding=&quot;product&quot;&gt;
+    &lt;input xis:binding=&quot;name&quot;&gt;
+    &lt;button xis:action=&quot;save&quot;&gt;Save&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<pre><code class="language-java">@Action
+PageResponse save(@FormData(&quot;product&quot;) ProductForm product) {
+    productService.save(product);
+    return new PageResponse(ProductDetailsPage.class)
+            .pathVariable(&quot;id&quot;, product.id());
+}</code></pre>
+<p>XIS deserializes submitted values into the <code>@FormData</code> object and validates its annotations. If validation fails, the action method is not called. The page or frontlet is rendered again with the submitted values and validation messages.</p>
+<p>Like <code>@ModelData</code>, form initialization can be limited to a lifecycle phase. This is useful when an initial form should be built from the current selection, but after a successful action the form should show a fresh post-action state instead of being overwritten by the initial default again.</p>
+<pre><code class="language-java">@FormData(value = &quot;step&quot;, load = ModelDataLoad.INITIAL)
+PipelineStepForm initiallySelectedStep(@SharedValue(&quot;selectedStep&quot;) PipelineStep selectedStep) {
+    return PipelineStepForm.from(selectedStep);
+}
+
+@FormData(value = &quot;step&quot;, load = ModelDataLoad.AFTER_ACTION)
+PipelineStepForm emptyStepForm(@SharedValue(&quot;pipeline&quot;) Pipeline pipeline) {
+    return PipelineStepForm.newStep(pipeline.id());
+}</code></pre>
+<p>An action can also return the form data for the next render by combining <code>@Action</code> and <code>@FormData</code>. The returned value is used for that form directly; XIS does not issue a second form-model request for the same form binding. Because <code>@Action</code> is a lifecycle filter, this method is not called when XIS initializes the form. It runs only when <code>selectStep</code> is triggered.</p>
+<pre><code class="language-java">@Action
+@FormData(&quot;step&quot;)
+PipelineStepForm selectStep(@ActionParameter(&quot;stepId&quot;) long stepId) {
+    return PipelineStepForm.from(pipelineService.step(stepId));
+}</code></pre>
+<p>See <a href="/docs/guide/forms-and-validation.html">Forms and validation</a> for message rendering, custom validators, records, and formatters.</p>
+<h3 id="shared-values">Shared Values</h3>
+<p>Use <code>@SharedValue</code> when several methods in the same processing flow need the same object.</p>
+<pre><code class="language-java">@SharedValue(&quot;product&quot;)
+Product product(@PathVariable(&quot;id&quot;) long id) {
+    return productService.findById(id);
+}
+
+@ModelData(&quot;product&quot;)
+Product productModel(@SharedValue(&quot;product&quot;) Product product) {
+    return product;
+}
+
+@Action
+void rename(@SharedValue(&quot;product&quot;) Product product,
+            @ActionParameter(&quot;name&quot;) String name) {
+    product.rename(name);
+}</code></pre>
+<p>This avoids repeating database or service lookups and lets an action work with the same contextual object that was loaded for rendering. Shared-value provider methods must not be annotated with <code>@Action</code>. They are dependency providers and run whenever a method in the same processing flow needs their value.</p>
+<h3 id="client-state">Client State</h3>
+<p><code>@LocalStorage</code>, <code>@SessionStorage</code>, and <code>@ClientState</code> read named values that XIS knows the controller may need. XIS does not send the whole browser state. It scans controller annotations and only transfers keys that may be used by the current controller.</p>
+<pre><code class="language-java">@Action
+void addToCart(@LocalStorage(&quot;cart&quot;) Cart cart,
+               @ActionParameter(&quot;productId&quot;) String productId) {
+    cart.add(productId);
+}</code></pre>
+<p>Prefer server-side state for normal application data. Client state is a convenience feature for browser-local state such as a cart draft, wizard state, or UI preferences.</p>
+<h3 id="server-triggered-refresh-events">Server-Triggered Refresh Events</h3>
+<p>The normal action response updates the current page or frontlet. Refresh events are for other already open pages or frontlets that should reload because shared state changed.</p>
+<p>To publish one, inject <code>RefreshEventPublisher</code> and call <code>publishToAll(...)</code>, <code>publishToClient(...)</code>, <code>publishToUser(...)</code>, or <code>publishToAllUsers(...)</code>.</p>
+<pre><code class="language-java">@Action
+void addItem(@ClientId String clientId) {
+    cartService.add(clientId);
+    refreshEventPublisher.publishToClient(&quot;cart-updated&quot;, clientId);
+}</code></pre>
+<p>See <a href="/docs/guide/events.html">Events</a> for the full publishing examples, target rules, and frontlet reload details.</p>
+  </main>
+</div>
+</body>
+</html>

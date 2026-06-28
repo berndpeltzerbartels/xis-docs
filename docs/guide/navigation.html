@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Navigation and Responses - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Navigation and Responses</span></div>
+    <h1>Navigation and Responses</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="navigation-and-responses">Navigation and Responses</h2>
+<p>Navigation is core XIS behavior. Pages, frontlets, links, forms, and actions all participate in the same navigation model.</p>
+<p>XIS supports deep links like a server-rendered application and smooth client-side transitions like an SPA. A user can open <code>/products/42.html</code> directly in the browser, but links, buttons, and actions inside the application do not need to reload the whole page.</p>
+<p>Template features often exist in two syntaxes:</p>
+<p>gives better previews in web design tools.</p>
+<p>more XML-like style.</p>
+<ul>
+<li>Attribute syntax, such as <code>&lt;a xis:page=&quot;/products.html&quot;&gt;</code>. This keeps the template close to normal HTML and usually</li>
+<li>Element syntax, such as <code>&lt;xis:a page=&quot;/products.html&quot;&gt;</code>. This is useful when you prefer explicit framework tags or a</li>
+</ul>
+<h3 id="page-links">Page Links</h3>
+<p>Use <code>xis:page</code> for direct navigation between XIS pages. This does not call a server-side action method.</p>
+<pre><code class="language-html">&lt;a xis:page=&quot;/products.html&quot;&gt;Products&lt;/a&gt;</code></pre>
+<p>This is the recommended syntax for internal page navigation. XIS updates browser history and loads the destination through its own client-side navigation flow.</p>
+<p>A normal HTML link still works:</p>
+<pre><code class="language-html">&lt;a href=&quot;/products.html&quot;&gt;Products&lt;/a&gt;</code></pre>
+<p>Use normal <code>href</code> links when you intentionally want ordinary browser behavior or when linking outside the XIS application. Use <code>xis:page</code> for XIS page-to-page navigation.</p>
+<p>Element syntax is also possible and normalizes to the same page-link behavior:</p>
+<pre><code class="language-html">&lt;xis:a page=&quot;/products.html&quot;&gt;Products&lt;/xis:a&gt;</code></pre>
+<p>Prefer <code>xis:page</code> on normal anchors unless the element syntax is clearly more readable in a specific template.</p>
+<p>Buttons can link to pages too:</p>
+<pre><code class="language-html">&lt;button xis:page=&quot;/products.html&quot;&gt;Products&lt;/button&gt;</code></pre>
+<h3 id="page-urls-and-path-variables">Page URLs and Path Variables</h3>
+<p>A page declares its URL with <code>@Page</code>.</p>
+<pre><code class="language-java">package example.products;
+
+import one.xis.ModelData;
+import one.xis.Page;
+import one.xis.PathVariable;
+
+@Page(&quot;/products/{id}.html&quot;)
+class ProductPage {
+
+    @ModelData
+    Product product(@PathVariable(&quot;id&quot;) long id) {
+        return productService.findById(id);
+    }
+}</code></pre>
+<p>The URL <code>/products/42.html</code> loads <code>ProductPage</code> and passes <code>42</code> as <code>id</code>.</p>
+<h3 id="action-links-and-buttons">Action Links and Buttons</h3>
+<p>Server-side action methods are triggered with <code>xis:action</code>. Outside forms there are two common action controls:</p>
+<ul>
+<li>Actionlink: an <code>&lt;a&gt;</code> with <code>xis:action</code></li>
+<li>Action Button: a <code>&lt;button&gt;</code> with <code>xis:action</code></li>
+</ul>
+<p>Actionlink:</p>
+<pre><code class="language-html">&lt;a xis:action=&quot;deleteProduct&quot;&gt;
+    &lt;xis:parameter name=&quot;productId&quot; value=&quot;${product.id}&quot;/&gt;
+    Delete
+&lt;/a&gt;</code></pre>
+<p>Element syntax:</p>
+<pre><code class="language-html">&lt;xis:action action=&quot;deleteProduct&quot;&gt;
+    &lt;xis:parameter name=&quot;productId&quot; value=&quot;${product.id}&quot;/&gt;
+    Delete
+&lt;/xis:action&gt;</code></pre>
+<p>Action Button:</p>
+<pre><code class="language-html">&lt;button xis:action=&quot;deleteProduct&quot;&gt;
+    &lt;xis:parameter name=&quot;productId&quot; value=&quot;${product.id}&quot;/&gt;
+    Delete
+&lt;/button&gt;</code></pre>
+<pre><code class="language-java">import one.xis.Action;
+import one.xis.ActionParameter;
+
+@Action
+void deleteProduct(@ActionParameter(&quot;productId&quot;) long productId) {
+    productService.delete(productId);
+}</code></pre>
+<p><code>void</code> means: stay on the current page or frontlet and refresh the relevant model data.</p>
+<p>Return types such as <code>PageResponse</code> and <code>FrontletResponse</code> are only evaluated after a server-side action invocation. They are not used by plain page links or frontlet links.</p>
+<p>Think about action results by target, not by where the action method lives. A page action can load a page or replace a frontlet. A frontlet action can replace a frontlet or navigate the whole page.</p>
+<p>When an action control has no explicit <code>xis:target-container</code>, its surrounding context decides which controller receives the action:</p>
+<ul>
+<li>Inside a frontlet container, the action is sent to the current frontlet.</li>
+<li>Outside a frontlet container, the action is sent to the current page.</li>
+</ul>
+<p>If a frontlet action returns another frontlet and no target container is specified, the current frontlet container is updated. To update a different frontlet container, set <code>xis:target-container</code> on the action control or <code>targetContainer(...)</code> on the <code>FrontletResponse</code>.</p>
+<h3 id="form-actions">Form Actions</h3>
+<p>Forms use <code>xis:binding</code> for their data object and <code>xis:action</code> on the submit control.</p>
+<pre><code class="language-html">&lt;form xis:binding=&quot;product&quot;&gt;
+    &lt;input type=&quot;text&quot; xis:binding=&quot;name&quot;/&gt;
+    &lt;button type=&quot;submit&quot; xis:action=&quot;save&quot;&gt;Save&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<p>Framework element syntax is also available for form controls. It normalizes to normal HTML controls:</p>
+<pre><code class="language-html">&lt;xis:form binding=&quot;product&quot;&gt;
+    &lt;xis:input type=&quot;text&quot; binding=&quot;name&quot;/&gt;
+    &lt;xis:submit action=&quot;save&quot;&gt;Save&lt;/xis:submit&gt;
+&lt;/xis:form&gt;</code></pre>
+<p>The action method can then return <code>void</code>, a page class, <code>PageResponse</code>, a frontlet class, <code>FrontletResponse</code>, or <code>ModalResponse</code>.</p>
+<p>Form actions follow the same navigation rules as action links and action buttons. Validation is the important difference: XIS validates the submitted <code>@FormData</code> object before the action method runs. If validation fails, the action method is not called, the user stays in the current page or frontlet, and the submitted values plus validation messages remain available in the form.</p>
+<p>After a valid submit, a page form can navigate to a detail page:</p>
+<pre><code class="language-java">import one.xis.Action;
+import one.xis.FormData;
+import one.xis.PageResponse;
+
+@Action
+PageResponse save(@FormData(&quot;product&quot;) ProductForm product) {
+    productService.save(product);
+    return PageResponse.of(ProductDetailsPage.class, &quot;id&quot;, product.id());
+}</code></pre>
+<p>A form inside a frontlet can also replace the current frontlet with a detail frontlet:</p>
+<pre><code class="language-java">import one.xis.Action;
+import one.xis.FormData;
+import one.xis.FrontletResponse;
+
+@Action
+FrontletResponse save(@FormData(&quot;product&quot;) ProductForm product) {
+    productService.save(product);
+    return FrontletResponse.of(ProductDetailsFrontlet.class, &quot;id&quot;, product.id());
+}</code></pre>
+<p>A form inside a modal usually returns <code>ModalResponse.close()</code> or <code>ModalResponse.close().reloadParent()</code>. If validation fails, the modal stays open and displays validation messages like any other XIS form.</p>
+<h3 id="return-a-page-class">Return a Page Class</h3>
+<p>An action can return a page controller class.</p>
+<pre><code class="language-java">@Action
+Class&lt;?&gt; save(@FormData(&quot;product&quot;) ProductForm product) {
+    productService.save(product);
+    return ProductListPage.class;
+}</code></pre>
+<p>Use this when the destination page does not need path variables or query parameters.</p>
+<p>The action may live on a page or on a frontlet. Returning a page class always navigates the page.</p>
+<h3 id="return-pageresponse">Return <code>PageResponse</code></h3>
+<p>Use <code>PageResponse</code> when the target page has path variables or query parameters.</p>
+<pre><code class="language-java">import one.xis.PageResponse;
+
+@Action
+PageResponse openProduct(@ActionParameter(&quot;productId&quot;) long productId) {
+    return PageResponse.of(ProductPage.class, &quot;id&quot;, productId);
+}</code></pre>
+<p>With query parameters:</p>
+<pre><code class="language-java">@Action
+PageResponse search(@FormData(&quot;search&quot;) SearchForm search) {
+    return new PageResponse(ProductSearchPage.class)
+            .queryParameter(&quot;q&quot;, search.query())
+            .queryParameter(&quot;page&quot;, 1);
+}</code></pre>
+<p><code>PageResponse</code> is the explicit, type-oriented way to navigate to a known XIS page.</p>
+<p><code>PageResponse</code> can also be returned by a frontlet action. The result is still page navigation:</p>
+<pre><code class="language-java">@Frontlet
+class CartFrontlet {
+
+    @Action
+    PageResponse checkout(@ActionParameter(&quot;cartId&quot;) long cartId) {
+        return PageResponse.of(CheckoutPage.class, &quot;cartId&quot;, cartId)
+                .queryParameter(&quot;step&quot;, &quot;address&quot;);
+    }
+}</code></pre>
+<h3 id="return-a-page-url">Return a Page URL</h3>
+<p>For page actions, returning a string that resolves to a known XIS page URL can navigate to that page.</p>
+<pre><code class="language-java">@Action
+String openProductUrl(@ActionParameter(&quot;productId&quot;) long productId) {
+    return &quot;/products/&quot; + productId + &quot;.html&quot;;
+}</code></pre>
+<p>Prefer <code>PageResponse</code> when the destination is a known page controller. It is easier to refactor and makes path variables visible in Java.</p>
+<h3 id="return-pageurlresponse">Return <code>PageUrlResponse</code></h3>
+<p>Use <code>PageUrlResponse</code> when the action already has a concrete URL string.</p>
+<pre><code class="language-java">import one.xis.PageUrlResponse;
+
+@Action
+PageUrlResponse openReport(@ActionParameter(&quot;reportId&quot;) String reportId) {
+    return new PageUrlResponse(&quot;/reports/&quot; + reportId + &quot;.html&quot;);
+}</code></pre>
+<p>Use this sparingly for application navigation. Prefer <code>PageResponse</code> for known pages.</p>
+<h3 id="frontlet-navigation">Frontlet Navigation</h3>
+<p>Frontlets are loaded into frontlet containers. A direct frontlet link or button changes the frontlet in a container without calling an action method.</p>
+<pre><code class="language-html">&lt;main xis:frontlet-container=&quot;main&quot; xis:default-frontlet=&quot;ProductListFrontlet&quot;&gt;&lt;/main&gt;</code></pre>
+<p>A link can load another frontlet into a target container:</p>
+<pre><code class="language-html">&lt;a xis:frontlet=&quot;ProductDetailsFrontlet&quot; xis:target-container=&quot;main&quot;&gt;
+    &lt;xis:parameter name=&quot;productId&quot; value=&quot;${product.id}&quot;/&gt;
+    Details
+&lt;/a&gt;</code></pre>
+<p>A button can do the same:</p>
+<pre><code class="language-html">&lt;button xis:frontlet=&quot;ProductDetailsFrontlet&quot; xis:target-container=&quot;main&quot;&gt;
+    &lt;xis:parameter name=&quot;productId&quot; value=&quot;${product.id}&quot;/&gt;
+    Details
+&lt;/button&gt;</code></pre>
+<p>Framework element syntax:</p>
+<pre><code class="language-html">&lt;xis:a frontlet=&quot;ProductDetailsFrontlet&quot; target-container=&quot;main&quot;&gt;
+    &lt;xis:parameter name=&quot;productId&quot; value=&quot;${product.id}&quot;/&gt;
+    Details
+&lt;/xis:a&gt;</code></pre>
+<p>The frontlet receives the parameter with <code>@FrontletParameter</code>.</p>
+<pre><code class="language-java">import one.xis.Frontlet;
+import one.xis.FrontletParameter;
+import one.xis.ModelData;
+
+@Frontlet
+class ProductDetailsFrontlet {
+
+    @ModelData
+    Product product(@FrontletParameter(&quot;productId&quot;) long productId) {
+        return productService.findById(productId);
+    }
+}</code></pre>
+<h3 id="url-mounted-frontlets">URL-Mounted Frontlets</h3>
+<p>A frontlet can also declare a URL and a container id:</p>
+<pre><code class="language-java">import one.xis.Frontlet;
+import one.xis.ModelData;
+import one.xis.PathVariable;
+
+@Frontlet(url = &quot;/employees/{group}/list.html&quot;, containerId = &quot;employees-list&quot;)
+class EmployeeListFrontlet {
+
+    @ModelData
+    String group(@PathVariable(&quot;group&quot;) String group) {
+        return group;
+    }
+}</code></pre>
+<p>When the current browser URL matches the frontlet URL, XIS can mount that frontlet into the annotated container without a <code>default-frontlet</code> attribute:</p>
+<pre><code class="language-html">&lt;main xis:frontlet-container=&quot;employees-list&quot;&gt;&lt;/main&gt;</code></pre>
+<p>For example, <code>/employees/workers/list.html</code> and <code>/employees/consultants/list.html</code> can load different matching frontlets into the same page region, or one generic frontlet can read <code>group</code> with <code>@PathVariable</code>.</p>
+<p>This is different from passing data to a frontlet link. Frontlets can read path variables from the current page URL even without their own <code>url</code>. Use <code>@FrontletParameter</code> for values that belong to one frontlet instance, such as the selected row id in a list. Use <code>@Frontlet(url = ..., containerId = ...)</code> when the browser URL itself decides which frontlet should occupy a page region.</p>
+<h3 id="return-a-frontlet-class">Return a Frontlet Class</h3>
+<p>An action can return a frontlet controller class.</p>
+<pre><code class="language-java">@Action
+Class&lt;?&gt; showCreateForm() {
+    return ProductFormFrontlet.class;
+}</code></pre>
+<p>This updates the current target container. If the frontlet declares <code>containerId</code>, XIS can use that metadata to select the container.</p>
+<p>A page action can also replace a frontlet. In that case, give the triggering element a target container:</p>
+<pre><code class="language-html">&lt;button xis:action=&quot;showDetails&quot; xis:target-container=&quot;main&quot;&gt;
+    Details
+&lt;/button&gt;</code></pre>
+<pre><code class="language-java">@Action
+Class&lt;?&gt; showDetails() {
+    return ProductDetailsFrontlet.class;
+}</code></pre>
+<p>The <code>xis:target-container</code> value must match a frontlet container ID on the current page.</p>
+<h3 id="return-frontletresponse">Return <code>FrontletResponse</code></h3>
+<p>Use <code>FrontletResponse</code> when you need to pass parameters, choose a container, or reload frontlets.</p>
+<pre><code class="language-java">import one.xis.FrontletResponse;
+
+@Action
+FrontletResponse showProduct(@ActionParameter(&quot;productId&quot;) long productId) {
+    return new FrontletResponse(ProductDetailsFrontlet.class)
+            .frontletParameter(&quot;productId&quot;, productId)
+            .targetContainer(&quot;main&quot;);
+}</code></pre>
+<p>Shortcut:</p>
+<pre><code class="language-java">@Action
+FrontletResponse showProduct(@ActionParameter(&quot;productId&quot;) long productId) {
+    return FrontletResponse.of(ProductDetailsFrontlet.class, &quot;productId&quot;, productId)
+            .targetContainer(&quot;main&quot;);
+}</code></pre>
+<p>You can also address a frontlet by its frontlet id or by a public frontlet URL. URL style is especially useful for distributed applications, because the caller does not need the target frontlet class on its classpath.</p>
+<pre><code class="language-java">@Action
+FrontletResponse showProductByUrl(@ActionParameter(&quot;productId&quot;) long productId) {
+    return new FrontletResponse(&quot;/product-summary?productId=&quot; + productId)
+            .targetContainer(&quot;main&quot;);
+}</code></pre>
+<p>The target frontlet declares the URL:</p>
+<pre><code class="language-java">@Frontlet(url = &quot;/product-summary&quot;, containerId = &quot;main&quot;)
+class ProductSummaryFrontlet {
+
+    @ModelData
+    Product product(@FrontletParameter(&quot;productId&quot;) long productId) {
+        return productService.findById(productId);
+    }
+}</code></pre>
+<p>The query parameters in the frontlet URL become frontlet parameters. The target frontlet reads them with <code>@FrontletParameter</code>, not <code>@QueryParameter</code>, because they belong to the frontlet instance rather than the current page URL.</p>
+<p>Nested frontlets can also read frontlet parameters from their containing frontlet. This is useful when an outer frontlet establishes the surrounding context, such as the currently selected project or pipeline, and an inner frontlet only adds its own more specific parameters.</p>
+<p>A frontlet action can also update another frontlet container. Use a target container on the action control, or set it in the response:</p>
+<pre><code class="language-html">&lt;button xis:action=&quot;showPreview&quot; xis:target-container=&quot;preview&quot;&gt;
+    Preview
+&lt;/button&gt;</code></pre>
+<pre><code class="language-java">@Action
+FrontletResponse showPreview(@ActionParameter(&quot;productId&quot;) long productId) {
+    return FrontletResponse.of(ProductPreviewFrontlet.class, &quot;productId&quot;, productId)
+            .targetContainer(&quot;preview&quot;);
+}</code></pre>
+<p>This replaces the frontlet in container <code>preview</code>; the frontlet that triggered the action can stay where it is.</p>
+<h3 id="return-modalresponse">Return <code>ModalResponse</code></h3>
+<p>Use <code>ModalResponse</code> when an action should open or close a modal dialog.</p>
+<pre><code class="language-java">import one.xis.Action;
+import one.xis.ActionParameter;
+import one.xis.ModalResponse;
+
+@Action
+ModalResponse editCustomer(@ActionParameter(&quot;customerId&quot;) long customerId) {
+    return ModalResponse.open(EditCustomerModal.class)
+            .parameter(&quot;customerId&quot;, customerId);
+}</code></pre>
+<p>To save and close a modal:</p>
+<pre><code class="language-java">@Action
+ModalResponse save(@FormData(&quot;customer&quot;) CustomerForm customer) {
+    customerService.save(customer);
+    return ModalResponse.close().reloadParent();
+}</code></pre>
+<p><code>reloadParent()</code> reloads the page that opened the modal, or exactly the frontlet instance that opened it. It is not a broadcast mechanism and it does not reload all frontlets of the same type. Use <a href="/docs/guide/events.html">events</a> when other clients or unrelated visible UI parts need to refresh.</p>
+<p>See <a href="/docs/guide/modals.html">Modals</a> for the full modal workflow.</p>
+<h3 id="deep-linking">Deep Linking</h3>
+<p>Every <code>@Page</code> URL is a deep link. Users can bookmark it, open it directly, and use browser back/forward navigation.</p>
+<p>Frontlet state is not automatically part of the URL. If a specific frontlet state must be shareable, model it through page path variables, query parameters, or frontlet URL metadata.</p>
+<p>Example: a product page controls which frontlet loads and passes the product ID to it.</p>
+<pre><code class="language-java">@Page(&quot;/products/{id}.html&quot;)
+class ProductPage {
+
+    @ModelData
+    String detailsFrontlet() {
+        return &quot;ProductDetailsFrontlet&quot;;
+    }
+
+    @ModelData
+    long productId(@PathVariable(&quot;id&quot;) long id) {
+        return id;
+    }
+}</code></pre>
+<pre><code class="language-html">&lt;main xis:frontlet-container=&quot;main&quot;
+      xis:default-frontlet=&quot;${detailsFrontlet}?productId=${productId}&quot;&gt;&lt;/main&gt;</code></pre>
+<h3 id="choosing-the-right-tool">Choosing the Right Tool</h3>
+<table><thead><tr><th>Need</th><th>Use</th></tr></thead><tbody><tr><td>Link to another XIS page in HTML</td><td><code>xis:page</code> or <code>&lt;xis:a page=&quot;...&quot;&gt;</code></td></tr><tr><td>Link to another XIS page from a button</td><td><code>&lt;button xis:page=&quot;...&quot;&gt;</code></td></tr><tr><td>Decide the target view on the server before a page is selected</td><td>Optional <a href="/docs/guide/routers.html">router</a> with <code>@Router</code> and <code>@Route</code></td></tr><tr><td>Trigger server logic from a link</td><td><code>&lt;a xis:action=&quot;...&quot;&gt;</code> or <code>&lt;xis:action action=&quot;...&quot;&gt;</code></td></tr><tr><td>Trigger server logic from a button</td><td><code>&lt;button xis:action=&quot;...&quot;&gt;</code></td></tr><tr><td>Trigger server logic from a form</td><td>submit control with <code>xis:action</code></td></tr><tr><td>Let context choose the action controller</td><td>omit <code>xis:target-container</code></td></tr><tr><td>Send a frontlet result to a specific container</td><td>add <code>xis:target-container=&quot;containerId&quot;</code> or return <code>FrontletResponse.targetContainer(...)</code></td></tr><tr><td>Stay on current page/frontlet</td><td>action returns <code>void</code></td></tr><tr><td>Navigate to a known page without parameters</td><td>return <code>ProductListPage.class</code></td></tr><tr><td>Navigate to a known page with parameters</td><td>return <code>PageResponse</code></td></tr><tr><td>Navigate to an already-built URL</td><td>return <code>PageUrlResponse</code></td></tr><tr><td>Load a frontlet into a container from HTML</td><td><code>xis:frontlet</code> with <code>xis:target-container</code></td></tr><tr><td>Load a frontlet from Java</td><td>return frontlet class</td></tr><tr><td>Load a frontlet with parameters/container control</td><td>return <code>FrontletResponse</code></td></tr><tr><td>Open or close a modal dialog</td><td><code>xis:modal</code> or <code>ModalResponse</code></td></tr></tbody></table>
+<h3 id="void-actions"><code>void</code> Actions</h3>
+<p>A <code>void</code> action does not mean &quot;nothing changes&quot;. It means: stay on the current page or frontlet and refresh the current model data.</p>
+<p>For page actions, XIS keeps the current URL. Path variables and query parameters from that URL are still available:</p>
+<pre><code class="language-java">@Page(&quot;/products/{category}.html&quot;)
+class ProductPage {
+
+    @Action
+    void refreshList() {
+        productService.refresh();
+    }
+
+    @ModelData
+    List&lt;Product&gt; products(
+            @PathVariable(&quot;category&quot;) String category,
+            @QueryParameter(&quot;sort&quot;) String sort) {
+        return productService.find(category, sort);
+    }
+}</code></pre>
+<p>For frontlet actions, XIS keeps the current page URL and the current frontlet parameters:</p>
+<pre><code class="language-java">@Frontlet
+class ProductListFrontlet {
+
+    @Action
+    void refresh() {
+    }
+
+    @ModelData
+    List&lt;Product&gt; products(
+            @PathVariable(&quot;category&quot;) String category,
+            @QueryParameter(&quot;sort&quot;) String sort,
+            @FrontletParameter(&quot;filter&quot;) String filter) {
+        return productService.find(category, sort, filter);
+    }
+}</code></pre>
+<p>Internal authentication or authorization flows may use lower-level redirect responses. Application code should normally use the navigation types above.</p>
+  </main>
+</div>
+</body>
+</html>

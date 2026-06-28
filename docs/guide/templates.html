@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Template Syntax - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Template Syntax</span></div>
+    <h1>Template Syntax</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="template-syntax">Template Syntax</h2>
+<p>XIS templates are plain HTML with XIS attributes, XIS tags, and expression language.</p>
+<p>Pages use complete HTML documents. Frontlets use template fragments.</p>
+<p>Many XIS template features can be written in two equivalent styles:</p>
+<ul>
+<li>Attribute syntax keeps the markup close to ordinary HTML and usually previews better in design tools.</li>
+<li>Element syntax uses explicit <code>xis:*</code> framework elements and can be preferable when you want a more XML-like template.</li>
+</ul>
+<p>This documentation shows both styles where the choice matters. For a compact side-by-side reference, see <a href="/docs/guide/tags-and-attributes.html">Tags and attributes</a>.</p>
+<h3 id="expression-language">Expression Language</h3>
+<p>Expressions use <code>${...}</code>.</p>
+<pre><code class="language-html">&lt;h1&gt;${product.name}&lt;/h1&gt;
+&lt;p&gt;${product.description}&lt;/p&gt;
+&lt;span&gt;${count &gt; 0 ? count + &quot; items&quot; : &quot;No items&quot;}&lt;/span&gt;</code></pre>
+<p>Expressions can access model data, loop variables, action parameters, and selected framework context values. They can be used in text content and in ordinary HTML attributes. XIS does not give HTML attributes such as <code>data-id</code> special meaning; it only replaces the <code>${...}</code> expression in the attribute value.</p>
+<pre><code class="language-html">&lt;li data-id=&quot;${product.id}&quot;&gt;${product.name}&lt;/li&gt;</code></pre>
+<p>For attributes that make the browser load a resource immediately, use the <code>xis:*</code> form so the browser does not request the raw template expression before XIS has initialized the page:</p>
+<pre><code class="language-html">&lt;img xis:src=&quot;/img/products/${product.image}&quot; alt=&quot;${product.name}&quot;/&gt;</code></pre>
+<p>XIS removes <code>xis:src</code> during initialization and writes the evaluated value to the real <code>src</code> attribute.</p>
+<h4 id="client-side-messages">Client-Side Messages</h4>
+<p>XIS loads the resolved message bundle during application startup and exposes it in templates as <code>messages</code>.</p>
+<pre><code class="language-html">&lt;h1&gt;${messages.customerListTitle}&lt;/h1&gt;
+&lt;button&gt;${messages[&#x27;customer.form.save&#x27;]}&lt;/button&gt;</code></pre>
+<p>Use dot notation for simple keys and bracket notation for keys that contain dots or are computed dynamically. Messages come from the same classpath property files that validation uses:</p>
+<pre><code class="language-properties"># messages.properties
+customerListTitle=Customers
+customer.form.save=Save customer</code></pre>
+<p>Locale-specific files use the Java language suffix, for example <code>messages_de.properties</code>. Application <code>messages*.properties</code> files override the framework <code>default-messages*.properties</code> fallbacks with the same rules as validation messages.</p>
+<p>The documented public EL surface is:</p>
+<ul>
+<li>literals: strings, numbers, booleans, <code>null</code>, and <code>undefined</code></li>
+<li>model values, loop variables, action parameters, and selected framework context values</li>
+<li>property and index access with dot and bracket syntax</li>
+<li>arithmetic, comparison, boolean operators, parentheses, and ternary expressions</li>
+<li>built-in EL functions listed below, including nested function calls</li>
+<li>text interpolation and attribute interpolation with <code>${...}</code></li>
+</ul>
+<h4 id="property-and-index-access">Property and Index Access</h4>
+<p>Use dot notation for ordinary Java bean properties and bracket notation when the key or index is dynamic.</p>
+<pre><code class="language-html">&lt;p&gt;${user.name}&lt;/p&gt;
+&lt;p&gt;${user[&#x27;name&#x27;]}&lt;/p&gt;
+&lt;p&gt;${items[1]}&lt;/p&gt;
+&lt;p&gt;${items[index + 1]}&lt;/p&gt;
+&lt;p&gt;${lookup[selectedKey]}&lt;/p&gt;
+&lt;p&gt;${lookup[prefix + &#x27;_item&#x27;].label}&lt;/p&gt;</code></pre>
+<p>Bracket expressions are useful when a map key is built from other model values. The result can be chained with normal property access, as in <code>${lookup[prefix + &#x27;_item&#x27;].label}</code>.</p>
+<h4 id="operators-and-conditions">Operators and Conditions</h4>
+<p>Template expressions support arithmetic, comparison, boolean operators, parentheses, and ternary expressions.</p>
+<pre><code class="language-html">&lt;p&gt;${price * quantity}&lt;/p&gt;
+&lt;p&gt;${count &gt; 0 ? count + &quot; items&quot; : &quot;No items&quot;}&lt;/p&gt;
+&lt;section xis:if=&quot;items[1] == &#x27;beta&#x27; &amp;&amp; notEmpty(user.name)&quot;&gt;
+    Content
+&lt;/section&gt;</code></pre>
+<p>Useful examples:</p>
+<pre><code class="language-html">&lt;p&gt;${toUpperCase(user.name)}&lt;/p&gt;
+&lt;p&gt;${default(user.email, &quot;No email&quot;)}&lt;/p&gt;
+&lt;p&gt;${round(order.total, 2)}&lt;/p&gt;
+&lt;p&gt;${formatDate(order.createdAt, &quot;en-US&quot;)}&lt;/p&gt;</code></pre>
+<p>Function parameters can be expressions, and function calls can be nested:</p>
+<pre><code class="language-html">&lt;p&gt;${defaultValue(user.displayName, toUpperCase(user.login))}&lt;/p&gt;
+&lt;p&gt;${join(split(tagsText, &quot;,&quot;), &quot; / &quot;)}&lt;/p&gt;</code></pre>
+<p>Keep complex business rules in Java <code>@ModelData</code> methods. Use template expressions for presentation logic.</p>
+<h3 id="built-in-el-functions">Built-in EL Functions</h3>
+<p>XIS includes a set of expression-language functions for common template work. These are built into the browser runtime.</p>
+<p>String functions:</p>
+<table><thead><tr><th>Function</th><th>Use</th></tr></thead><tbody><tr><td><code>toUpperCase(str)</code></td><td>Converts a string to uppercase.</td></tr><tr><td><code>toLowerCase(str)</code></td><td>Converts a string to lowercase.</td></tr><tr><td><code>trim(str)</code></td><td>Removes leading and trailing whitespace.</td></tr><tr><td><code>substring(str, start, end)</code></td><td>Returns part of a string.</td></tr><tr><td><code>replace(str, search, replacement)</code></td><td>Replaces the first matching string fragment.</td></tr><tr><td><code>split(str, separator)</code></td><td>Splits a string into an array.</td></tr><tr><td><code>join(array, separator)</code></td><td>Joins an array into a string.</td></tr></tbody></table>
+<p>Collection and object functions:</p>
+<table><thead><tr><th>Function</th><th>Use</th></tr></thead><tbody><tr><td><code>length(value)</code></td><td>Returns length or size for strings, arrays, maps, sets, or objects.</td></tr><tr><td><code>size(value)</code></td><td>Alias for <code>length(value)</code>.</td></tr><tr><td><code>count(value)</code></td><td>Alias for <code>length(value)</code>.</td></tr><tr><td><code>empty(value)</code></td><td>Returns <code>true</code> for <code>null</code>, empty strings, empty arrays, empty maps, or empty sets.</td></tr><tr><td><code>isEmpty(value)</code></td><td>Alias for <code>empty(value)</code>.</td></tr><tr><td><code>notEmpty(value)</code></td><td>Returns <code>true</code> for non-empty strings, arrays, maps, or sets.</td></tr><tr><td><code>contains(container, value)</code></td><td>Checks strings, arrays, or object values.</td></tr><tr><td><code>keys(object)</code></td><td>Returns object keys.</td></tr><tr><td><code>values(object)</code></td><td>Returns object values.</td></tr><tr><td><code>hasKey(object, key)</code></td><td>Checks whether an object owns a key.</td></tr><tr><td><code>flatMap(value, path)</code></td><td>Extracts nested values from one object or an array of objects.</td></tr><tr><td><code>filter(array, property, value)</code></td><td>Filters an array by property equality.</td></tr><tr><td><code>arrayOf(first, last)</code></td><td>Creates an integer array from <code>first</code> to <code>last</code>, inclusive.</td></tr></tbody></table>
+<p>Number functions:</p>
+<table><thead><tr><th>Function</th><th>Use</th></tr></thead><tbody><tr><td><code>round(value)</code></td><td>Rounds to the nearest integer.</td></tr><tr><td><code>round(value, digits)</code></td><td>Rounds to the given number of decimal places.</td></tr><tr><td><code>floor(value)</code></td><td>Rounds down.</td></tr><tr><td><code>ceil(value)</code></td><td>Rounds up.</td></tr><tr><td><code>abs(value)</code></td><td>Returns the absolute value.</td></tr><tr><td><code>sum(...)</code></td><td>Adds numeric values or numeric values inside arrays.</td></tr></tbody></table>
+<p>Date and time functions:</p>
+<table><thead><tr><th>Function</th><th>Use</th></tr></thead><tbody><tr><td><code>formatDate(date, locale)</code></td><td>Formats a date with medium date style.</td></tr><tr><td><code>formatDateTime(date, locale)</code></td><td>Formats date and time with medium date style and short time style.</td></tr><tr><td><code>formatTime(date, locale)</code></td><td>Formats time with short time style.</td></tr><tr><td><code>year(date)</code></td><td>Extracts the year.</td></tr><tr><td><code>month(date)</code></td><td>Extracts the month number, starting at <code>1</code>.</td></tr><tr><td><code>day(date)</code></td><td>Extracts the day of month.</td></tr><tr><td><code>hour(date)</code></td><td>Extracts the hour.</td></tr><tr><td><code>minute(date)</code></td><td>Extracts the minute.</td></tr></tbody></table>
+<p>Fallback functions:</p>
+<table><thead><tr><th>Function</th><th>Use</th></tr></thead><tbody><tr><td><code>default(value, fallback)</code></td><td>Returns <code>fallback</code> when <code>value</code> is <code>null</code>, an empty string, or an empty array.</td></tr><tr><td><code>defaultValue(value, fallback)</code></td><td>Alias for <code>default(value, fallback)</code>.</td></tr></tbody></table>
+<p>Security display functions:</p>
+<table><thead><tr><th>Function</th><th>Use</th></tr></thead><tbody><tr><td><code>isUserInRole(role)</code></td><td>Returns <code>true</code> when the current authenticated user has the named role.</td></tr><tr><td><code>isUserInRoles(role, ...)</code></td><td>Returns <code>true</code> when the current authenticated user has at least one of the named roles. Also accepts an array.</td></tr></tbody></table>
+<p>These functions run in the browser and are only for presentation logic, usually with <code>xis:if</code>. They can hide or show controls, but hidden frontend markup is not access control. Protect the page, frontlet, action, parameter, or DTO with <code>@Authenticated</code> or <code>@Roles</code> whenever the operation itself must be restricted.</p>
+<p>Examples:</p>
+<pre><code class="language-html">&lt;h2&gt;${default(product.name, &quot;Unnamed product&quot;)}&lt;/h2&gt;
+&lt;p&gt;${toUpperCase(user.lastName)}, ${user.firstName}&lt;/p&gt;
+&lt;p&gt;${count(products)} products&lt;/p&gt;
+&lt;p xis:if=&quot;${notEmpty(products)}&quot;&gt;Products are available.&lt;/p&gt;
+&lt;button xis:if=&quot;isUserInRole(&#x27;ADMIN&#x27;)&quot; xis:action=&quot;rebuildIndex&quot;&gt;Rebuild index&lt;/button&gt;
+&lt;p&gt;Total: ${round(sum(order.lines), 2)}&lt;/p&gt;
+&lt;p&gt;Created: ${formatDateTime(order.createdAt, &quot;en-US&quot;)}&lt;/p&gt;</code></pre>
+<p>Custom EL functions are an advanced extension topic. Project code can register browser-side functions with <code>XIS.addElFunction(name, functionRef)</code> before templates using that function are initialized. See <a href="/docs/guide/advanced/custom-javascript.html">Custom JavaScript and custom EL functions</a> when you need project-specific template functions.</p>
+<h3 id="iteration">Iteration</h3>
+<p>Use <code>xis:foreach</code> to repeat the content of an element. Attribute syntax:</p>
+<pre><code class="language-html">&lt;ul xis:foreach=&quot;product:${products}&quot;&gt;
+    &lt;li&gt;${productIndex + 1}. ${product.name}&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+<p>In attribute syntax, the content of the host element is repeated. The host element itself is not repeated.</p>
+<p>Element syntax:</p>
+<pre><code class="language-html">&lt;ul&gt;
+    &lt;xis:foreach var=&quot;product&quot; array=&quot;${products}&quot;&gt;
+        &lt;li data-id=&quot;${product.id}&quot;&gt;${productIndex + 1}. ${product.name}&lt;/li&gt;
+    &lt;/xis:foreach&gt;
+&lt;/ul&gt;</code></pre>
+<p>XIS adds an index variable by appending <code>Index</code> to the loop variable name. In the example above, the index is <code>productIndex</code>.</p>
+<p>Use element syntax or <code>xis:repeat</code> when attributes of the repeated element depend on the loop item:</p>
+<pre><code class="language-html">&lt;li xis:repeat=&quot;product:${products}&quot;&gt;
+    ${product.name}
+&lt;/li&gt;</code></pre>
+<h3 id="conditions">Conditions</h3>
+<p>Attribute syntax:</p>
+<pre><code class="language-html">&lt;p xis:if=&quot;${notEmpty(products)}&quot;&gt;Products are available.&lt;/p&gt;
+&lt;p xis:if=&quot;${empty(products)}&quot;&gt;No products found.&lt;/p&gt;</code></pre>
+<p>Element syntax:</p>
+<pre><code class="language-html">&lt;xis:if condition=&quot;${notEmpty(products)}&quot;&gt;
+    &lt;p&gt;Products are available.&lt;/p&gt;
+&lt;/xis:if&gt;</code></pre>
+<p>Expressions can often be written without <code>${...}</code> when the attribute expects an expression:</p>
+<pre><code class="language-html">&lt;p xis:if=&quot;notEmpty(products)&quot;&gt;Products are available.&lt;/p&gt;</code></pre>
+<h3 id="navigation">Navigation</h3>
+<p>Use <code>xis:page</code> for XIS navigation. Attribute syntax:</p>
+<pre><code class="language-html">&lt;a xis:page=&quot;/products.html&quot;&gt;Products&lt;/a&gt;</code></pre>
+<p>Element syntax:</p>
+<pre><code class="language-html">&lt;xis:a page=&quot;/products.html&quot;&gt;Products&lt;/xis:a&gt;</code></pre>
+<p>Use <code>xis:action</code> for controller actions. Action Button:</p>
+<pre><code class="language-html">&lt;button xis:action=&quot;save&quot;&gt;Save&lt;/button&gt;</code></pre>
+<p>Actionlink:</p>
+<pre><code class="language-html">&lt;a xis:action=&quot;save&quot;&gt;Save&lt;/a&gt;</code></pre>
+<p>Framework action element:</p>
+<pre><code class="language-html">&lt;xis:action action=&quot;save&quot;&gt;Save&lt;/xis:action&gt;</code></pre>
+<p>Pass parameters with <code>xis:parameter</code>:</p>
+<pre><code class="language-html">&lt;button xis:action=&quot;delete&quot;&gt;
+    &lt;xis:parameter name=&quot;productId&quot; value=&quot;${product.id}&quot;/&gt;
+    Delete
+&lt;/button&gt;</code></pre>
+<p>Simple drag-and-drop actions use <code>xis:drag</code> and <code>xis:drop</code>:</p>
+<pre><code class="language-html">&lt;span xis:drag=&quot;from:${field}&quot;&gt;Piece&lt;/span&gt;
+&lt;div xis:drop=&quot;move(from, target=&#x27;${targetField}&#x27;)&quot;&gt;Target&lt;/div&gt;</code></pre>
+<pre><code class="language-java">@Action
+void move(@ActionParameter(&quot;from&quot;) String from, @ActionParameter(&quot;target&quot;) String target) {
+}</code></pre>
+<p>Read <a href="/docs/guide/drag-and-drop.html">Drag and drop</a> for the full behavior and test support.</p>
+<h3 id="frontlets-and-includes">Frontlets and Includes</h3>
+<p>Short frontlet tag:</p>
+<pre><code class="language-html">&lt;xis:frontlet name=&quot;CartFrontlet&quot;/&gt;</code></pre>
+<p>Container attribute syntax:</p>
+<pre><code class="language-html">&lt;div xis:frontlet-container=&quot;cart&quot; xis:default-frontlet=&quot;CartFrontlet&quot;&gt;&lt;/div&gt;</code></pre>
+<p>Includes:</p>
+<pre><code class="language-html">&lt;xis:include name=&quot;header&quot;/&gt;</code></pre>
+<p>Include attribute syntax:</p>
+<pre><code class="language-html">&lt;header xis:include=&quot;header&quot;&gt;&lt;/header&gt;</code></pre>
+<p>The include value is a registered include key, not a free resource path. Only fragments exposed by an <code>@Include</code> controller can be referenced from templates. This is intentional: application code has to explicitly allow a fragment to be included, and templates cannot browse to arbitrary HTML resources.</p>
+<p>Includes are initialized inside the surrounding page or frontlet. They are for markup reuse, but the included markup may still contain XIS links, action buttons, parameters, and model expressions that belong to that surrounding controller. Use frontlets when the fragment needs its own controller, model data, or independently replaceable state.</p>
+<p>Frontlet container element syntax:</p>
+<pre><code class="language-html">&lt;xis:frontlet-container container-id=&quot;content&quot; default-frontlet=&quot;DashboardFrontlet&quot;/&gt;</code></pre>
+<p>Attribute syntax:</p>
+<pre><code class="language-html">&lt;main xis:frontlet-container=&quot;content&quot; xis:default-frontlet=&quot;DashboardFrontlet&quot;&gt;&lt;/main&gt;</code></pre>
+<h3 id="forms">Forms</h3>
+<p>Form fields use <code>xis:binding</code>.</p>
+<p>Attribute syntax:</p>
+<pre><code class="language-html">&lt;form xis:binding=&quot;user&quot;&gt;
+    &lt;input type=&quot;text&quot; xis:binding=&quot;firstName&quot;/&gt;
+    &lt;input type=&quot;email&quot; xis:binding=&quot;email&quot;/&gt;
+    &lt;button type=&quot;submit&quot; xis:action=&quot;saveUser&quot;&gt;Save&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<p>Framework element syntax:</p>
+<pre><code class="language-html">&lt;xis:form binding=&quot;user&quot;&gt;
+    &lt;xis:input type=&quot;text&quot; binding=&quot;firstName&quot;/&gt;
+    &lt;xis:input type=&quot;email&quot; binding=&quot;email&quot;/&gt;
+    &lt;xis:submit action=&quot;saveUser&quot;&gt;Save&lt;/xis:submit&gt;
+&lt;/xis:form&gt;</code></pre>
+<p>Validation messages:</p>
+<pre><code class="language-html">&lt;div xis:message-for=&quot;email&quot;&gt;&lt;/div&gt;
+&lt;xis:global-messages/&gt;</code></pre>
+<h3 id="static-assets">Static Assets</h3>
+<p>Static resources such as CSS, images, and fonts belong under:</p>
+<pre><code class="language-text">src/main/resources/public/</code></pre>
+<p>Reference them without <code>/public</code>:</p>
+<pre><code class="language-html">&lt;link rel=&quot;stylesheet&quot; href=&quot;/css/app.css&quot;/&gt;
+&lt;img src=&quot;/images/logo.png&quot; alt=&quot;Logo&quot;/&gt;</code></pre>
+<p>JavaScript needs special care in XIS because pages and frontlets are inserted dynamically in an SPA-style runtime. Avoid adding ordinary <code>&lt;script&gt;</code> tags inside page and frontlet templates until the JavaScript integration for that use case is documented.</p>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Development workflow - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Operations / <span data-current-page>Development workflow</span></div>
+    <h1>Development workflow</h1>
+    <p class="lead">
+      XIS is designed for a short backend-oriented development loop: write the controller, generate a starting template
+      or test when useful, validate templates early, and keep executable tests next to the feature.
+    </p>
+
+    <h2>Start with a page controller</h2>
+    <p>
+      A XIS page starts with a controller annotated with <code>@Page</code>. The controller describes the URL, the model
+      data, the form data, and the actions the browser can call. If these annotations are new to you, keep the
+      <a href="/docs/guide/annotations.html">Annotation reference</a>,
+      <a href="/docs/core/pages-templates.html">Pages and templates</a>, and
+      <a href="/docs/core/forms-validation.html">Forms and validation</a> open while reading this example.
+    </p>
+    <p>
+      This small contact page intentionally contains a few things that the template generator can reflect later:
+      a scalar model value, an array model value, a form object, validation annotations, and a form action.
+    </p>
+    <pre><code class="language-java">package example.contact;
+
+import one.xis.Action;
+import one.xis.FormData;
+import one.xis.ModelData;
+import one.xis.Page;
+import one.xis.validation.EMail;
+import one.xis.validation.Mandatory;
+
+@Page("/contact.html")
+class ContactPage {
+
+    @ModelData("headline")
+    String headline() {
+        return "Contact us";
+    }
+
+    @ModelData("topics")
+    String[] topics() {
+        return new String[] { "Support", "Sales", "Partnership" };
+    }
+
+    @FormData("message")
+    ContactMessage message() {
+        return new ContactMessage("", "", "Support");
+    }
+
+    @Action
+    void send(@FormData("message") ContactMessage message) {
+    }
+
+    record ContactMessage(
+            @Mandatory String name,
+            @Mandatory @EMail String email,
+            @Mandatory String topic
+    ) {
+    }
+}</code></pre>
+    <p>
+      <code>@ModelData</code> exposes values to the template. <code>@FormData</code> creates the server-side form object.
+      <code>@Action</code> marks a method that a button or form can call. <code>@Mandatory</code> and <code>@EMail</code>
+      are server-side validation annotations. The browser can show validation feedback, but the server remains
+      authoritative.
+    </p>
+
+    <h2>Generate the template</h2>
+    <p>
+      Run <code>xisTemplates</code> after the controller shape exists. The task creates missing template files next to the
+      controller. Existing templates are not overwritten.
+    </p>
+    <pre><code class="language-bash">./gradlew xisTemplates</code></pre>
+    <p>
+      For the controller above, the task generated this actual file:
+    </p>
+    <pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang="en" xmlns:xis="http://xis.one/schema"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"/&gt;
+    &lt;title&gt;&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+
+&lt;section&gt;
+  &lt;div&gt;${headline}&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section&gt;
+  &lt;ul xis:foreach="topic:${topics}"&gt;
+    &lt;li&gt;${topic}&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/section&gt;
+
+&lt;form xis:binding="message"&gt;
+  &lt;xis:global-messages/&gt;
+  &lt;div&gt;
+    &lt;label for="message-name" xis:error-binding="name" xis:error-class="error"&gt;Name&lt;/label&gt;
+    &lt;input id="message-name" type="text" xis:binding="name" xis:error-class="error"/&gt;
+    &lt;div xis:message-for="name"&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div&gt;
+    &lt;label for="message-email" xis:error-binding="email" xis:error-class="error"&gt;Email&lt;/label&gt;
+    &lt;input id="message-email" type="text" xis:binding="email" xis:error-class="error"/&gt;
+    &lt;div xis:message-for="email"&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div&gt;
+    &lt;label for="message-topic" xis:error-binding="topic" xis:error-class="error"&gt;Topic&lt;/label&gt;
+    &lt;input id="message-topic" type="text" xis:binding="topic" xis:error-class="error"/&gt;
+    &lt;div xis:message-for="topic"&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;button type="button" xis:action="send"&gt;Save&lt;/button&gt;
+&lt;/form&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+    <p>
+      Notice how the generator mirrored the controller contract: <code>headline</code> became an expression,
+      <code>topics</code> became a <code>xis:foreach</code> list, <code>message</code> became a form binding, the record
+      components became inputs, and <code>send</code> became the form action. The result is not meant to be beautiful.
+      It is meant to be executable wiring that you can now refine. For template rules, see
+      <a href="/docs/guide/templates.html">Template syntax</a> and
+      <a href="/docs/guide/tags-and-attributes.html">Tags and attributes</a>.
+    </p>
+
+    <h2>Generate the first test</h2>
+    <p>
+      The same controller can also get a starter integration test. In this probe project, running
+      <code>xisTemplates</code> and <code>xisTests</code> as separate commands worked reliably:
+    </p>
+    <pre><code class="language-bash">./gradlew xisTests</code></pre>
+    <p>
+      The task generated this actual test:
+    </p>
+    <pre><code class="language-java">package example.contact;
+
+import one.xis.boot.test.XisBootTest;
+import one.xis.context.IntegrationTestContext;
+import one.xis.test.InTestContext;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+/**
+ * Integration test for ContactPage
+ * @generated
+ */
+@XisBootTest
+class ContactPageTest {
+
+    private IntegrationTestContext context;
+
+    @InTestContext
+    private ContactPage contactPage;
+
+    @Test
+    void test() {
+        // Edit url if you need path variables or query parameters
+        var client = context.openPage("/contact.html");
+
+        assertNotNull(client.getDocument());
+        // TODO: Add more assertions
+    }
+}</code></pre>
+    <p>
+      <code>@XisBootTest</code> creates a XIS integration-test context. <code>IntegrationTestContext</code> opens a page
+      the same way a browser would enter it. <code>@InTestContext</code> gives the test access to the managed page
+      object. The generated assertion only proves that a document was rendered. From here, edit the test until it says
+      what the page must really do: show the headline, render the topic list, submit invalid data, show validation
+      messages, and call the action for valid data. See
+      <a href="/docs/getting-started/testing-from-start.html">Testing from the start</a> and
+      <a href="/docs/guide/examples-and-tests.html">Examples and tests</a>.
+    </p>
+
+    <h2>Validate before running</h2>
+    <p>
+      After generation and after each meaningful template edit, run validation. It catches structural mistakes before
+      you start the application: missing required framework attributes, invalid bindings, unknown <code>xis:*</code>
+      elements, and model/form properties that do not match the controller contract.
+    </p>
+    <pre><code class="language-bash">./gradlew xisValidate
+./gradlew xisValidate --all-errors</code></pre>
+    <p>
+      Validation is not a replacement for tests. It proves that the template is structurally consistent with the server
+      contract; tests prove that the feature behaves correctly.
+    </p>
+
+    <h2>Run locally</h2>
+    <p>
+      XIS Boot applications can be run through the Gradle plugin. Pass a port when the default port is already in use.
+    </p>
+    <pre><code class="language-bash">./gradlew xisRun --port=9090</code></pre>
+    <p>
+      In XIS Boot development runs, public resources under <code>src/main/resources/public</code> are read from the
+      source file when available. CSS and similar resource edits should therefore become visible after pressing the
+      browser reload button. Packaged jars remain static, and Java/controller changes still require rebuilding or
+      restarting the application.
+    </p>
+
+    <h2>The loop in practice</h2>
+    <p>
+      The practical rhythm is:
+    </p>
+    <pre><code class="language-bash">./gradlew xisTemplates
+./gradlew xisTests
+./gradlew xisValidate
+./gradlew test
+./gradlew xisRun --port=9090</code></pre>
+    <p>
+      Then edit Java, templates, and resources together. Use browser reload for public resource changes, rerun
+      <code>xisValidate</code> when template structure changes, and keep the test suite moving with the feature.
+    </p>
+
+    <h2>Related pages</h2>
+    <p>
+      The detailed task reference is in <a href="/docs/gradleplugin.html">Gradle plugin and tooling</a>. The testing
+      introduction is in <a href="/docs/getting-started/testing-from-start.html">Testing from the start</a>, and the
+      full test API is covered by <a href="/docs/guide/examples-and-tests.html">Examples and tests</a>.
+    </p>
+  </main>
+</div>
+</body>
+</html>

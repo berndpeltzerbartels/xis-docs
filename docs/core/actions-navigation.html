@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Actions And Navigation - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Core Model / <span data-current-page>Actions and navigation</span></div>
+    <h1>Actions and navigation</h1>
+    <p class="lead">
+      XIS actions let a browser event call Java code without turning the page into a handwritten frontend application.
+      The method result describes what should happen next: update the current view, navigate to another page, open a
+      modal, refresh a frontlet, or do nothing visible.
+    </p>
+
+    <h2>Actions are part of the page contract</h2>
+    <p>
+      A page controller is not just a URL handler. It is the server-side model of the interactive page. Links, buttons,
+      forms, drag-and-drop targets, and modal commands can all bind to controller methods. This keeps the decision about
+      what is allowed, what is validated, and which model is returned on the server side.
+    </p>
+    <p>
+      The browser still behaves like an SPA. XIS receives the action response, updates only the affected DOM regions,
+      and keeps browser state such as focused elements and client-side widgets as stable as possible.
+    </p>
+
+    <h2>Return types</h2>
+    <p>
+      XIS deliberately makes navigation explicit. A controller method can return page data for the current page, a page
+      response, a page URL response, a frontlet response, a modal response, a redirect-like response, or no result when
+      the action is purely server-side. The exact type tells the framework how much of the browser state must change.
+    </p>
+    <p>
+      This is also why tests remain small: a test can call the same page interaction a user would trigger and assert the
+      response type or rendered result without spinning up a separate JavaScript application model.
+    </p>
+    <pre><code class="language-java">import one.xis.Action;
+import one.xis.FrontletResponse;
+import one.xis.ModalResponse;
+import one.xis.PageResponse;
+
+class CartPage {
+
+    @Action("increase")
+    void increaseQuantity(long lineId) {
+        cart.increase(lineId);
+        // Stay on the current page and refresh the affected model.
+    }
+
+    @Action("checkout")
+    PageResponse checkout() {
+        return new PageResponse(CheckoutPage.class);
+    }
+
+    @Action("showShipping")
+    ModalResponse showShippingOptions() {
+        return ModalResponse.open(ShippingModal.class);
+    }
+
+    @Action("refreshSummary")
+    FrontletResponse refreshSummary() {
+        return new FrontletResponse(CartSummaryFrontlet.class)
+                .targetContainer("cart-summary");
+    }
+}</code></pre>
+
+    <h2>Deep links and path variables</h2>
+    <p>
+      Pages can expose stable URLs with path variables. This matters for bookmarks, shared links, and browser reloads.
+      The user can enter through a URL, but after that the same page can continue through XIS actions and partial
+      updates.
+    </p>
+    <pre><code class="language-java">import one.xis.ModelData;
+import one.xis.Page;
+import one.xis.PathVariable;
+
+@Page("/products/{id}.html")
+class ProductPage {
+
+    @ModelData("product")
+    Product product(@PathVariable("id") long id) {
+        return catalog.findProduct(id);
+    }
+}</code></pre>
+
+    <h2>Modals and small edit flows</h2>
+    <p>
+      Many business applications need small forms that open above an existing list or detail page. In XIS these modals
+      should be treated as normal server-backed form flows: open the modal through an action, validate on the server,
+      close or refresh the relevant part of the page after success.
+    </p>
+
+    <h2>Routers</h2>
+    <p>
+      Routers are useful when an application needs explicit routing logic before a page is selected. They should not be
+      used as a replacement for ordinary page controllers. If a URL maps naturally to one page, the page controller is
+      usually the simpler model.
+    </p>
+  </main>
+</div>
+</body>
+</html>

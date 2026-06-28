@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cloud Native And Native Images - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Cloud Native And Native Images</span></div>
+    <h1>Cloud Native And Native Images</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="cloud-native-and-native-images">Cloud Native And Native Images</h2>
+<p>XIS Boot Native is the cloud-native deployment path for standalone XIS applications. It is meant for applications that should be compiled to a GraalVM native executable and deployed as a small container or directly as a native process.</p>
+<p>The goal is not merely that XIS does not block native-image builds. XIS generates the metadata a native image needs: component catalogs, resource catalogs, reflection configuration, proxy configuration, and a native runner. Application code should therefore stay close to normal XIS Boot code.</p>
+<h3 id="basic-build">Basic Build</h3>
+<p>Use <code>xis-boot-native</code> instead of <code>xis-boot</code>:</p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation &quot;one.xis:xis-boot-native&quot;
+}</code></pre>
+<p>The XIS Gradle plugin generates the native catalogs and runner when the application depends on <code>xis-boot-native</code>. A native build needs:</p>
+<ul>
+<li>generated component catalogs for framework modules and application classes</li>
+<li>generated resource catalog for HTML, CSS, JavaScript, properties, and other bundled resources</li>
+<li>generated reflection configuration</li>
+<li>generated dynamic proxy configuration</li>
+<li>a generated runner that starts the XIS Boot Native context</li>
+<li>a local GraalVM installation with <code>native-image</code></li>
+</ul>
+<p>The plugin looks for <code>native-image</code> in this order: an explicitly configured GraalVM home (<code>-PgraalVmHome=...</code> or <code>--graal-vm-home=...</code>), <code>GRAALVM_HOME</code>, <code>JAVA_HOME</code>, <code>PATH</code>, and then common local JDK installation directories. It does not require a specific GraalVM distribution. If Oracle GraalVM is installed and selected through one of those mechanisms, the plugin uses it.</p>
+<p>Native Image performance depends noticeably on the GraalVM distribution, version, CPU, and build options. In XIS&#x27; server-throughput benchmarks, native executables have not consistently beaten the JVM; the strongest reason to choose native images has been lower memory use, fast startup, and compact deployment. For throughput-sensitive services, test the exact target environment before assuming a native executable is faster. If Oracle GraalVM performs better for your workload than another Native Image distribution, point the plugin at that installation explicitly.</p>
+<p>The native plugin tasks are:</p>
+<pre><code class="language-bash">./gradlew xisNativeCompile
+./gradlew xisNativeCompileForHost
+./gradlew xisNativeRun
+./gradlew xisNativeSmokeTest</code></pre>
+<p><code>xisNativeCompile</code> builds the executable, <code>xisNativeRun</code> starts it locally, and <code>xisNativeSmokeTest</code> builds the executable, starts it on a temporary port, verifies that the HTTP server answers, and stops it again.</p>
+<p><code>xisNativeCompileForHost</code> builds a second executable optimized for the current build host and passes <code>-march=native</code> to <code>native-image</code>. Use it when the build runs on the same machine, VM, or container type that will later run the binary. The executable is written next to the portable binary with a <code>-host</code> suffix.</p>
+<p>XIS leaves the GraalVM optimization level at the documented native-image default. Additional GraalVM <code>native-image</code> arguments, such as <code>-O3</code>, can be passed either as a task option or as a Gradle property:</p>
+<pre><code class="language-bash">./gradlew xisNativeCompile --native-image-args=&quot;-O3&quot;
+./gradlew xisNativeCompile -PxisNativeImageArgs=&quot;-O3&quot;
+./gradlew xisNativeCompileForHost -PxisNativeImageArgs=&quot;-O3&quot;</code></pre>
+<p>These arguments affect the executable at build time. Runtime arguments for the application still belong to <code>xisNativeRun --application-args</code>. CPU-specific options such as <code>-march=native</code> are intentionally isolated in <code>xisNativeCompileForHost</code> because the resulting executable is tied more closely to the build machine.</p>
+<h3 id="application-entry-point">Application Entry Point</h3>
+<p>Application code still starts from a normal XIS Boot application class:</p>
+<pre><code class="language-java">package example;
+
+import one.xis.boot.XISBootApplication;
+
+@XISBootApplication
+class Application {
+}</code></pre>
+<p>For native images, the generated runner uses generated catalogs instead of runtime package scanning.</p>
+<h3 id="java-kotlin-and-groovy">Java, Kotlin, And Groovy</h3>
+<p>XIS Boot Native supports Java and Kotlin applications. The Gradle plugin generates component catalogs, resource metadata, reflection/proxy configuration, and the native runner for both source layouts.</p>
+<p>Groovy controllers and forms are supported on the JVM path, but not as GraalVM native images. Even with static Groovy compilation, the Groovy runtime can make dynamic call-site and meta-class infrastructure reachable during native-image analysis.</p>
+<p>If an application must be compiled with <code>xis-boot-native</code>, write the native application code in Java or Kotlin.</p>
+<h3 id="database-modules">Database Modules</h3>
+<p>Native database support is explicit. Add the normal persistence module plus the native driver module for the DBMS used by the application.</p>
+<p>This is different from a normal JVM build. On the JVM, a JDBC driver can often be added as <code>runtimeOnly</code> and discovered later through <code>DriverManager</code> or the Java service loader. A GraalVM native image is closed at build time: the driver classes, service registrations, resources, reflection needs, and initialization behavior must be known while the executable is built. If a driver is only treated as an ordinary late runtime dependency, the application may compile and even work on the JVM but fail during <code>native-image</code> or inside the native executable.</p>
+<p>The <code>xis-boot-native-*</code> database modules make that dependency explicit. They provide tested default driver versions and put the driver on the native build path in the way XIS expects. Applications may still override the driver version with normal Gradle dependency management, but that replacement driver then belongs to the application&#x27;s native test scope.</p>
+<h4 id="h2">H2</h4>
+<p>H2 is useful for local development, tests, small embedded applications, and smoke tests:</p>
+<pre><code class="language-groovy">dependencies {
+    implementation &quot;one.xis:xis-boot-native&quot;
+    implementation &quot;one.xis:xis-sql&quot;
+    implementation &quot;one.xis:xis-boot-native-h2&quot;
+}</code></pre>
+<h4 id="postgresql">PostgreSQL</h4>
+<pre><code class="language-groovy">dependencies {
+    implementation &quot;one.xis:xis-boot-native&quot;
+    implementation &quot;one.xis:xis-sql&quot;
+    implementation &quot;one.xis:xis-boot-native-postgresql&quot;
+}</code></pre>
+<h4 id="mariadb">MariaDB</h4>
+<pre><code class="language-groovy">dependencies {
+    implementation &quot;one.xis:xis-boot-native&quot;
+    implementation &quot;one.xis:xis-sql&quot;
+    implementation &quot;one.xis:xis-boot-native-mariadb&quot;
+}</code></pre>
+<h4 id="mongodb">MongoDB</h4>
+<pre><code class="language-groovy">dependencies {
+    implementation &quot;one.xis:xis-boot-native&quot;
+    implementation &quot;one.xis:xis-boot-native-mongodb&quot;
+}</code></pre>
+<h3 id="component-discovery">Component Discovery</h3>
+<p>Normal XIS Boot can scan the classpath at startup. A native executable cannot rely on the same kind of runtime discovery. For native builds, XIS generates catalogs during the build and starts the context from those catalogs.</p>
+<p>This means:</p>
+<p>catalogs, not with Lombok source transformations at runtime</p>
+<ul>
+<li>components, pages, frontlets, modals, includes, repositories, and proxy interfaces must be visible to the build</li>
+<li>artifacts built as XIS libraries can contribute generated catalogs, so reusable XIS modules can participate in native applications</li>
+<li>source-level Lombok is not a problem for this mechanism because XIS works with the compiled classes and generated</li>
+</ul>
+<p>If you are going to use Lombok as an annotation processor, use a Lombok version that supports the JDK used for the build. For JDK 21 builds, use Lombok 1.18.34 or newer. Older Lombok versions can fail during compilation before XIS native metadata generation starts.</p>
+<h3 id="reusable-libraries">Reusable Libraries</h3>
+<p>Reusable XIS libraries can participate in native applications when they are built with the XIS Gradle plugin and declare <code>xis-boot-native</code>. Applying <code>one.xis.plugin</code> marks the project as a XIS artifact; adding <code>xis-boot-native</code> opts the artifact into native metadata generation. The library jar contributes its generated component and native class catalogs, and the native application consumes those catalogs from its compile and runtime classpath.</p>
+<p>A native application does not need source access to every library. It only needs the library artifact on the normal Gradle classpath, and that artifact must contain the generated XIS catalog resources.</p>
+<p>A library that was not built as a native XIS artifact does not automatically contribute XIS components to a native application. If such a library only provides ordinary helper classes, that is fine. If it contains XIS components, pages, repositories, or other framework-managed classes that should be available in a native executable, build it with the XIS plugin and add <code>xis-boot-native</code> so the native metadata is part of the jar.</p>
+<h3 id="bean-methods">Bean Methods</h3>
+<p><code>@Bean</code> methods may return concrete application classes, application interfaces, or application base classes:</p>
+<pre><code class="language-java">@Component
+class MailConfiguration {
+
+    @Bean
+    MailSender mailSender() {
+        return new SmtpMailSender();
+    }
+
+    @Bean
+    MessageFormatter messageFormatter() {
+        return new HtmlMessageFormatter();
+    }
+}</code></pre>
+<p>This is important for readable application design. Consumers should depend on the meaningful application type, not on the concrete implementation class:</p>
+<pre><code class="language-java">@Component
+class CustomerNotifier {
+
+    private final MailSender mailSender;
+
+    CustomerNotifier(MailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+}</code></pre>
+<p>Avoid strongly generic return types in native applications:</p>
+<pre><code class="language-java">@Bean
+Object mailSender() {
+    return new SmtpMailSender();
+}</code></pre>
+<p>The Java version can work at runtime, but it hides the meaningful type from the generated native metadata. In a native build, XIS must know the types that can become beans, dependencies, proxies, and reflection targets. Use a concrete class, an application interface, or an application base class instead.</p>
+<h3 id="proxies-and-aop">Proxies And AOP</h3>
+<p>XIS AOP and SQL repositories are interface-based. XIS Boot Native deliberately does not use Byte Buddy, CGLIB, load-time weaving, or runtime bytecode enhancement. This makes native images smaller, easier to reason about, and more predictable in cloud deployments.</p>
+<p>If a component needs advice, use an interface:</p>
+<pre><code class="language-java">interface CustomerService {
+    void createCustomer(Customer customer);
+}</code></pre>
+<p>The implementation can carry the annotation, but the component must be injectable through the interface. This also matches SQL repositories, which are proxy interfaces by design.</p>
+<h3 id="current-limitations">Current Limitations</h3>
+<p>Native support is young and deliberately explicit. Expect these boundaries:</p>
+<ul>
+<li>the public Gradle plugin workflow for native builds may still change</li>
+<li>driver replacement is allowed, but only the default driver versions from the native DB modules are tested by XIS</li>
+<li>dynamic runtime classpath scanning is not part of the native startup model</li>
+<li>bytecode-enhanced AOP is intentionally unsupported</li>
+<li>generic <code>@Bean</code> return types such as <code>Object</code> or broad JDK marker interfaces are not suitable for native metadata</li>
+</ul>
+<p>Those restrictions are part of the architecture, not temporary workarounds. They keep the cloud-native path predictable and close to the normal XIS programming model.</p>
+<h3 id="logging">Logging</h3>
+<p>XIS uses SLF4J. XIS Boot ships a small default SLF4J provider, so standalone and native applications write framework logs without requiring every application to add a logging backend first. The default provider is intentionally simple and writes to the process output, which fits container platforms and local native executables.</p>
+<p>Applications that need another logging backend can replace the default through normal Gradle dependency management.</p>
+  </main>
+</div>
+</body>
+</html>

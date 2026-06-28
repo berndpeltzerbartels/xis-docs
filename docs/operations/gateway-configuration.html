@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gateway configuration - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Operations / <span data-current-page>Gateway configuration</span></div>
+    <h1>Gateway configuration</h1>
+    <p class="lead">
+      A XIS Boot application usually runs behind a gateway. Apache or nginx can terminate HTTPS, serve static pages,
+      and forward the application paths to the local XIS process.
+    </p>
+
+    <h2>What must be proxied</h2>
+    <p>
+      XIS pages may be mounted below an application path such as <code>/app-wizzard/</code>, but the framework runtime
+      also uses root-level resources and service endpoints. A gateway therefore has to forward the page path and the XIS
+      runtime paths together.
+    </p>
+    <p>
+      For a page application behind <code>/app-wizzard/</code>, the important paths are:
+    </p>
+    <table>
+      <thead>
+      <tr>
+        <th>Path</th>
+        <th>Purpose</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><code>/app-wizzard/</code></td>
+        <td>The application page and its public resources.</td>
+      </tr>
+      <tr>
+        <td><code>/xis/</code></td>
+        <td>XIS internal endpoints, including server-sent events such as <code>/xis/events</code>.</td>
+      </tr>
+      <tr>
+        <td><code>/bundle.min.js</code></td>
+        <td>The XIS browser runtime used by page applications.</td>
+      </tr>
+      <tr>
+        <td><code>/default-main.css</code></td>
+        <td>Small framework CSS for XIS-owned browser elements.</td>
+      </tr>
+      </tbody>
+    </table>
+
+    <h2>Apache 2</h2>
+    <p>
+      Enable the proxy modules once and keep the application process bound to localhost. The example assumes the XIS
+      application listens on <code>127.0.0.1:8081</code>.
+    </p>
+    <pre><code class="language-bash">sudo a2enmod proxy proxy_http
+sudo systemctl reload apache2</code></pre>
+    <pre><code class="language-apache">ProxyPreserveHost On
+
+ProxyPass        /app-wizzard/ http://127.0.0.1:8081/app-wizzard/
+ProxyPassReverse /app-wizzard/ http://127.0.0.1:8081/app-wizzard/
+
+ProxyPass        /xis/ http://127.0.0.1:8081/xis/
+ProxyPassReverse /xis/ http://127.0.0.1:8081/xis/
+
+ProxyPass        /bundle.min.js http://127.0.0.1:8081/bundle.min.js
+ProxyPassReverse /bundle.min.js http://127.0.0.1:8081/bundle.min.js
+
+ProxyPass        /default-main.css http://127.0.0.1:8081/default-main.css
+ProxyPassReverse /default-main.css http://127.0.0.1:8081/default-main.css</code></pre>
+    <p>
+      Validate before reloading:
+    </p>
+    <pre><code class="language-bash">sudo apache2ctl configtest
+sudo systemctl reload apache2</code></pre>
+
+    <h2>nginx</h2>
+    <p>
+      nginx uses <code>location</code> blocks for the same split. SSE endpoints need buffering disabled so events reach
+      the browser immediately.
+    </p>
+    <pre><code class="language-nginx">server {
+    listen 443 ssl;
+    server_name example.com;
+
+    root /var/www/html/xis-docs;
+    index index.html;
+
+    location /app-wizzard/ {
+        proxy_pass http://127.0.0.1:8081/app-wizzard/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location /xis/ {
+        proxy_pass http://127.0.0.1:8081/xis/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_buffering off;
+    }
+
+    location = /bundle.min.js {
+        proxy_pass http://127.0.0.1:8081/bundle.min.js;
+        proxy_set_header Host $host;
+    }
+
+    location = /default-main.css {
+        proxy_pass http://127.0.0.1:8081/default-main.css;
+        proxy_set_header Host $host;
+    }
+}</code></pre>
+    <pre><code class="language-bash">sudo nginx -t
+sudo systemctl reload nginx</code></pre>
+
+    <h2>Static documentation beside an app</h2>
+    <p>
+      Static documentation and a XIS application can share one host. Let the gateway serve static HTML directly and only
+      forward the application and XIS runtime paths. That keeps documentation deploys independent from application
+      deploys.
+    </p>
+    <p>
+      When Apache Server Side Includes are used for static documentation, keep SSI on the documentation directory and
+      keep the XIS application behind proxy rules. The two concerns should not be mixed inside the application process.
+    </p>
+  </main>
+</div>
+</body>
+</html>

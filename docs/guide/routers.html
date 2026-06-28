@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Routers - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Routers</span></div>
+    <h1>Routers</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="routers">Routers</h2>
+<p>Routers are an optional navigation tool. They are not a core concept that every XIS application has to use. Unlike frameworks where every route has to be declared in a router, XIS normally maps pages directly through <code>@Page</code>. Most pages can and should be linked directly with <code>xis:page</code>, ordinary links, forms, or action responses.</p>
+<p>Use a router only when several links or several actions point to the same business destination, but server-side business logic must decide what should actually be shown. Without a router, that decision often ends up duplicated in several actions or hidden in a service. Duplicating the navigation code is noisy, while putting view navigation into a domain service usually mixes responsibilities. A router keeps that decision close to the web layer without forcing every link or action to know the final target.</p>
+<h3 id="typical-case">Typical Case</h3>
+<p>A shop links to a product detail route. The URL is stable:</p>
+<pre><code class="language-html">&lt;a xis:page=&quot;/products/${product.id}.html&quot;&gt;${product.name}&lt;/a&gt;</code></pre>
+<p>But the product state decides which page URL is useful:</p>
+<ul>
+<li>the product is available, so the normal product page should open</li>
+<li>the product is sold out, so a sold-out page should open</li>
+<li>the product needs age confirmation, so an age-confirmation page should open first</li>
+</ul>
+<p>The link still points to one product destination. The router owns the decision about the concrete page.</p>
+<pre><code class="language-java">import one.xis.PageResponse;
+import one.xis.PathVariable;
+import one.xis.Route;
+import one.xis.Router;
+
+@Router(&quot;/products&quot;)
+class ProductRouter {
+
+    private final ProductService productService;
+
+    ProductRouter(ProductService productService) {
+        this.productService = productService;
+    }
+
+    @Route(&quot;/{id}.html&quot;)
+    PageResponse product(@PathVariable(&quot;id&quot;) long id) {
+        var product = productService.findById(id);
+        if (product.isSoldOut()) {
+            return PageResponse.of(SoldOutProductPage.class, &quot;id&quot;, id);
+        }
+        if (product.requiresAgeConfirmation()) {
+            return PageResponse.of(AgeConfirmationPage.class, &quot;id&quot;, id);
+        }
+        return PageResponse.of(ProductPage.class, &quot;id&quot;, id);
+    }
+}</code></pre>
+<p>The same pattern can also return a page:</p>
+<pre><code class="language-java">@Route(&quot;/{id}/edit.html&quot;)
+PageResponse editProduct(@PathVariable(&quot;id&quot;) long id) {
+    if (productService.requiresApproval(id)) {
+        return PageResponse.of(ProductApprovalPage.class, &quot;id&quot;, id);
+    }
+    return PageResponse.of(EditProductPage.class, &quot;id&quot;, id);
+}</code></pre>
+<h3 id="how-routing-works">How Routing Works</h3>
+<p>A router is a backend-only controller. It has no HTML template. XIS matches the router URL, calls the matching <code>@Route</code> method, and then processes the returned navigation target through the normal response model.</p>
+<p>The class-level <code>@Router</code> path and method-level <code>@Route</code> path are joined:</p>
+<pre><code class="language-java">@Router(&quot;/products&quot;)
+class ProductRouter {
+
+    @Route(&quot;/{id}.html&quot;)
+    PageResponse product(@PathVariable(&quot;id&quot;) long id) {
+        return PageResponse.of(ProductPage.class, &quot;id&quot;, id);
+    }
+}</code></pre>
+<p>This matches <code>/products/42.html</code>. If the combined route does not end with <code>.html</code>, XIS adds <code>.html</code>.</p>
+<p>Route methods may use the same injected request data as ordinary controller methods, such as <code>@PathVariable</code>, <code>@QueryParameter</code>, <code>@ClientId</code>, <code>UserContext</code>, and storage parameters.</p>
+<h3 id="welcome-routes">Welcome Routes</h3>
+<p>A router can provide the application&#x27;s welcome entry when the first request should be decided by backend logic. Annotate the selected <code>@Route</code> method with <code>@WelcomePage</code>:</p>
+<pre><code class="language-java">@Router(&quot;/entry&quot;)
+class EntryRouter {
+
+    @WelcomePage
+    @Route(&quot;/start.html&quot;)
+    Class&lt;?&gt; start(@ClientId String clientId) {
+        return HomePage.class;
+    }
+}</code></pre>
+<p>If a router has exactly one route, <code>@WelcomePage</code> may also be placed on the router class. XIS fails during startup if that would be ambiguous, for example when a class-level welcome router declares more than one <code>@Route</code>.</p>
+<h3 id="return-values">Return Values</h3>
+<p>Route methods must return a page navigation value:</p>
+<ul>
+<li><code>String</code> or <code>PageUrlResponse</code> for URL-based page navigation</li>
+<li>a page class or <code>PageResponse</code> for type-oriented page navigation</li>
+</ul>
+<p>Use <code>String</code> or URL responses when you intentionally want to decouple modules. For example, in a distributed application a router can return a URL without requiring the target page class on the classpath.</p>
+<p>Routers are matched from page URLs and should not be used to select frontlets directly. If a page URL should decide which frontlet is mounted, model that through the target page, query/path parameters, or URL-mounted frontlets.</p>
+<h3 id="validation">Validation</h3>
+<p><code>@Route</code> is only valid on <code>@Router</code> controllers. XIS fails during application startup if a route method is placed on a page or frontlet controller, if it is also annotated with <code>@Action</code>, or if its return type is not a supported navigation type.</p>
+<h3 id="when-not-to-use-a-router">When Not to Use a Router</h3>
+<p>Do not introduce a router for ordinary page links. If a link always opens the same page, use <code>xis:page</code>. If an action always opens the same target, return the navigation value directly from the action. Router is useful when the same business destination is reached from multiple places and the final view depends on state that belongs in backend code.</p>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Security - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Security</span></div>
+    <h1>Security</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="security">Security</h2>
+<p>XIS security is role-based. Add <code>xis-authentication</code> when pages or actions should require a login. The normal page, frontlet, action, form, and navigation APIs stay the same.</p>
+<p><code>build.gradle</code> for XIS Boot:</p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation &quot;one.xis:xis-boot&quot; // or xis-spring
+    implementation &quot;one.xis:xis-authentication&quot;
+}</code></pre>
+<p><code>build.gradle</code> for Spring:</p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+    id &quot;org.springframework.boot&quot; version &quot;3.3.0&quot;
+    id &quot;io.spring.dependency-management&quot; version &quot;1.1.5&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation &quot;org.springframework.boot:spring-boot-starter-web&quot;
+    implementation &quot;one.xis:xis-spring&quot;
+    implementation &quot;one.xis:xis-authentication&quot;
+}</code></pre>
+<h3 id="page-and-action-roles">Page And Action Roles</h3>
+<p>Use <code>@Authenticated</code> when a page, frontlet, action method, action parameter, or action DTO requires a login but no named role. Use <code>@Roles</code> when at least one named application role is required.</p>
+<p><code>@Authenticated</code> is a good fit for community areas, profile pages, carts, or applications where a login is enough:</p>
+<pre><code class="language-java">@Page(&quot;/community.html&quot;)
+@Authenticated
+class CommunityPage {
+}</code></pre>
+<pre><code class="language-java">package example.security;
+
+import one.xis.Action;
+import one.xis.ModelData;
+import one.xis.Page;
+import one.xis.Roles;
+import one.xis.UserId;
+
+@Page(&quot;/account.html&quot;)
+@Roles(&quot;USER&quot;)
+class AccountPage {
+
+    @ModelData(&quot;message&quot;)
+    String message(@UserId String userId) {
+        return &quot;Account for &quot; + userId;
+    }
+
+    @Action
+    @Roles(&quot;ADMIN&quot;)
+    void rebuildIndex() {
+        adminService.rebuildIndex();
+    }
+}</code></pre>
+<p>Role checks are hierarchical:</p>
+<p><code>@Roles</code>-annotated action parameter type, when present</p>
+<ul>
+<li>controller level: login from <code>@Authenticated</code>, or at least one role from the controller/frontlet <code>@Roles</code></li>
+<li>method level: login from <code>@Authenticated</code>, or at least one role from the method <code>@Roles</code>, when present</li>
+<li>parameter/DTO level: login from <code>@Authenticated</code> on the parameter or parameter type, or at least one role from a</li>
+</ul>
+<p>All annotated levels must match. Within one role level, alternatives are allowed.</p>
+<p>A missing <code>@Authenticated</code> or <code>@Roles</code> annotation means public access. A legacy empty <code>@Roles</code> annotation still means authenticated access, but new code should use <code>@Authenticated</code> because it states the intent directly.</p>
+<h3 id="role-based-visibility-in-templates">Role-based Visibility In Templates</h3>
+<p>Use <code>isUserInRole(role)</code> or <code>isUserInRoles(role, ...)</code> in <code>xis:if</code> when the UI should only show a control to users with matching roles:</p>
+<pre><code class="language-html">&lt;button xis:if=&quot;isUserInRole(&#x27;ADMIN&#x27;)&quot; xis:action=&quot;rebuildIndex&quot;&gt;Rebuild index&lt;/button&gt;
+&lt;a xis:if=&quot;isUserInRoles(&#x27;SUPPORT&#x27;, &#x27;ADMIN&#x27;)&quot; xis:page=&quot;/support.html&quot;&gt;Support&lt;/a&gt;</code></pre>
+<p><code>isUserInRoles(...)</code> accepts either separate role arguments or an array expression:</p>
+<pre><code class="language-html">&lt;button xis:if=&quot;isUserInRoles(visibleRoles)&quot; xis:action=&quot;moderate&quot;&gt;Moderate&lt;/button&gt;</code></pre>
+<p>This is frontend code. A hidden button is not the same as a protected action, because a user can still call endpoints or modify browser code. Always put <code>@Roles</code> or <code>@Authenticated</code> on the controller, frontlet, action method, action parameter, or DTO that actually requires protection.</p>
+<h3 id="dto-roles">DTO Roles</h3>
+<p><code>@Authenticated</code> can be put on an individual action parameter when that parameter should only be deserialized for logged-in users. <code>@Roles</code> belongs on a DTO type used by an action parameter.</p>
+<pre><code class="language-java">@Action
+void rememberReturnUrl(@Authenticated @FormData(&quot;returnUrl&quot;) String returnUrl) {
+    navigationService.remember(returnUrl);
+}</code></pre>
+<pre><code class="language-java">package example.security;
+
+import one.xis.Action;
+import one.xis.FormData;
+import one.xis.Page;
+import one.xis.Roles;
+
+@Page(&quot;/editor.html&quot;)
+@Roles(&quot;USER&quot;)
+class EditorPage {
+
+    @Action
+    void save(@FormData(&quot;article&quot;) ArticleForm article) {
+        articleService.save(article);
+    }
+}</code></pre>
+<pre><code class="language-java">package example.security;
+
+import one.xis.Roles;
+
+@Roles(&quot;DATA_EDITOR&quot;)
+record ArticleForm(String title, String body) {
+}</code></pre>
+<p>The <code>save</code> action requires both <code>USER</code> and <code>DATA_EDITOR</code>: <code>USER</code> from the page and <code>DATA_EDITOR</code> from the DTO.</p>
+<h3 id="ownership-checks">Ownership Checks</h3>
+<p>Use <code>@OwnedBy</code> when submitted form/action data references an object that must belong to the currently authenticated user. XIS runs the configured <code>OwnershipGuard</code> after the object has been deserialized and before the action method is called. The guard receives the submitted object and the trusted <code>UserContext</code>; the application owns the actual lookup or policy decision.</p>
+<pre><code class="language-java">package example.security;
+
+import one.xis.Action;
+import one.xis.FormData;
+import one.xis.OwnedBy;
+import one.xis.OwnershipGuard;
+import one.xis.Page;
+import one.xis.Roles;
+import one.xis.UserContext;
+import one.xis.context.Component;
+
+@Component
+class CustomerOwnershipGuard implements OwnershipGuard&lt;CustomerForm&gt; {
+
+    private final CustomerService customerService;
+
+    CustomerOwnershipGuard(CustomerService customerService) {
+        this.customerService = customerService;
+    }
+
+    @Override
+    public boolean mayAccess(CustomerForm form, UserContext userContext) {
+        return customerService.customerBelongsToUser(form.customerId(), userContext.getUserId());
+    }
+}
+
+@Page(&quot;/customers.html&quot;)
+@Roles(&quot;USER&quot;)
+class CustomerPage {
+
+    @Action
+    void save(@FormData(&quot;customer&quot;) CustomerForm form) {
+        customerService.save(form);
+    }
+}
+
+@OwnedBy(CustomerOwnershipGuard.class)
+record CustomerForm(String customerId, String name) {
+}</code></pre>
+<p>In Spring applications, make the guard a Spring bean, for example with <code>org.springframework.stereotype.Component</code>, instead of <code>one.xis.context.Component</code>.</p>
+<p>Ownership violations behave like role violations. The action is not called. In a frontend request XIS turns the security failure into the same login redirect flow used by <code>@Roles</code> and <code>@Authenticated</code>, so the browser opens the login page with the current page as <code>redirect_uri</code>.</p>
+<p><code>@OwnedBy</code> can be placed on the DTO class or on the concrete action parameter:</p>
+<pre><code class="language-java">@Action
+void save(@OwnedBy(CustomerOwnershipGuard.class)
+          @FormData(&quot;customer&quot;) CustomerForm form) {
+    customerService.save(form);
+}</code></pre>
+<p>Nested objects are checked individually while they are deserialized. If a nested object or field has its own <code>@OwnedBy</code>, that nested object must also pass its guard.</p>
+<p>XIS does not cache ownership decisions. The framework does not know which fields identify the protected resource, and all other submitted values may legally change. If a guard needs caching, keep that cache inside the application code where the stable resource id and operation are known.</p>
+<h3 id="local-authentication">Local Authentication</h3>
+<p>For a single application with local users, use <code>xis-local-credentials</code> for password validation and provide a <code>UserAccountService</code> for account data and roles. The split is intentional: password hashes are managed by <code>LocalCredentialService</code>, while <code>UserAccountService</code> maps the authenticated user id to the application&#x27;s account.</p>
+<p>Add <code>xis-local-credentials</code> and one repository implementation. <code>xis-local-credentials-sql</code> stores password hashes in SQL and uses Argon2id through Password4j:</p>
+<pre><code class="language-groovy">dependencies {
+    implementation &quot;one.xis:xis-authentication&quot;
+    implementation &quot;one.xis:xis-local-credentials&quot;
+    implementation &quot;one.xis:xis-local-credentials-sql&quot;
+}</code></pre>
+<p>The account service can stay focused on profile data and roles:</p>
+<pre><code class="language-java">package example.security;
+
+import one.xis.auth.UserAccount;
+import one.xis.auth.UserAccountService;
+import one.xis.context.Component;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+@Component
+class AppUsers implements UserAccountService&lt;AppUser&gt; {
+
+    private final Map&lt;String, AppUser&gt; users = Map.of(&quot;alice&quot;, createAlice());
+
+    @Override
+    public Optional&lt;AppUser&gt; getUserAccount(String userId) {
+        return Optional.ofNullable(users.get(userId));
+    }
+
+    private static AppUser createAlice() {
+        var user = new AppUser();
+        user.setUserId(&quot;alice&quot;);
+        user.setPreferredUsername(&quot;alice&quot;);
+        user.setRoles(Set.of(&quot;USER&quot;));
+        return user;
+    }
+
+    @Override
+    public void saveUserAccount(AppUser userAccount) {
+        throw new UnsupportedOperationException();
+    }
+}
+
+class AppUser implements UserAccount {
+
+    private String userId;
+    private Set&lt;String&gt; roles = Set.of();
+    private String email;
+    private String name;
+    private String preferredUsername;
+    private String givenName;
+    private String familyName;
+    private String locale;
+    private String pictureUrl;
+    private boolean emailVerified;
+
+    // getters and setters
+}</code></pre>
+<p>In a local-only application XIS does not call <code>saveUserAccount</code>; throwing <code>UnsupportedOperationException</code> makes an accidental call visible. For external OpenID Connect logins this is different: <code>saveUserAccount</code> is part of the successful login flow and must not throw.</p>
+<p>The same service in a Spring application uses the Spring stereotype instead:</p>
+<pre><code class="language-java">package example.security;
+
+import one.xis.auth.UserAccount;
+import one.xis.auth.UserAccountService;
+import org.springframework.stereotype.Component;
+
+@Component
+class AppUsers implements UserAccountService&lt;AppUser&gt; {
+    // same methods as above
+}</code></pre>
+<p>Applications that do not use the SQL default can implement <code>LocalCredentialRepository</code> or replace <code>LocalCredentialService</code> entirely. A replacement service is responsible for secure password storage and verification.</p>
+<p>When an unauthenticated user opens a protected page, XIS returns a <code>401</code> response with a <code>Location</code> header. The browser client follows that location and opens the login page. With local authentication the target is:</p>
+<pre><code class="language-text">/login.html?redirect_uri=...</code></pre>
+<p>After a successful login, XIS redirects back to the original page.</p>
+<h3 id="custom-login-template">Custom Login Template</h3>
+<p>The login page is a normal XIS template. The only special part is that XIS already provides the controller, form object, and action behind it. Add a <code>login.html</code> resource to the application classpath to override the framework default template.</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html xmlns:xis=&quot;https://xis.one/xsd&quot; lang=&quot;en&quot;&gt;
+&lt;head&gt;&lt;title&gt;Login&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;form xis:binding=&quot;login&quot;&gt;
+    &lt;h1&gt;Sign in&lt;/h1&gt;
+    &lt;xis:global-messages/&gt;
+
+    &lt;label for=&quot;username&quot; xis:binding=&quot;username&quot; xis:error-class=&quot;error&quot;&gt;Username&lt;/label&gt;
+    &lt;input xis:binding=&quot;username&quot; id=&quot;username&quot; type=&quot;text&quot;/&gt;
+    &lt;xis:message message-for=&quot;username&quot;/&gt;
+
+    &lt;label for=&quot;password&quot; xis:binding=&quot;password&quot; xis:error-class=&quot;error&quot;&gt;Password&lt;/label&gt;
+    &lt;input xis:binding=&quot;password&quot; id=&quot;password&quot; type=&quot;password&quot;/&gt;
+    &lt;xis:message message-for=&quot;password&quot;/&gt;
+
+    &lt;input xis:binding=&quot;state&quot; type=&quot;hidden&quot;/&gt;
+    &lt;button xis:action=&quot;login&quot; type=&quot;submit&quot;&gt;Login&lt;/button&gt;
+&lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<p>The form binding, field bindings, hidden <code>state</code>, and <code>login</code> action name belong to the framework contract. The surrounding markup, labels, layout, CSS classes, and text are application design.</p>
+<p>Local login uses normal XIS validation. When credentials are wrong, the login action is not executed and a global validation message is returned. Render it with <code>&lt;xis:global-messages/&gt;</code> inside the <code>login</code> form. Field messages and error highlighting use the same tags and attributes as any other form: <code>xis:message-for</code>, <code>xis:error-class</code>, <code>xis:error-style</code>, and <code>xis:error-binding</code>.</p>
+<p><code>&lt;xis:global-messages/&gt;</code> always renders a list structure when messages exist, even if there is only one message. This keeps the DOM shape predictable for templates and CSS. If the login page should look like a single alert, style the generated <code>ul.error</code> and <code>li.error</code> without bullets.</p>
+<p>This is also the pattern for reusable application libraries. A library can provide controllers and default templates as classpath resources, while applications keep the option to replace those templates with resources of the same name. The login page is simply the built-in example of that mechanism.</p>
+<p>When optional login factors are active, the default login page renders their fields automatically. A custom <code>login.html</code> must render the matching field itself. For TOTP, add a field bound to <code>totpCode</code> and guard it with <code>totpLoginEnabled</code>:</p>
+<pre><code class="language-html">&lt;div xis:if=&quot;${totpLoginEnabled}&quot;&gt;
+    &lt;label for=&quot;totpCode&quot; xis:binding=&quot;totpCode&quot; xis:error-class=&quot;error&quot;&gt;Authenticator code&lt;/label&gt;
+    &lt;input xis:binding=&quot;totpCode&quot; id=&quot;totpCode&quot; type=&quot;text&quot; inputmode=&quot;numeric&quot; autocomplete=&quot;one-time-code&quot;/&gt;
+    &lt;xis:message message-for=&quot;totpCode&quot;/&gt;
+&lt;/div&gt;</code></pre>
+<p>If the application also offers external OpenID Connect providers, the login controller exposes <code>externalIdpIds</code> and <code>externalIdpUrls</code>. A custom template can render them next to the local login form:</p>
+<pre><code class="language-html">&lt;div xis:repeat=&quot;idpId:externalIdpIds&quot;&gt;
+    &lt;a href=&quot;${externalIdpUrls[idpId]}&quot;&gt;${idpId}&lt;/a&gt;
+&lt;/div&gt;</code></pre>
+<h3 id="totp-two-factor-login">TOTP Two-Factor Login</h3>
+<p>Add <code>xis-totp</code> when local username/password login should support authenticator-app codes:</p>
+<pre><code class="language-groovy">dependencies {
+    implementation &quot;one.xis:xis-authentication&quot;
+    implementation &quot;one.xis:xis-totp&quot;
+}</code></pre>
+<p>The module is optional. If it is present, XIS validates the application at startup:</p>
+<ul>
+<li>exactly one <code>TOTPStore</code> implementation must exist</li>
+<li><code>xis.totp.encryption-key</code> must be configured</li>
+</ul>
+<p>The store belongs to the application because only the application knows where user security data should live. XIS never hands raw authenticator secrets to the store. It encrypts a generated Base32 secret first and stores only the encrypted value.</p>
+<pre><code class="language-java">package example.security;
+
+import one.xis.context.Component;
+import one.xis.totp.TOTPStore;
+
+import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.concurrent.ConcurrentHashMap;
+
+@Component
+class AppTotpStore implements TOTPStore {
+
+    private final ConcurrentHashMap&lt;String, String&gt; secrets = new ConcurrentHashMap&lt;&gt;();
+    private final ConcurrentHashMap&lt;String, Long&gt; acceptedSteps = new ConcurrentHashMap&lt;&gt;();
+
+    @Override
+    public Optional&lt;String&gt; getEncryptedSecret(String userId) {
+        return Optional.ofNullable(secrets.get(userId));
+    }
+
+    @Override
+    public void saveEncryptedSecret(String userId, String encryptedSecret) {
+        secrets.put(userId, encryptedSecret);
+    }
+
+    @Override
+    public OptionalLong getLastAcceptedTimeStep(String userId) {
+        Long step = acceptedSteps.get(userId);
+        return step == null ? OptionalLong.empty() : OptionalLong.of(step);
+    }
+
+    @Override
+    public void saveLastAcceptedTimeStep(String userId, long timeStep) {
+        acceptedSteps.put(userId, timeStep);
+    }
+}</code></pre>
+<p>Configure a stable encryption key and, optionally, the issuer shown in authenticator apps:</p>
+<pre><code class="language-properties">xis.totp.encryption-key=replace-with-a-stable-secret-from-your-environment
+xis.totp.issuer=Example CRM</code></pre>
+<p>When a user has no stored TOTP secret, password login stays password-only. When a secret exists, the login validator requires the <code>totpCode</code> field before it creates the local login code. If the store persists the last accepted time step, XIS rejects a repeated code from the same 30-second window.</p>
+<p><code>xis-totp</code> also contributes an HTTP controller for provisioning:</p>
+<pre><code class="language-text">/xis/totp/qr.svg</code></pre>
+<p>The endpoint requires an authenticated user. It creates a secret for that user if none exists yet, stores the encrypted secret through <code>TOTPStore</code>, and returns an SVG QR code containing the standard <code>otpauth://</code> URI. Applications can show that SVG on their own account/security page.</p>
+<p><code>xis-totp</code> also provides <code>/totp-setup.html</code> as a default setup page. It uses the same basic CSS hooks as the default login page (<code>container</code>, <code>form_container</code>, <code>form-group</code>, <code>form-control</code>, <code>btn</code>, <code>btn-primary</code>) plus TOTP-specific hooks such as <code>totp-setup-container</code>, <code>totp-setup-form</code>, <code>totp-setup-error</code>, <code>totp-setup-qr-code</code>, and <code>totp-setup-login-link</code>. Applications can usually style the built-in page with CSS; add a <code>totp-setup.html</code> resource only when the page structure itself should be replaced.</p>
+<h3 id="external-idp">External IDP</h3>
+<p>External identity providers are supported through OpenID Connect. XIS uses the provider discovery document at <code>/.well-known/openid-configuration</code>, the authorization code flow, the token endpoint, and the provider JWKS endpoint. Other login protocols such as SAML are not supported.</p>
+<p>Provide one or more <code>ExternalIDPConfig</code> instances.</p>
+<pre><code class="language-java">package example.security;
+
+import one.xis.auth.idp.ExternalIDPConfig;
+import one.xis.context.Component;
+
+@Component
+class KeycloakLogin implements ExternalIDPConfig {
+
+    @Override
+    public String getIdpId() {
+        return &quot;keycloak&quot;;
+    }
+
+    @Override
+    public String getIdpServerUrl() {
+        return &quot;http://localhost:8080/realms/xis&quot;;
+    }
+
+    @Override
+    public String getClientId() {
+        return &quot;xis-app&quot;;
+    }
+
+    @Override
+    public String getClientSecret() {
+        return &quot;change-me&quot;;
+    }
+}</code></pre>
+<p>In a Spring application the same class should be a Spring bean:</p>
+<pre><code class="language-java">package example.security;
+
+import one.xis.auth.idp.ExternalIDPConfig;
+import org.springframework.stereotype.Component;
+
+@Component
+class KeycloakLogin implements ExternalIDPConfig {
+    // same methods as above
+}</code></pre>
+<p>If the application has exactly one external IDP and no local login, XIS redirects directly to that IDP login URL. If the application has local authentication or multiple external IDPs, XIS uses <code>/login.html</code> so the user can choose or use the local login form.</p>
+<p><code>@UserId</code> receives the OpenID Connect <code>sub</code> claim for external providers. That value is usually a stable provider id, not necessarily the visible login name or email address.</p>
+<p>After the callback, XIS always issues its own local application token. With no custom <code>UserAccountService</code>, XIS uses the external <code>sub</code> as the local user id. If the provider access token is a readable JWT with roles in <code>realm_access.roles</code> or <code>resource_access.account.roles</code>, those roles are copied into the local XIS token. If the provider token is opaque or does not carry application roles, protect pages with <code>@Authenticated</code> or provide a <code>UserAccountService</code> that maps the external user to local roles in <code>saveUserAccount</code>.</p>
+<p>By default XIS requests the <code>openid</code> scope. Providers may require additional scopes for role claims. Override <code>getScope()</code> in <code>ExternalIDPConfig</code> when the provider needs them:</p>
+<pre><code class="language-java">@Override
+public String getScope() {
+    return &quot;openid roles&quot;;
+}</code></pre>
+<h4 id="keycloak">Keycloak</h4>
+<p>For Keycloak, create a realm and a confidential OpenID Connect client. The client must allow this redirect URI:</p>
+<pre><code class="language-text">http://localhost:8080/xis/auth/callback/keycloak</code></pre>
+<p>Use the actual application origin instead of <code>http://localhost:8080</code> and the same provider id that <code>getIdpId()</code> returns instead of <code>keycloak</code>.</p>
+<p>The Keycloak issuer URL is the realm URL:</p>
+<pre><code class="language-text">http://localhost:8080/realms/xis</code></pre>
+<p>That is the value for <code>getIdpServerUrl()</code>. XIS reads the discovery document from:</p>
+<pre><code class="language-text">http://localhost:8080/realms/xis/.well-known/openid-configuration</code></pre>
+<p>For local development, Keycloak can be started in Docker and import a realm on startup. Mount the realm export into <code>/opt/keycloak/data/import</code> and start Keycloak with <code>start-dev --import-realm</code>.</p>
+<p>Keycloak publishes the standard OpenID Connect discovery document, so <code>ExternalIDPConfig</code> is enough. For role-protected pages, assign realm roles such as <code>USER</code> to the Keycloak user and request a scope that includes role claims, for example <code>openid roles</code>.</p>
+<h4 id="google">Google</h4>
+<p>Google publishes an OpenID Connect discovery document. Use this issuer URL:</p>
+<pre><code class="language-text">https://accounts.google.com</code></pre>
+<p>Configure the Google OAuth client as a web application and add the XIS callback URL as an authorized redirect URI:</p>
+<pre><code class="language-text">http://localhost:8080/xis/auth/callback/google</code></pre>
+<p>Use the actual application origin instead of <code>http://localhost:8080</code> and the same provider id that <code>getIdpId()</code> returns instead of <code>google</code>.</p>
+<p>Google&#x27;s token response contains an <code>id_token</code>, which is the OpenID Connect identity JWT. The <code>access_token</code> is meant for Google APIs. XIS therefore reads the Google <code>id_token</code> after the callback and issues its own application token. For a simple community login, no <code>UserAccountService</code> is required: the Google <code>sub</code> claim becomes the XIS user id and the local token has no named roles.</p>
+<p>Use a <code>UserAccountService</code> only when the application wants to store or enrich the Google user, for example for an approval workflow, profile data, or application roles. Use the application&#x27;s own concrete <code>UserAccount</code> implementation as the generic type. During the callback, XIS copies Google profile claims from the <code>id_token</code> into that object before <code>saveUserAccount</code> is called.</p>
+<p><code>saveUserAccount</code> is called after the external provider has successfully authenticated the user and before XIS creates its own local application token. This is the hook for creating or updating the application&#x27;s account for that external user: store profile data, attach approval state, or assign application roles. If the application does not need local user data at all, leave the <code>UserAccountService</code> out. If it provides one, <code>saveUserAccount</code> must be able to accept the externally loaded user. A no-op implementation is acceptable when the application deliberately keeps no local copy, but throwing an exception is not: the method is part of the successful external login flow.</p>
+<pre><code class="language-java">package example.security;
+
+import one.xis.auth.UserAccount;
+import one.xis.auth.UserAccountService;
+import one.xis.context.Component;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+@Component
+class GoogleUsers implements UserAccountService&lt;AppUser&gt; {
+
+    private final Map&lt;String, AppUser&gt; users = new ConcurrentHashMap&lt;&gt;();
+
+    @Override
+    public Optional&lt;AppUser&gt; getUserAccount(String userId) {
+        return Optional.ofNullable(users.get(userId));
+    }
+
+    @Override
+    public void saveUserAccount(AppUser userAccount) {
+        users.put(userAccount.getUserId(), userAccount);
+    }
+}
+
+class AppUser implements UserAccount {
+
+    private String userId;
+    private Set&lt;String&gt; roles = Set.of();
+    private String email;
+    private String name;
+    private String preferredUsername;
+    private String givenName;
+    private String familyName;
+    private String locale;
+    private String pictureUrl;
+    private boolean emailVerified;
+
+    // getters and setters
+}</code></pre>
+<p>For a real application, replace the in-memory map with your user database or approval workflow. If the application only needs a community login, leave the <code>UserAccountService</code> out and protect pages with <code>@Authenticated</code>. If the application needs named roles, provide a <code>UserAccountService</code> and assign roles in <code>saveUserAccount</code>. XIS calls <code>saveUserAccount</code> during the Google callback before it creates the local XIS token, so role assignments made there are part of the token used for the redirected page.</p>
+<p>The client id and client secret from Google are returned by <code>getClientId()</code> and <code>getClientSecret()</code>. For normal Google sign-in, request:</p>
+<pre><code class="language-java">@Override
+public String getScope() {
+    return &quot;openid profile email&quot;;
+}</code></pre>
+<p>Google also uses the standard OpenID Connect discovery document.</p>
+<h3 id="login-variants">Login Variants</h3>
+<h4 id="local-authentication-only">Local Authentication Only</h4>
+<p>Provide a <code>LocalCredentialService</code> and a real <code>UserAccountService</code>. The default <code>LocalCredentialService</code> is available through <code>xis-local-credentials</code>. When a protected page is opened without a valid login, XIS redirects to:</p>
+<pre><code class="language-text">/login.html?redirect_uri=...</code></pre>
+<p>The login page renders the local form. A custom <code>login.html</code> only needs the <code>login</code> form binding, the <code>username</code>, <code>password</code>, and hidden <code>state</code> fields, and the <code>login</code> action.</p>
+<h4 id="local-authentication-and-one-external-openid-connect-provider">Local Authentication And One External OpenID Connect Provider</h4>
+<p>Provide a <code>LocalCredentialService</code>, a real <code>UserAccountService</code>, and one <code>ExternalIDPConfig</code>. When a protected page is opened without a valid login, XIS still redirects to <code>/login.html</code> instead of redirecting directly to the provider.</p>
+<p>The login page renders the local form and one provider link. A custom <code>login.html</code> should render both the local form and the <code>externalIdpIds</code> / <code>externalIdpUrls</code> provider link.</p>
+<h4 id="local-authentication-and-multiple-external-openid-connect-providers">Local Authentication And Multiple External OpenID Connect Providers</h4>
+<p>Provide a <code>LocalCredentialService</code>, a real <code>UserAccountService</code>, and multiple <code>ExternalIDPConfig</code> instances. When a protected page is opened without a valid login, XIS redirects to <code>/login.html</code>.</p>
+<p>The login page renders the local form and one link per provider. A custom template should render the local form and loop over <code>externalIdpIds</code>, using <code>externalIdpUrls[idpId]</code> as the link target.</p>
+<h4 id="one-external-openid-connect-provider-without-local-authentication">One External OpenID Connect Provider Without Local Authentication</h4>
+<p>Provide one <code>ExternalIDPConfig</code> and no <code>LocalCredentialService</code>. XIS then redirects directly to that provider when a protected page is opened without a valid login.</p>
+<p><code>/login.html</code> is normally skipped in this setup. If it is opened explicitly, the local form is not rendered because the application has no local credentials service.</p>
+<h4 id="multiple-external-openid-connect-providers-without-local-authentication">Multiple External OpenID Connect Providers Without Local Authentication</h4>
+<p>Provide multiple <code>ExternalIDPConfig</code> instances and no <code>LocalCredentialService</code>. When a protected page is opened without a valid login, XIS redirects to <code>/login.html</code> so the user can choose the provider.</p>
+<p>The login page renders only provider links. A custom <code>login.html</code> must render <code>externalIdpIds</code> and <code>externalIdpUrls</code>; it should not show a local username/password form unless the application also provides a <code>LocalCredentialService</code>.</p>
+<p><code>UserAccountService</code> is optional when the application only uses external providers. XIS reads the OpenID Connect <code>id_token</code> after the callback and issues its own local application token. If no <code>UserAccountService</code> is present, the OpenID Connect <code>sub</code> claim becomes the XIS user id. If the provider access token is a readable JWT with roles in <code>realm_access.roles</code> or <code>resource_access.account.roles</code>, XIS copies those roles into the local token. Providers such as Google usually issue access tokens for their own APIs instead; in that case the local token has no named roles unless the application maps the account through a <code>UserAccountService</code>.</p>
+<h3 id="xis-as-an-openid-connect-provider">XIS As An OpenID Connect Provider</h3>
+<p>XIS can also run as an OpenID Connect provider. Use this setup when one application should own authentication and issue tokens for other applications.</p>
+<p>This is useful when authentication is more than a simple password check. For example, an account may need a pre-registration step, documents may need to be checked, or a human reviewer may need to approve the account before the user can log in. In that case the IDP application can own the registration and approval workflow. The consuming applications only need to trust the tokens issued by the XIS IDP.</p>
+<p>It is also useful for SSO across multiple applications. Several XIS applications, or applications written in other languages, can use the same XIS IDP as their OpenID Connect provider. The application-specific login logic stays in one place, while every client application receives standard access, refresh, and ID tokens.</p>
+<p>Another reason is token normalization. The IDP application decides how users are authenticated and which claims are issued. Client applications then see one predictable token format from the XIS IDP instead of having to know the application-specific account model behind it.</p>
+<p>To implement a XIS IDP, add <code>xis-idp-server</code> and provide an <code>IDPService</code>. The service is responsible for:</p>
+<ul>
+<li>returning user information</li>
+<li>returning access-token and ID-token claims</li>
+<li>registering allowed clients through <code>IDPClientInfo</code></li>
+</ul>
+<p>Add <code>xis-idp-credentials</code> and one repository implementation to validate user passwords and client secrets. The SQL default is available through <code>xis-idp-credentials-sql</code>.</p>
+<pre><code class="language-groovy">implementation &quot;one.xis:xis-idp-server:${xisVersion}&quot;
+implementation &quot;one.xis:xis-idp-credentials:${xisVersion}&quot;
+implementation &quot;one.xis:xis-idp-credentials-sql:${xisVersion}&quot;</code></pre>
+<p>In a Spring application, the service can be a Spring bean. In a XIS Boot application, use a XIS component instead.</p>
+<pre><code class="language-java">package example.idp;
+
+import one.xis.auth.AccessTokenClaims;
+import one.xis.auth.IDPClientInfo;
+import one.xis.auth.IDPClientInfoImpl;
+import one.xis.auth.IDPService;
+import one.xis.auth.IDPUserInfo;
+import one.xis.auth.IDPUserInfoImpl;
+import one.xis.auth.IDTokenClaims;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+@Component
+class AppIDPService implements IDPService {
+
+    private final Map&lt;String, IDPClientInfo&gt; clients = Map.of(
+            &quot;orders-app&quot;,
+            new IDPClientInfoImpl(
+                    &quot;orders-app&quot;,
+                    Set.of(&quot;http://localhost:8080/xis/auth/callback/xis-idp&quot;)
+            )
+    );
+
+    @Override
+    public Optional&lt;IDPUserInfo&gt; userAccount(String userId) {
+        return Optional.of(new IDPUserInfoImpl(userId, &quot;orders-app&quot;));
+    }
+
+    @Override
+    public Optional&lt;AccessTokenClaims&gt; accessTokenClaims(String userId) {
+        var claims = new AccessTokenClaims();
+        claims.setUsername(userId);
+        claims.setRoles(List.of(&quot;USER&quot;));
+        return Optional.of(claims);
+    }
+
+    @Override
+    public Optional&lt;IDTokenClaims&gt; idTokenClaims(String userId) {
+        var claims = new IDTokenClaims();
+        claims.setPreferredUsername(userId);
+        return Optional.of(claims);
+    }
+
+    @Override
+    public Optional&lt;IDPClientInfo&gt; findClientInfo(String clientId) {
+        return Optional.ofNullable(clients.get(clientId));
+    }
+}</code></pre>
+<p><code>IDPUserInfo</code> connects the authenticated user to the client application. <code>IDPClientInfo</code> registers a client id, client id and the exact callback URLs that may receive authorization codes. User passwords and client secrets are owned by <code>IDPCredentialService</code>; the default implementation stores Password4j Argon2id hashes through <code>IDPCredentialRepository</code>. The consuming XIS application uses the matching client id, client secret, and callback URL in its <code>ExternalIDPConfig</code>.</p>
+<p><code>accessTokenClaims</code> and <code>idTokenClaims</code> only need to fill the application-specific claims, such as username, display name, email, and roles. XIS fills the technical token fields such as <code>sub</code>, <code>iss</code>, <code>iat</code>, <code>exp</code>, <code>nbf</code>, and <code>client_id</code> when the token is issued.</p>
+<p>The IDP publishes the OpenID Connect discovery document, JWKS, login page, and token endpoint. Client applications then configure the XIS IDP like any other external OpenID Connect provider by using <code>ExternalIDPConfig</code> and the IDP base URL.</p>
+<p>To create or update credentials, inject <code>IDPCredentialService</code> and call <code>setUserPassword</code> or <code>setClientSecret</code>. Do this from an application setup flow, an admin UI, or a controlled bootstrap component. The service hashes the submitted secret before it reaches the repository.</p>
+<pre><code class="language-java">package example.idp;
+
+import one.xis.auth.IDPCredentialService;
+import one.xis.context.Component;
+import one.xis.context.Init;
+
+@Component
+class IDPBootstrapCredentials {
+
+    private final IDPCredentialService credentials;
+
+    IDPBootstrapCredentials(IDPCredentialService credentials) {
+        this.credentials = credentials;
+    }
+
+    @Init
+    void init() {
+        credentials.setUserPassword(&quot;alice&quot;, &quot;secret&quot;);
+        credentials.setClientSecret(&quot;orders-app&quot;, &quot;orders-secret&quot;);
+    }
+}</code></pre>
+<h3 id="sso-in-distributed-xis-applications">SSO In Distributed XIS Applications</h3>
+<p>Distributed XIS applications can share one login across a shell application and remote XIS runtimes. The browser logs in at one application, receives the XIS <code>access_token</code> and <code>refresh_token</code> cookies, and sends those cookies to the remote XIS runtime when a remote page, frontlet, action, or SSE event stream is used.</p>
+<p>After an external OpenID Connect callback, XIS issues local XIS tokens. That is intentional: the application can map or enrich external identities once and then work with one XIS token shape. In a distributed XIS application, every participating XIS runtime that should accept the same login must therefore be able to validate those local XIS tokens. Use a shared <code>LocalKeyProvider</code> setup, for example a shared keystore or mounted key material, instead of the default in-memory development keys.</p>
+<p>For XIS as an IDP, this is the intended setup:</p>
+<ul>
+<li>the shell application uses <code>xis-authentication</code> and <code>xis-idp-client</code></li>
+<li>each remote XIS application also uses <code>xis-authentication</code> and configures the same XIS IDP issuer</li>
+<li>distributed routing comes from <code>xis-distributed</code></li>
+<li>remote hosts are listed in the distributed configuration so XIS opens remote XIS requests and remote SSE connections</li>
+<li>participating XIS applications use shared local token keys so they can validate the XIS cookies issued by the shell</li>
+</ul>
+<p>The remote application does not receive the shell application&#x27;s server-side state. It receives the same token cookies and validates the XIS token signature locally. Its <code>ExternalIDPConfig</code> is still needed when the remote application may start or renew an external login flow itself.</p>
+<p>For Keycloak, use the same principle. Every participating XIS application must be able to validate the same Keycloak issuer and then issue or accept local XIS tokens consistently. If an application should use Keycloak roles directly, the Keycloak access token must be a JWT with the role claims XIS expects. Configure redirect URIs for applications that may initiate login directly.</p>
+<p>For different domains, remember normal browser cookie rules. The browser only sends cookies to hosts for which the cookie is valid. Same-site local development such as different <code>localhost</code> ports works naturally; separate production domains may require a shared parent domain and matching cookie configuration. If that is not possible, use a central XIS IDP or another broker pattern and keep application domains planned around browser cookie rules.</p>
+<p>The built-in IDP login flow is still a XIS login flow backed by <code>IDPService</code>. If the IDP application needs a more complex interactive process, such as multi-step registration or manual account approval, model that process in the IDP application and allow credential validation only after the account is ready.</p>
+  </main>
+</div>
+</body>
+</html>

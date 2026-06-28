@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Custom Proxies - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / Advanced / <span data-current-page>Custom Proxies</span></div>
+    <h1>Custom Proxies</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="custom-proxies">Custom Proxies</h2>
+<p><a href="/docs/guide/advanced/index.html">Advanced topics</a></p>
+<p>Custom proxies are an advanced extension point for libraries that want to expose interface-based components without making application code construct them by hand. XIS SQL repositories use this mechanism: an interface is annotated, XIS finds the annotation, asks the configured factory for a proxy, and then injects the proxy like any other component.</p>
+<p>Most applications should use existing proxy-based modules such as <code>xis-sql</code>. Create your own proxy annotation when you are building reusable infrastructure: repositories for another datastore, generated clients, typed access to an external system, or a company library that should feel like a normal injected service.</p>
+<h3 id="shape-of-a-proxy-extension">Shape Of A Proxy Extension</h3>
+<p>A proxy extension has three parts:</p>
+<ul>
+<li>an interface that application code injects</li>
+<li>an annotation for those interfaces</li>
+<li>a <code>ProxyFactory</code> that creates the runtime implementation</li>
+</ul>
+<pre><code class="language-java">package com.example.audit;
+
+import one.xis.context.Proxy;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Proxy(factory = AuditClientProxyFactory.class)
+@interface AuditClient {
+}</code></pre>
+<pre><code class="language-java">package com.example.audit;
+
+@AuditClient
+interface CustomerAudit {
+
+    void changed(long customerId, String message);
+}</code></pre>
+<pre><code class="language-java">package com.example.audit;
+
+import one.xis.context.ProxyFactory;
+
+class AuditClientProxyFactory implements ProxyFactory&lt;CustomerAudit&gt; {
+
+    private final AuditTransport transport;
+
+    AuditClientProxyFactory(AuditTransport transport) {
+        this.transport = transport;
+    }
+
+    @Override
+    public CustomerAudit createProxy(Class&lt;CustomerAudit&gt; interf) {
+        return (customerId, message) -&gt; transport.send(interf.getName(), customerId, message);
+    }
+}</code></pre>
+<p>The factory itself can use constructor injection. In XIS Boot it is created by the XIS context. In Spring Boot, XIS registers interfaces annotated with proxy annotations as Spring beans and lets Spring create the factory, so Spring beans such as <code>DataSource</code>, HTTP clients, or project services can be injected into the factory.</p>
+<h3 id="using-the-proxy">Using The Proxy</h3>
+<p>Once the interface is annotated, application code uses it like any other dependency:</p>
+<pre><code class="language-java">import one.xis.Service;
+
+@Service
+class CustomerService {
+
+    private final CustomerAudit audit;
+
+    CustomerService(CustomerAudit audit) {
+        this.audit = audit;
+    }
+
+    void renameCustomer(long customerId, String name) {
+        audit.changed(customerId, &quot;renamed to &quot; + name);
+    }
+}</code></pre>
+<p>The application does not call the factory directly and does not need a manual <code>@Bean</code> method for every interface.</p>
+<h3 id="interface-advice-proxies">Interface Advice Proxies</h3>
+<p>Ordinary context components can also be wrapped by interface advice. That is a separate advanced topic because it is about cross-cutting behavior around normal service methods, not about generated interface implementations. See <a href="/docs/guide/advanced/aspects.html">Aspects and interface advice</a>.</p>
+<h3 id="factory-name-variant">Factory Name Variant</h3>
+<p>If the factory type should not be loaded directly from the annotation, use <code>factoryName</code>:</p>
+<pre><code class="language-java">@Proxy(factoryName = &quot;com.example.audit.AuditClientProxyFactory&quot;)
+@interface AuditClient {
+}</code></pre>
+<p>This is useful for optional integrations where the annotation module should not directly depend on the implementation module.</p>
+<h3 id="spring-boot-notes">Spring Boot Notes</h3>
+<p>XIS Spring scans the Spring Boot application packages for interfaces annotated with annotations that themselves carry <code>@Proxy</code>. For every matching interface it registers a Spring bean backed by the proxy factory.</p>
+<p>This means:</p>
+<ul>
+<li>constructor injection into Spring components works for custom proxies</li>
+<li>proxy factories can depend on Spring beans</li>
+<li>libraries can provide proxy annotations without requiring handwritten Spring configuration in every application</li>
+</ul>
+<p>If a factory depends on optional infrastructure, make sure that infrastructure is available in the Spring context. For example, SQL repository factories need a <code>DataSource</code>; <code>xis-spring</code> supplies the default XIS SQL datasource when <code>xis-sql</code> is on the classpath and the application has not defined its own <code>DataSource</code>.</p>
+<h3 id="when-not-to-use-this">When Not To Use This</h3>
+<p>Do not use custom proxies to hide ordinary business services. If a class can simply be a <code>@Service</code> or <code>@Component</code>, keep it that way. Proxies are best for interface families where the implementation is generated, reflected, remote, or backed by metadata on the interface.</p>
+  </main>
+</div>
+</body>
+</html>

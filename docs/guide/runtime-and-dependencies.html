@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Runtime And Dependency Model - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / <span data-current-page>Runtime And Dependency Model</span></div>
+    <h1>Runtime And Dependency Model</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="runtime-and-dependency-model">Runtime And Dependency Model</h2>
+<p>XIS separates the public programming model from runtime integration. Most controller code and templates look the same whether the application runs inside Spring, standalone on the JVM, or as a GraalVM native image.</p>
+<p>Controllers, components, and form/data objects can be written in Java, Groovy, or Kotlin. Java and Kotlin are supported on the JVM and with XIS Boot Native; Groovy is supported on the JVM path.</p>
+<h3 id="runtime-choice">Runtime Choice</h3>
+<p>Choose one main application runtime:</p>
+<p><code>build.gradle</code> for Spring:</p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+    id &quot;org.springframework.boot&quot; version &quot;3.3.0&quot;
+    id &quot;io.spring.dependency-management&quot; version &quot;1.1.5&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation &quot;org.springframework.boot:spring-boot-starter-web&quot;
+    implementation &quot;one.xis:xis-spring&quot;
+}</code></pre>
+<p><code>build.gradle</code> for XIS Boot on the JVM:</p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation &quot;one.xis:xis-boot&quot; // or xis-spring
+}</code></pre>
+<p><code>build.gradle</code> for the advanced case of a standalone HTTP-controller-only application:</p>
+<pre><code class="language-groovy">plugins {
+    id &quot;java&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation &quot;one.xis:xis-http-controller&quot;
+}</code></pre>
+<p>When the XIS Gradle plugin is used, it aligns XIS dependency versions to the plugin version. Add explicit versions only in builds that do not use the plugin.</p>
+<p>Use <code>xis-spring</code> when the application already uses Spring Boot or needs Spring integration. <code>xis-spring</code> also brings the plain HTTP-controller API onto the classpath, so Spring applications can expose advanced plain HTTP endpoints next to XIS pages when they deliberately need that lower-level API.</p>
+<p>Use <code>xis-boot</code> when you want a small standalone runtime with XIS dependency injection, properties, package scanning, and an embedded HTTP runtime.</p>
+<p>**XIS pages, frontlets, modals, forms, and actions do not need plain HTTP controllers.** XIS already provides the browser/server transport for normal XIS applications. Use <code>xis-http-controller</code> as an application runtime only for the special case where you deliberately do not use the XIS page/frontend layer and want a standalone application made of plain HTTP endpoints and your own static resources.</p>
+<p><code>xis-http-controller</code> provides <code>one.xis.http.Controller</code>, <code>@Get</code>, <code>@Post</code>, the other HTTP controller annotations, SSE, static public resources, and the embedded Netty HTTP runtime. It is intentionally named HTTP rather than REST because XIS does not try to define or enforce the full REST architectural style.</p>
+<p>This API is still an advanced tool. In a normal XIS application, prefer pages, frontlets, forms, actions, and model data. Use plain HTTP controllers for external clients, webhooks, custom static-resource handling, or intentionally framework-light applications such as a small API plus hand-written browser assets.</p>
+<p>If this HTTP-controller-only special case should be built as a GraalVM native executable, add <code>xis-http-controller-native</code> instead of <code>xis-http-controller</code>. This opt-in enables the native build tasks without making native class catalogs part of ordinary HTTP-controller applications.</p>
+<p>Use <code>xis-boot-native</code> when you want the XIS Boot programming model and want to build a GraalVM native executable for small containers, fast startup, and cloud-native deployment. Continue with <a href="/docs/guide/cloud-native.html">Cloud Native And Native Images</a> for Gradle examples, native database modules, build requirements, and current limitations.</p>
+<h3 id="controller-api">Controller API</h3>
+<p>The selected runtime brings the controller annotations into the application.</p>
+<p>Important annotations include:</p>
+<table><thead><tr><th>Annotation</th><th>Use</th></tr></thead><tbody><tr><td><code>@Page</code></td><td>Maps a controller to a page URL.</td></tr><tr><td><code>@WelcomePage</code></td><td>Marks the default entry page.</td></tr><tr><td><code>@Frontlet</code></td><td>Marks a reusable frontlet controller.</td></tr><tr><td><code>@Modal</code></td><td>Marks a modal dialog controller.</td></tr><tr><td><code>@Include</code></td><td>Registers a reusable HTML include.</td></tr><tr><td><code>@ModelData</code></td><td>Exposes data to a template.</td></tr><tr><td><code>@FormData</code></td><td>Provides or receives form-bound data.</td></tr><tr><td><code>@Action</code></td><td>Exposes a method to template-triggered interactions.</td></tr><tr><td><code>@PathVariable</code></td><td>Binds a value from the current page URL.</td></tr><tr><td><code>@QueryParameter</code></td><td>Binds a query parameter from the current page URL.</td></tr><tr><td><code>@ActionParameter</code></td><td>Binds a parameter sent by the triggering action element.</td></tr><tr><td><code>@FrontletParameter</code></td><td>Binds a stable parameter of the current frontlet.</td></tr><tr><td><code>@ModalParameter</code></td><td>Binds a stable parameter of the current modal.</td></tr></tbody></table>
+<h3 id="validation-api">Validation API</h3>
+<p>The selected runtime also brings validation support into the application.</p>
+<h3 id="xis-boot">XIS Boot</h3>
+<p><code>xis-boot</code> is the standalone runtime. A minimal application:</p>
+<pre><code class="language-java">package example;
+
+import one.xis.boot.XISBootApplication;
+import one.xis.boot.XISBootRunner;
+
+@XISBootApplication
+class Application {
+
+    public static void main(String[] args) {
+        XISBootRunner.run(Application.class, args);
+    }
+}</code></pre>
+<p><code>xis-boot</code> supports:</p>
+<ul>
+<li>package scanning</li>
+<li>dependency injection</li>
+<li><code>@Component</code>, <code>@Bean</code>, <code>@Inject</code>, <code>@Value</code></li>
+<li><code>application.properties</code></li>
+<li><code>application-&lt;profile&gt;.properties</code></li>
+<li>profiles through <code>xis.profiles</code> or <code>XIS_PROFILES</code></li>
+</ul>
+<h4>XIS Boot configuration example</h4>
+<p>Profiles are activated through a system property or environment variable:</p>
+<pre><code class="language-bash">java -Dxis.profiles=dev -jar app.jar</code></pre>
+<pre><code class="language-bash">export XIS_PROFILES=dev,local</code></pre>
+<p>Values can be injected from <code>application.properties</code> or a profile-specific file:</p>
+<pre><code class="language-properties">app.title=Demo Application
+app.port=8080</code></pre>
+<pre><code class="language-java">package com.example.demo.config;
+
+import one.xis.context.Component;
+import one.xis.context.Value;
+
+@Component
+public class DemoConfig {
+
+    @Value("app.title")
+    private String title;
+
+    @Value("${app.port}")
+    private int port;
+
+    public String getTitle() {
+        return title;
+    }
+
+    public int getPort() {
+        return port;
+    }
+}</code></pre>
+<p>Bean factory methods are ordinary component methods annotated with <code>@Bean</code>:</p>
+<pre><code class="language-java">package com.example.demo.config;
+
+import one.xis.context.Bean;
+import one.xis.context.Component;
+
+import java.time.Clock;
+
+@Component
+public class AppConfiguration {
+
+    @Bean
+    public Clock systemClock() {
+        return Clock.systemUTC();
+    }
+}</code></pre>
+<p>The HTTP port can be passed as the first application argument:</p>
+<pre><code class="language-bash">java -jar app.jar 9090</code></pre>
+<h3 id="static-resources">Static Resources</h3>
+<p>Put public assets here:</p>
+<pre><code class="language-text">src/main/resources/public/</code></pre>
+<p>Reference them from HTML without the <code>public</code> segment:</p>
+<pre><code class="language-html">&lt;link rel=&quot;stylesheet&quot; href=&quot;/css/app.css&quot;/&gt;
+&lt;img src=&quot;/images/logo.png&quot; alt=&quot;Logo&quot;/&gt;</code></pre>
+<p>XIS also uses classpath <code>public</code> resources when it builds the root page:</p>
+<p>elements and built-in pages, for example modal dialogs, toast messages, and login forms</p>
+<ul>
+<li>every <code>public/**/*.css</code> resource is added to the root page as a stylesheet</li>
+<li>every <code>public/**/*.js</code> resource is added to the root page as a script</li>
+<li><code>public/default-main.css</code> is provided by XIS itself and contains default structural styles for framework-owned DOM</li>
+</ul>
+<p>You normally do not need to add stylesheet links for application CSS under <code>public</code>. Put app-specific CSS there and let XIS add it to the root page. The generated URLs omit the <code>public</code> segment, for example <code>src/main/resources/public/css/app.css</code> becomes <code>/css/app.css</code>.</p>
+<p>If you want to replace the XIS default styling completely, provide your own <code>src/main/resources/public/default-main.css</code>. An empty file is enough when you want no default styling at all.</p>
+<p>If you want to start from the XIS default file instead of an empty replacement, copy it from the resolved dependency:</p>
+<pre><code class="language-groovy">tasks.register(&quot;copyXisDefaultMainCss&quot;, Copy) {
+    from {
+        configurations.runtimeClasspath
+                .filter { it.name.startsWith(&quot;xis-javascript-&quot;) }
+                .collect { zipTree(it) }
+    }
+    include &quot;public/default-main.css&quot;
+    into &quot;src/main/resources&quot;
+}</code></pre>
+<p><code>default-main.css</code> is not the optional theme. It is the replaceable XIS default stylesheet and is loaded even when the optional <code>xis-theme</code> dependency is not used. Additional theme stylesheets are only relevant when you add <code>xis-theme</code>; see <a href="/docs/guide/advanced/theme.html">XIS theme</a>.</p>
+<p>In XIS Boot development runs, public assets under <code>src/main/resources/public</code> are read from the source file when it is available. CSS edits therefore become visible after a browser reload without rebuilding the application. Packaged jar resources remain static.</p>
+<p>For JavaScript, prefer <a href="/docs/guide/advanced/custom-javascript.html">Custom JavaScript and custom EL functions</a> when you want to extend the XIS browser runtime. Files listed through <code>META-INF/xis/js/extensions</code> are bundled into <code>/bundle.min.js</code>; files under <code>public</code> are loaded as normal root-page scripts.</p>
+<p>Optional JavaScript extension artifacts can register browser libraries through the same mechanism. For example, <code>one.xis:xis-javascript-jquery</code> adds the jQuery WebJar and registers <code>jquery.min.js</code> as a XIS JavaScript extension.</p>
+<h3 id="distributed-mode">Distributed Mode</h3>
+<p>The default deployment mode is same-origin: pages, frontlets, static assets, and XIS endpoints are served from the same host.</p>
+<p>Distributed page and frontlet delivery is an advanced deployment mode. Use it when one browser application should be composed from multiple XIS runtimes, for example a shell application plus independently deployed frontlets or pages.</p>
+<p>Continue with <a href="/docs/guide/advanced/microfrontend-architecture.html">Microfrontend Architecture</a> when you need this setup.</p>
+  </main>
+</div>
+</body>
+</html>

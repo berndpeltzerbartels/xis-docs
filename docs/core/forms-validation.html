@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Forms And Validation - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Core / <span data-current-page>Forms and validation</span></div>
+    <h1>Forms and validation</h1>
+    <p class="lead">
+      XIS keeps validation rules on the server to avoid parallel client/server rule sets. The cost is an extra request
+      when validation runs; the gain is one authoritative validation model.
+    </p>
+    <p>
+      Forms can cover normal input fields, nested objects, lists, type conversion, custom validators, validation
+      messages, action validation failures, file uploads, and modal dialogs. The same binding model is used throughout.
+    </p>
+
+    <h2>Why server-side validation is the default</h2>
+    <p>
+      Client-side validation can feel immediate, but it often creates two rule systems: one in the browser and one on the
+      server. Those systems drift. XIS favors one source of truth and then makes validation feedback part of the normal
+      page update flow.
+    </p>
+    <p>
+      This does not prevent small browser-side conveniences. It only means correctness belongs to the server. The
+      framework transports validation errors back to the UI and lets templates render them consistently.
+    </p>
+
+    <h2>A form is a Java contract plus HTML binding</h2>
+    <p>
+      The controller exposes a form object with <code>@FormData</code>. The template binds normal HTML controls to that
+      object. Validation annotations stay on the Java type, so tests and runtime behavior use the same rules.
+    </p>
+    <pre><code class="language-java">import one.xis.Action;
+import one.xis.FormData;
+import one.xis.Page;
+import one.xis.validation.EMail;
+import one.xis.validation.MinLength;
+
+@Page("/contact.html")
+class ContactPage {
+
+    @FormData("contact")
+    ContactForm contact() {
+        return new ContactForm("", "", "");
+    }
+
+    @Action("send")
+    void send(@FormData("contact") ContactForm form) {
+        // Called only after binding and validation have succeeded.
+        contactService.send(form.name(), form.email(), form.message());
+    }
+
+    record ContactForm(
+            @MinLength(1) String name,
+            @EMail String email,
+            @MinLength(10) String message) {
+    }
+}</code></pre>
+    <pre><code class="language-html">&lt;form xis:binding="contact"&gt;
+  &lt;label&gt;Name&lt;input xis:binding="name"&gt;&lt;/label&gt;
+  &lt;label&gt;Email&lt;input xis:binding="email"&gt;&lt;/label&gt;
+  &lt;label&gt;Message&lt;textarea xis:binding="message"&gt;&lt;/textarea&gt;&lt;/label&gt;
+  &lt;button type="submit" xis:action="send"&gt;Send&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+
+    <h2>Modal forms are ordinary forms</h2>
+    <p>
+      Small dialog forms are common in business applications: edit one field, confirm a change, add a row, or collect a
+      short decision without leaving the current page. XIS modals use the same controller, template, model data, form
+      data, action, and validation concepts as normal pages.
+    </p>
+  </main>
+</div>
+</body>
+</html>

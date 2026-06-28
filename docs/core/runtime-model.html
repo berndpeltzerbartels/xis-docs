@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Runtime Model - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Core / <span data-current-page>Runtime model</span></div>
+    <h1>Runtime model</h1>
+    <p class="lead">
+      XIS separates the programming model from the runtime integration. Most application code should depend on one
+      runtime and then use the same controller annotations and templates.
+    </p>
+
+    <h2>Runtime choices</h2>
+    <div class="two-column">
+      <div>
+        <h3>XIS Boot</h3>
+        <p>
+          The standalone runtime for lightweight XIS applications. Lightweight means a smaller infrastructure surface,
+          not a smaller ambition. Classic web applications with templates, validation, authentication, SQL, and jobs are
+          in scope.
+        </p>
+      </div>
+      <div>
+        <h3>XIS Spring</h3>
+        <p>
+          The right choice when the application is already a Spring Boot application or when the Spring ecosystem
+          already provides important infrastructure the project relies on.
+        </p>
+      </div>
+      <div>
+        <h3>XIS Boot Native</h3>
+        <p>
+          The native-image path for standalone applications that should deploy as small native executables or compact
+          containers.
+        </p>
+      </div>
+      <div>
+        <h3>HTTP Controller API</h3>
+        <p>
+          An advanced path for raw HTTP endpoints, special static apps, games, and native REST-like services. Normal XIS
+          page applications usually do not need it.
+        </p>
+      </div>
+    </div>
+
+    <h2>Choosing between XIS Boot and Spring</h2>
+    <p>
+      If an application already lives in Spring Boot, staying with Spring is usually the right choice. The same is true
+      when the application depends heavily on Spring ecosystem infrastructure that would otherwise have to be recreated
+      as XIS components.
+    </p>
+    <p>
+      XIS Boot is the smaller standalone path. It is especially attractive for microfrontend-oriented applications and
+      services where the web UI should stay close to the feature code, while the runtime should not bring a large
+      general-purpose application platform with it. A small amount of ordinary infrastructure code is not a reason to
+      abandon XIS Boot; the question is whether the project genuinely needs the breadth of the Spring ecosystem.
+    </p>
+    <p>
+      XIS Boot also has onboard support for the cloud-native path: the same standalone programming model can be built as
+      a runnable JVM jar or, with XIS Boot Native, as a GraalVM native executable with generated metadata for components,
+      resources, proxies, and reflection. That native path is not an add-on architecture; it is part of the reason to
+      choose XIS Boot for deployable services with a deliberately small runtime and infrastructure surface.
+    </p>
+    <p>
+      If cloud-native deployment is a primary requirement and the application does not already need Spring, XIS Boot is
+      usually the stronger recommendation. Spring can be used, but the native-image path tends to be heavier and more
+      sensitive to the surrounding ecosystem. XIS Boot keeps the runtime surface smaller and the generated native metadata
+      closer to the framework features the application actually uses.
+    </p>
+
+    <h2>Dependency shape</h2>
+    <p>
+      Normal applications choose one runtime dependency. That runtime brings the controller and validation APIs
+      transitively. Lower-level modules are documented because they are public, but most applications should not assemble
+      their own runtime from individual internal pieces.
+    </p>
+    <pre><code class="language-groovy">plugins {
+    id "java"
+    id "one.xis.plugin" version "0.18.0"
+}
+
+dependencies {
+    implementation "one.xis:xis-boot"
+    // or: implementation "one.xis:xis-spring"
+    // or: implementation "one.xis:xis-boot-native"
+}</code></pre>
+    <pre><code class="language-java">import one.xis.boot.XISBootApplication;
+import one.xis.boot.XISBootRunner;
+
+@XISBootApplication
+public class Application {
+    public static void main(String[] args) {
+        XISBootRunner.run(Application.class, args);
+    }
+}</code></pre>
+
+    <h2>Static resources</h2>
+    <p>
+      Public files live under <code>src/main/resources/public</code> and are served without the <code>public</code>
+      path segment. XIS also uses public CSS and JavaScript resources when building the root page. Concrete public
+      files can be served directly; the root path itself is not treated as a public directory.
+    </p>
+  </main>
+</div>
+</body>
+</html>

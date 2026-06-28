@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HTTP Controller API - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Architecture / <span data-current-page>HTTP Controller API</span></div>
+    <h1>HTTP Controller API</h1>
+    <p class="lead">
+      The HTTP Controller API is a special path for raw HTTP endpoints, static apps, games, and REST-like services. It
+      is powerful, but normal XIS page applications usually do not need it.
+    </p>
+    <p>
+      The native variant is still important: it should be easy to build small native HTTP services when the page
+      framework is intentionally not part of the application.
+    </p>
+
+    <h2>When this API is the right tool</h2>
+    <p>
+      Most XIS applications should use pages, frontlets, forms, and actions. The HTTP Controller API is meant for cases
+      where that model would get in the way: REST endpoints, small service APIs, static browser clients, games, probes,
+      health checks, and integration endpoints that are not page interactions.
+    </p>
+    <p>
+      This distinction is important for positioning. The existence of HTTP controllers does not mean that ordinary XIS
+      users should write their own JavaScript application and only use XIS as a backend. It means the framework also has
+      a controlled escape hatch for applications that intentionally do not use the page layer.
+    </p>
+    <pre><code class="language-java">import one.xis.http.Controller;
+import one.xis.http.Get;
+import one.xis.http.PathVariable;
+import one.xis.http.Post;
+import one.xis.http.RequestBody;
+import one.xis.http.ResponseEntity;
+
+@Controller
+class CustomerEndpoint {
+
+    @Get("/api/customers/{id}")
+    CustomerDto find(@PathVariable("id") long id) {
+        return customers.findDto(id);
+    }
+
+    @Post("/api/customers")
+    ResponseEntity&lt;CustomerDto&gt; create(@RequestBody CustomerForm form) {
+        CustomerDto customer = customers.create(form);
+        return ResponseEntity.created(customer)
+                .addHeader("Location", "/api/customers/" + customer.id());
+    }
+}</code></pre>
+
+    <h2>Runtime choices</h2>
+    <p>
+      A pure HTTP controller application can run with XIS Boot and the Netty HTTP runtime. In a Spring application, the
+      servlet container remains the natural HTTP runtime. If a project already uses Spring MVC and Spring security
+      conventions heavily, it is usually better to keep using Spring's controller annotations for that part.
+    </p>
+    <p>
+      The advanced case is a mixed XIS application: server-driven pages for the user interface and a few plain HTTP
+      endpoints for assets, diagnostics, or integration. In that case the HTTP filter chain is the right place to keep
+      static resources and custom endpoints away from the page controller flow when necessary.
+    </p>
+    <pre><code class="language-java">import one.xis.context.Component;
+import one.xis.http.FilterChain;
+import one.xis.http.HttpFilter;
+import one.xis.http.HttpRequest;
+import one.xis.http.HttpResponse;
+
+@Component
+class DiagnosticsHeaderFilter implements HttpFilter {
+    @Override
+    public void doFilter(HttpRequest request, HttpResponse response, FilterChain chain) {
+        response.addHeader("X-App", "example");
+        chain.doFilter(request, response);
+    }
+}</code></pre>
+
+    <h2>Static clients and public resources</h2>
+    <p>
+      Static HTML, JavaScript, and assets in the public resource folder are public web resources. They should be served
+      as files, not interpreted as XIS page templates. This is the pattern used by applications that bring their own
+      browser client while still using the XIS HTTP runtime.
+    </p>
+    <p>
+      The rule keeps ownership clear: templates belong to the XIS page layer, public resources belong to the web server
+      side of the application. A custom filter can short-circuit requests when an application has unusual routing needs.
+    </p>
+
+    <h2>SSE and streaming responses</h2>
+    <p>
+      Server-sent events fit the HTTP Controller API better than the page action model. They are useful when the browser
+      needs a long-lived stream for refresh signals, progress updates, or other one-way server notifications. The stream
+      should publish small events and let the normal page/frontlet refresh path load substantial data.
+    </p>
+
+    <h2>Native images</h2>
+    <p>
+      Small HTTP services are a strong native-image use case because they can avoid the page runtime and the generated
+      JavaScript bundle entirely. The native build should still be benchmarked in the target environment. Native images
+      are excellent for startup and memory shape, but they are not a promise of higher long-running throughput.
+    </p>
+  </main>
+</div>
+</body>
+</html>

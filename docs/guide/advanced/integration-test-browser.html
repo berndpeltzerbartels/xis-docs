@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Integration-Test Browser Model - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content doc-body">
+    <div class="breadcrumb">Complete Guide / Advanced / <span data-current-page>Integration-Test Browser Model</span></div>
+    <h1>Integration-Test Browser Model</h1>
+    <p class="lead">Complete reference chapter for the public XIS behavior. Use it when the overview pages are too short and you need exact annotations, tags, code shape, and runtime rules.</p>
+<h2 id="integration-test-browser-model">Integration-Test Browser Model</h2>
+<p>XIS integration tests run the XIS JavaScript runtime in GraalVM JavaScript, but they do not start a real browser. The test module provides a small Java implementation of common browser objects so tests can render templates, click elements, submit forms, navigate, and inspect the resulting DOM quickly.</p>
+<p>Use this environment for XIS behavior. Use E2E tests with a real browser when browser behavior itself is important.</p>
+<p>Because tests run under GraalVM, some JavaScript or host-object interactions may be less forgiving than a browser would be. Keep custom JavaScript strict and explicit: declare variables, avoid relying on accidental globals, avoid assigning to read-only properties, and prefer simple browser APIs that are listed below.</p>
+<p>Extension files are bundled as plain scripts, not as JavaScript modules. <code>export</code> and <code>import</code> are not supported in XIS custom JavaScript extension files.</p>
+<h3 id="available-global-objects">Available Global Objects</h3>
+<p>The integration-test script exposes these browser-like globals:</p>
+<table><thead><tr><th>Global</th><th>What It Provides</th></tr></thead><tbody><tr><td><code>document</code></td><td>Parsed DOM tree for the current XIS page.</td></tr><tr><td><code>window</code></td><td>Browser window facade with location, history, scroll state, and references to document/storage/console.</td></tr><tr><td><code>localStorage</code></td><td>In-memory <code>Storage</code> implementation for the test client.</td></tr><tr><td><code>sessionStorage</code></td><td>In-memory <code>Storage</code> implementation for the test client.</td></tr><tr><td><code>console</code></td><td><code>log</code>, <code>debug</code>, <code>warn</code>, and <code>error</code>. <code>console.error</code> fails the test.</td></tr><tr><td><code>Node</code></td><td>DOM node constants such as <code>Node.ELEMENT_NODE</code>.</td></tr><tr><td><code>setTimeout</code></td><td>Runs the callback after a delay in a Java thread.</td></tr><tr><td><code>atob</code></td><td>Base64 decoder.</td></tr><tr><td><code>encodeURIComponent</code></td><td>URL component encoder.</td></tr></tbody></table>
+<p>XIS also binds internal helpers used by its own runtime, such as <code>htmlToElement</code> and <code>backendBridge</code>.</p>
+<h3 id="document">Document</h3>
+<p><code>document</code> supports the operations most XIS integration tests need:</p>
+<pre><code class="language-javascript">document.querySelector(&#x27;#save&#x27;);
+document.querySelectorAll(&#x27;.item&#x27;);
+document.getElementById(&#x27;name&#x27;);
+document.getElementsByTagName(&#x27;input&#x27;);
+document.createElement(&#x27;div&#x27;);
+document.createTextNode(&#x27;Hello&#x27;);
+document.createComment(&#x27;note&#x27;);
+document.createDocumentFragment();</code></pre>
+<p>The common properties below are also available:</p>
+<pre><code class="language-javascript">document.documentElement;
+document.body;
+document.head;
+document.title;
+document.cookie;
+document.location;
+document.defaultView;</code></pre>
+<p><code>document.title</code> and <code>document.cookie</code> can be read and written in JavaScript.</p>
+<h3 id="element-and-node">Element And Node</h3>
+<p>Elements support the DOM operations used by the XIS runtime and by typical integration tests:</p>
+<pre><code class="language-javascript">element.getAttribute(&#x27;data-id&#x27;);
+element.setAttribute(&#x27;data-id&#x27;, &#x27;42&#x27;);
+element.hasAttribute(&#x27;disabled&#x27;);
+element.removeAttribute(&#x27;disabled&#x27;);
+element.appendChild(child);
+element.insertBefore(newNode, markerNode);
+element.removeChild(child);
+element.remove();
+element.cloneNode();
+element.click();
+element.dispatchEvent(event);
+element.querySelector(&#x27;input[name=&quot;email&quot;]&#x27;);
+element.querySelectorAll(&#x27;.error&#x27;);</code></pre>
+<p>Common DOM properties are exposed through Java getters and setters, so JavaScript can use property syntax:</p>
+<pre><code class="language-javascript">element.innerText = &#x27;Saved&#x27;;
+element.innerHTML = &#x27;&lt;span&gt;Saved&lt;/span&gt;&#x27;;
+element.textContent = &#x27;Saved&#x27;;
+element.className = &#x27;active selected&#x27;;
+
+element.innerText;
+element.innerHTML;
+element.textContent;
+element.localName;
+element.tagName;
+element.parentNode;
+element.firstChild;
+element.nextSibling;
+element.childNodes;
+element.classList;</code></pre>
+<p>Form element implementations exist for <code>input</code>, <code>textarea</code>, <code>select</code>, and <code>option</code>.</p>
+<p>Drag and drop tests can use <code>one.xis.test.dom.DragAndDrop</code>. It dispatches <code>dragstart</code>, <code>dragover</code>, and <code>drop</code> events with one shared <code>DataTransfer</code> object. The test browser model implements the <code>setData</code> and <code>getData</code> methods used by XIS drag and drop actions.</p>
+<h3 id="window">Window</h3>
+<p><code>window</code> contains:</p>
+<pre><code class="language-javascript">window.document;
+window.location;
+window.history;
+window.localStorage;
+window.sessionStorage;
+window.console;
+window.scrollTo(0, 0);
+window.scrollX;
+window.scrollY;</code></pre>
+<p><code>window.addEventListener(...)</code> exists as a no-op. It is present so browser-oriented code can be loaded, but it does not simulate the browser event loop.</p>
+<h3 id="location-and-history">Location And History</h3>
+<p><code>location</code> supports the fields XIS navigation needs:</p>
+<pre><code class="language-javascript">location.pathname;
+location.href;
+location.origin;
+location.search;</code></pre>
+<p><code>history</code> supports:</p>
+<pre><code class="language-javascript">history.pushState(state, title, url);
+history.replaceState(state, title, url);
+history.back();
+history.forward();</code></pre>
+<p>The Java test API also exposes inspection helpers such as the current state and history entries.</p>
+<h3 id="storage">Storage</h3>
+<p><code>localStorage</code> and <code>sessionStorage</code> support the normal methods:</p>
+<pre><code class="language-javascript">localStorage.setItem(&#x27;key&#x27;, &#x27;value&#x27;);
+localStorage.getItem(&#x27;key&#x27;);
+localStorage.removeItem(&#x27;key&#x27;);</code></pre>
+<p>Values are kept in memory for the test client. They are not browser storage and they do not persist outside the test context.</p>
+<h3 id="what-is-not-a-real-browser">What Is Not A Real Browser</h3>
+<p>The integration-test browser model intentionally does not implement the complete Web Platform. In particular, do not rely on it for:</p>
+<ul>
+<li>CSS cascade, layout, flex/grid position, dimensions, computed styles, fonts, or media queries</li>
+<li>canvas, SVG rendering, images, video, audio, WebGL, or animation frames</li>
+<li>focus management, pointer/touch/keyboard event fidelity, bubbling/capturing semantics, or default browser actions</li>
+<li>real networking APIs such as <code>fetch</code>, <code>XMLHttpRequest</code>, <code>WebSocket</code>, or <code>EventSource</code></li>
+<li>real cookie handling, cookie attributes, SameSite/Secure behavior, or browser privacy rules</li>
+<li>Web Components, Shadow DOM, mutation observers, intersection observers, resize observers, or performance APIs</li>
+<li>browser security behavior such as CORS, CSP, redirects, popup blocking, or third-party cookie policy</li>
+<li>execution behavior of dynamically inserted <code>&lt;script&gt;</code> tags</li>
+<li>JavaScript module loading, including <code>export</code> and <code>import</code> syntax in extension files</li>
+</ul>
+<p>If custom JavaScript depends on one of these areas, cover it with a Playwright E2E test instead of relying only on <code>xis-test</code>.</p>
+<h3 id="practical-rule">Practical Rule</h3>
+<p>Use integration tests for custom JavaScript when it manipulates the XIS-rendered DOM in simple ways, registers EL functions, reads or writes attributes, or reacts to XIS-triggered clicks.</p>
+<p>Use E2E tests when the JavaScript depends on actual browser APIs, browser layout, network behavior, or realistic events.</p>
+  </main>
+</div>
+</body>
+</html>

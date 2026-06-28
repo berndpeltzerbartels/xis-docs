@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pages And Templates - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Core / <span data-current-page>Pages and templates</span></div>
+    <h1>Pages and templates</h1>
+    <p class="lead">
+      XIS pages are defined by a backend controller and an HTML template. Model methods provide data, actions handle
+      user interaction, and the browser runtime applies the resulting changes without turning the application into a
+      handwritten frontend state machine.
+    </p>
+
+    <h2>The page as a vertical slice</h2>
+    <p>
+      A page controller describes what the page can do. The HTML template describes how that page is shown. XIS connects
+      both sides: it invokes model methods, binds action calls, transports form data, and updates the browser after the
+      server has produced a response.
+    </p>
+    <p>
+      The browser does not become the owner of routing or application state. It executes the XIS runtime, keeps the DOM
+      in sync, and avoids browser full page reloads. Even a transition from one XIS page to another is not a classic
+      browser reload: the XIS JavaScript runtime receives the server-rendered result and replaces the relevant DOM
+      elements. That is why the programming model can feel like request/response code even though the browser behaves
+      like an SPA.
+    </p>
+
+    <h2>Template syntax belongs to the model</h2>
+    <p>
+      XIS templates are plain HTML plus XIS attributes and tags. Conditions, iteration, navigation attributes, forms,
+      validation messages, dynamic classes, raw content, includes, and frontlet declarations are documented as part of
+      the core UI model because they are the public surface the developer writes every day.
+    </p>
+
+    <h2>Variable scope</h2>
+    <p>
+      A template is evaluated in the scope of the current component. A page has its page model. A frontlet has its
+      frontlet model. An include is initialized inside the surrounding page or frontlet and therefore sees the
+      surrounding variables.
+    </p>
+    <p>
+      Nested frontlets can also read parameters from their containing frontlet. A directly supplied frontlet parameter
+      wins over an inherited parameter with the same name. Use this for values that really belong to a concrete
+      frontlet instance. Shared route context, such as a product id in <code>/products/{id}.html</code>, should normally
+      stay a path variable and be read with <code>@PathVariable</code>.
+    </p>
+    <pre><code class="language-html">&lt;main xis:frontlet-container="buy-box"
+      xis:default-frontlet="AddToCartFrontlet?layout=compact"&gt;
+&lt;/main&gt;</code></pre>
+    <p>
+      In this example the frontlet receives <code>layout</code> as a frontlet parameter because it describes how this
+      specific buy box should render. The product id can still come from the current page URL:
+    </p>
+    <pre><code class="language-java">@Frontlet
+class AddToCartFrontlet {
+
+    @ModelData("cartLine")
+    CartLineForm cartLine(@PathVariable("id") long productId,
+                          @FrontletParameter("layout") String layout) {
+        return cartService.newLine(productId, layout);
+    }
+}</code></pre>
+  </main>
+</div>
+</body>
+</html>

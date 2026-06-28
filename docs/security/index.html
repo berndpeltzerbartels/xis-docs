@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Security - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Security / <span data-current-page>Security model</span></div>
+    <h1>Security</h1>
+    <p class="lead">
+      This overview explains the security model at a high level. The full security reference covers roles, template
+      visibility, ownership checks, local authentication, external OpenID Connect providers, TOTP, XIS as IDP, and
+      distributed SSO.
+    </p>
+    <div class="note">
+      <strong>Need the full API?</strong> Continue with the
+      <a href="/docs/guide/security.html">complete security guide</a> for configuration, login flows, role checks,
+      external identity providers, and SSO.
+    </div>
+
+    <h2>Application security</h2>
+    <p>
+      The ordinary security story is application-level security: pages and actions can require roles, templates can hide
+      or show content based on authorization, DTOs can carry role metadata, and ownership checks can decide whether a
+      user may access a particular object.
+    </p>
+    <p>
+      Roles come from the authenticated user context. In a local-login application they are supplied by the local
+      credential/user service. With an external OpenID Connect provider they are mapped from the authenticated identity
+      and its claims. Once the user is authenticated, page and action checks read those roles through the XIS security
+      context.
+    </p>
+    <pre><code class="language-java">import one.xis.Action;
+import one.xis.ModelData;
+import one.xis.Page;
+import one.xis.Roles;
+import one.xis.UserId;
+
+@Page("/account.html")
+@Roles("USER")
+class AccountPage {
+
+    @ModelData("message")
+    String message(@UserId String userId) {
+        return "Account for " + userId;
+    }
+
+    @Action
+    @Roles("ADMIN")
+    void rebuildIndex() {
+        adminService.rebuildIndex();
+    }
+}</code></pre>
+    <pre><code class="language-html">&lt;button xis:if="isUserInRole('ADMIN')" xis:action="rebuildIndex"&gt;
+  Rebuild index
+&lt;/button&gt;</code></pre>
+    <p>
+      Template visibility is only a usability rule. The action still needs <code>@Roles</code> or
+      <code>@Authenticated</code>, because browser HTML is never the security boundary.
+    </p>
+    <p>
+      See <a href="/docs/guide/security.html#page-and-action-roles">roles on pages, actions, and
+      frontlets</a> and <a href="/docs/guide/security.html#role-based-visibility-in-templates">template visibility</a> for the complete
+      behavior.
+    </p>
+
+    <h2>Login and identity providers</h2>
+    <p>
+      XIS supports local authentication, custom login templates, TOTP two-factor login, and external OpenID Connect
+      providers. These topics belong in the security chapter because most users need to understand them before they care
+      about distributed architecture.
+    </p>
+    <p>
+      The complete guide explains <a href="/docs/guide/security.html#local-authentication">local authentication</a>,
+      <a href="/docs/guide/security.html#external-idp">external OpenID Connect providers</a>, and
+      login template customization.
+    </p>
+
+    <h2>SSO and XIS as identity provider</h2>
+    <p>
+      Distributed SSO and XIS as an OpenID Connect provider are architectural security topics. They should be explained
+      here first and then cross-linked from the microfrontend chapter where topology and cross-application composition
+      become relevant.
+    </p>
+    <p>
+      See <a href="/docs/guide/security.html#xis-as-an-openid-connect-provider">XIS as OpenID Connect provider</a> and
+      <a href="/docs/guide/security.html#sso-in-distributed-xis-applications">distributed SSO</a> for the detailed setup.
+    </p>
+  </main>
+</div>
+</body>
+</html>

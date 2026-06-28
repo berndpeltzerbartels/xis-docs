@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Testing From The Start - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260620-copy">
+  <script src="/public/js/site.js?v=20260620-copy" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Getting Started / <span data-current-page>Testing from the start</span></div>
+    <h1>Testing from the start</h1>
+    <p class="lead">
+      XIS should make test-driven development feel natural. A controller and template form a small slice that can be
+      rendered, interacted with, and verified without constructing a separate frontend test universe.
+    </p>
+
+    <h2>The early testing promise</h2>
+    <p>
+      The first tutorial includes a test before the reader has learned the entire framework. This makes the product
+      story clear: XIS does not hide behavior behind a browser-only client application that is hard to exercise from
+      JVM tests.
+    </p>
+    <p>
+      The important point is not only that XIS has tests. The point is that the ordinary programming model is testable:
+      open a XIS page, inspect the rendered document, click an action, submit a form, and assert the resulting DOM or
+      service state. You do not need to build a parallel REST client and a parallel frontend state model just to test a
+      page workflow.
+    </p>
+
+    <h2>Generated starter tests</h2>
+    <p>
+      If the project uses the XIS Gradle plugin, <code>xisTests</code> can generate starter tests for page controllers.
+      This is useful at the beginning of a page because it creates the test file in the right package, wires the XIS test
+      context, and opens the page URL from the page annotation.
+    </p>
+    <pre><code class="language-bash">./gradlew xisTests</code></pre>
+    <p>
+      A practical workflow is to sketch the controller first, including the <code>@ModelData</code>, <code>@FormData</code>,
+      and <code>@Action</code> methods that define the page contract, then generate templates and tests:
+    </p>
+    <pre><code class="language-bash">./gradlew xisTemplates xisTests</code></pre>
+    <p>
+      Generated tests are starting points. They should be edited immediately until they describe the behavior you want.
+      The generator avoids boilerplate; it does not replace test design.
+    </p>
+    <pre><code class="language-java">package example.dashboard;
+
+import one.xis.boot.test.XisBootTest;
+import one.xis.context.IntegrationTestContext;
+import one.xis.test.InTestContext;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+@XisBootTest
+class DashboardPageTest {
+
+    private IntegrationTestContext context;
+
+    @InTestContext
+    private DashboardPage dashboardPage;
+
+    @Test
+    void opensDashboard() {
+        var client = context.openPage("/dashboard.html");
+
+        assertNotNull(client.getDocument());
+    }
+}</code></pre>
+
+    <h2>Using the annotation without generated tests</h2>
+    <p>
+      The generated style is not special to generated files. You can write the same kind of test by hand. Use
+      <code>@XisBootTest</code> when you want the JUnit extension to create the XIS integration-test context and support
+      XIS test annotations such as <code>@InTestContext</code>, <code>@Mock</code>, <code>@Spy</code>, and
+      <code>@Captor</code>.
+    </p>
+    <pre><code class="language-java">package example.products;
+
+import one.xis.boot.test.XisBootTest;
+import one.xis.context.IntegrationTestContext;
+import one.xis.test.InTestContext;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@XisBootTest
+class ProductPageTest {
+
+    private IntegrationTestContext context;
+
+    @InTestContext
+    private ProductService productService;
+
+    @Test
+    void opensProductPage() {
+        productService.add(new Product(42, "Desk"));
+
+        var client = context.openPage("/products/42.html");
+        var document = client.getDocument();
+
+        assertEquals("Desk", document.getElementByTagName("h1").getInnerText());
+    }
+}</code></pre>
+    <p>
+      <code>@InTestContext</code> registers a real collaborator in the XIS context. The controller sees the same instance
+      through constructor or field injection that the test later inspects.
+    </p>
+
+    <h2>Testing interactions</h2>
+    <p>
+      Tests should not stop at "the page opens." XIS tests can interact with the document. A button click can call a
+      server action, a form submit can trigger validation, and the returned DOM can be asserted.
+    </p>
+    <pre><code class="language-java">@XisBootTest
+class CounterPageTest {
+
+    private IntegrationTestContext context;
+
+    @Test
+    void incrementsCounter() {
+        var client = context.openPage("/counter.html");
+        var document = client.getDocument();
+
+        assertEquals("0", document.getElementById("count").getInnerText());
+
+        document.getElementById("increment").click();
+
+        assertEquals("1", client.getDocument().getElementById("count").getInnerText());
+    }
+}</code></pre>
+    <p>
+      The exact document helper methods depend on the element you are testing. The mental model is stable: inspect the
+      rendered document, perform the interaction a user would perform, then inspect the updated document or an injected
+      collaborator.
+    </p>
+
+    <h2>Manual integration context</h2>
+    <p>
+      You can also write XIS integration tests without <code>@XisBootTest</code>. This is useful for very explicit tests,
+      for builds that do not use the starter dependency, or for cases where the test wants complete control over the
+      registered classes and instances.
+    </p>
+    <pre><code class="language-java">package example.products;
+
+import one.xis.context.IntegrationTestContext;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class ProductPageManualTest {
+
+    private IntegrationTestContext context;
+    private ProductService productService;
+
+    @BeforeEach
+    void setUp() {
+        productService = new ProductService();
+        context = IntegrationTestContext.builder()
+                .withBasePackageClass(ProductPageManualTest.class)
+                .withInstance(productService)
+                .build();
+    }
+
+    @Test
+    void opensProductPage() {
+        productService.add(new Product(42, "Desk"));
+
+        var client = context.openPage("/products/42.html");
+
+        assertEquals("Desk", client.getDocument().getElementByTagName("h1").getInnerText());
+    }
+}</code></pre>
+    <p>
+      This lower-level style is still a XIS integration test. It renders the page through the XIS controller/template
+      lifecycle. It simply does not use the JUnit annotation as a convenience layer.
+    </p>
+
+    <h2>What belongs where</h2>
+    <table>
+      <thead>
+      <tr><th>Test kind</th><th>Use it for</th></tr>
+      </thead>
+      <tbody>
+      <tr><td>Unit test</td><td>Services, repository-adjacent logic, formatters, validators.</td></tr>
+      <tr><td>XIS integration test</td><td>Pages, actions, validation, navigation, modal flows, drag and drop.</td></tr>
+      <tr><td>Browser/E2E test</td><td>Real browser behavior, CSS/JS integration, deployment-level confidence.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Generated is not required</h2>
+    <p>
+      There are three valid testing styles:
+    </p>
+    <ul>
+      <li>Generate a starter with <code>xisTests</code>, then edit it.</li>
+      <li>Write a hand-made <code>@XisBootTest</code>.</li>
+      <li>Build an <code>IntegrationTestContext</code> manually without the annotation.</li>
+    </ul>
+    <p>
+      The first style is fastest when starting a page. The second is concise for ordinary page and frontlet behavior.
+      The third is best when the test setup itself is part of what you want to control.
+    </p>
+
+    <h2>Documentation rule</h2>
+    <p>
+      Every non-trivial code example should either live in an executable documentation project or be derived from code
+      that is compiled and tested somewhere. The same discipline is useful in application documentation: executable
+      examples age much better than copied snippets.
+    </p>
+    <p>
+      The detailed reference for generated tests, document interaction, drag and drop, authentication, manual contexts,
+      and test dependencies lives in the <a href="/docs/guide/examples-and-tests.html">Examples and Tests</a> guide.
+    </p>
+  </main>
+</div>
+</body>
+</html>

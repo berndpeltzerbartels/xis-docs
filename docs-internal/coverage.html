@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Coverage Checklist - XIS</title>
+  <link rel="stylesheet" href="/public/css/site.css?v=20260619-search">
+  <script src="/public/js/site.js?v=20260619-search" defer></script>
+  <!--#include virtual="/includes/site-analytics.html" -->
+</head>
+<body>
+<!-- Internal documentation review aid. Do not deploy this file as public user documentation. -->
+<div data-include="/includes/site-header.html"><!--#include virtual="/includes/site-header.html" --></div>
+<div class="page-shell">
+  <div data-include="/includes/site-sidebar.html"><!--#include virtual="/includes/site-sidebar.html" --></div>
+  <main class="content">
+    <div class="breadcrumb">Reference / <span data-current-page>Coverage checklist</span></div>
+    <h1>Coverage checklist</h1>
+    <p class="lead">
+      This page guards completeness. Nothing that is currently described in the XIS README or module READMEs should
+      vanish from the static documentation.
+    </p>
+
+    <h2>Must be covered</h2>
+    <p>
+      The checklist is intentionally detailed. It mirrors the current README and user-doc map so the new static site can
+      replace the README collection without losing public behavior.
+    </p>
+
+    <div class="principle">
+      <strong>Current completion status.</strong> The conceptual chapters explain the framework in book form. The
+      <a href="/docs/guide/index.html">Complete Guide</a> contains the detailed public API material, including
+      annotations, tags, validation, persistence, security, Gradle, native images,
+      tests, and advanced extension topics.
+    </div>
+
+    <table>
+      <thead>
+      <tr><th>Current source</th><th>Topics</th><th>Target chapter</th></tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>Quickstart</td>
+        <td>Prerequisites, Gradle setup, application class, template location, first page, action, form with validation,
+          SQL, customer list, edit flow, frontlets, authentication.</td>
+        <td>First application, testing from the start, forms, SQL, frontlets, security.</td>
+      </tr>
+      <tr>
+        <td>Runtime and dependencies</td>
+        <td>Runtime choice, Controller API, Validation API, XIS Boot, static resources, distributed mode.</td>
+        <td>Runtime model, HTTP Controller API, microfrontends.</td>
+      </tr>
+      <tr>
+        <td>Cloud Native</td>
+        <td>Basic build, generated native app entry point, Java/Kotlin/Groovy limits, native database modules, component
+          discovery, reusable libraries, bean methods, proxies/AOP, limitations, logging.</td>
+        <td>Cloud native and native images.</td>
+      </tr>
+      <tr>
+        <td>Gradle plugin</td>
+        <td>Plugin configuration, XIS catalogs, <code>xisTemplates</code>, <code>xisTests</code>,
+          <code>xisValidate</code>, <code>xisJar</code>, <code>xisRun</code>, native tasks, builds without plugin.</td>
+        <td>Gradle plugin and tooling.</td>
+      </tr>
+      <tr>
+        <td>Core model</td>
+        <td>Pages, model data, actions, parameters, frontlets, frontlet containers, includes.</td>
+        <td>Pages and templates; actions and navigation; frontlets and theme.</td>
+      </tr>
+      <tr>
+        <td>Template location and mapping</td>
+        <td>Default location, generated templates and tests, explicit <code>@HtmlFile</code>, shared templates,
+          default templates.</td>
+        <td>Pages and templates; testing from the start.</td>
+      </tr>
+      <tr>
+        <td>Template syntax</td>
+        <td>Expression language, client-side messages, property/index access, operators, conditions, built-in functions,
+          iteration, navigation, frontlets/includes, forms, static assets.</td>
+        <td>Pages and templates; forms and validation; reference.</td>
+      </tr>
+      <tr>
+        <td>Tags and attributes</td>
+        <td>Conditions, iteration, page navigation, actions, drag and drop actions, modals, frontlets, includes, forms,
+          validation messages, dynamic classes, client state, raw content, required attributes.</td>
+        <td>Pages and templates; UI composition; forms; reference.</td>
+      </tr>
+      <tr>
+        <td>Navigation and responses</td>
+        <td>Page links, URLs and path variables, action links/buttons, form actions, page responses, page URL responses,
+          frontlet responses, modal responses, deep linking, choosing the right response, void actions.</td>
+        <td>Actions and navigation.</td>
+      </tr>
+      <tr>
+        <td>Routers</td>
+        <td>Typical routing cases, routing mechanics, welcome routes, return values, validation, when not to use a router.</td>
+        <td>Actions and navigation.</td>
+      </tr>
+      <tr>
+        <td>Forms and validation</td>
+        <td>Basic binding, multiple submit actions, nested objects/lists, file uploads, type conversion, validation,
+          custom validators, action validation failures.</td>
+        <td>Forms, validation, and modal forms.</td>
+      </tr>
+      <tr>
+        <td>Modals</td>
+        <td>Define modal, open from HTML, open/close from Java, validation, when to use events instead, tests.</td>
+        <td>Forms, validation, and modal forms; actions and navigation.</td>
+      </tr>
+      <tr>
+        <td>Request lifecycle</td>
+        <td>Initial page load, navigation without actions, actions, default selection model data, forms, shared values,
+          client state, server-triggered refresh events.</td>
+        <td>Request lifecycle, refresh, events, and client synchronization.</td>
+      </tr>
+      <tr>
+        <td>Events</td>
+        <td>Refresh event keys, page/frontlet refresh, publish to all clients, one client, one user, authenticated users,
+          target choice.</td>
+        <td>Request lifecycle, refresh, events, and client synchronization.</td>
+      </tr>
+      <tr>
+        <td>Drag and drop</td>
+        <td>Basic pattern, full example, simple payloads, testing.</td>
+        <td>Frontlets, composition, reuse, and theme; testing.</td>
+      </tr>
+      <tr>
+        <td>SQL</td>
+        <td>Dependency, DataSource, optional pool, DDL/change sets, entity mapping, relations, repositories, select,
+          insert/update, save, delete, transactions, functions, stored procedures.</td>
+        <td>SQL repositories.</td>
+      </tr>
+      <tr>
+        <td>MongoDB</td>
+        <td>Dependency, configuration, documents, repositories, change streams.</td>
+        <td>MongoDB.</td>
+      </tr>
+      <tr>
+        <td>Security</td>
+        <td>Page/action roles, template visibility, DTO roles, ownership checks, local authentication, custom login,
+          TOTP, external IDP, login variants, XIS as OpenID Connect provider, distributed SSO.</td>
+        <td>Security.</td>
+      </tr>
+      <tr>
+        <td>Scheduled jobs</td>
+        <td>Fixed delay, fixed rate, scheduler component.</td>
+        <td>Scheduled jobs.</td>
+      </tr>
+      <tr>
+        <td>Examples and tests</td>
+        <td>Generated starter tests, test a page, document interaction, drag and drop, test context, authentication,
+          dependencies without plugin, what to test where, example quality, test coupling, change discipline.</td>
+        <td>Testing from the start; testing XIS applications.</td>
+      </tr>
+      <tr>
+        <td>Language support</td>
+        <td>Groovy and Kotlin requirements, controller examples, template location/scaffolding, XIS Boot, native images,
+          tested behavior.</td>
+        <td>Language support.</td>
+      </tr>
+      <tr>
+        <td>Microfrontend architecture</td>
+        <td>Dependencies, routing model, properties configuration, Java configuration, navigation by URL.</td>
+        <td>Microfrontends.</td>
+      </tr>
+      <tr>
+        <td>Reusable web artifacts</td>
+        <td>Replaceable templates, default functionality first, JavaScript extensions.</td>
+        <td>Frontlets, composition, reuse, and theme.</td>
+      </tr>
+      <tr>
+        <td>Custom JavaScript</td>
+        <td>Register extension files, add extension dependency, custom EL functions, publish extension artifact, global
+          browser behavior, submit XIS form from JavaScript, CSS/static assets, when to use this.</td>
+        <td>Custom JavaScript; extension points.</td>
+      </tr>
+      <tr>
+        <td>Advanced extension pages</td>
+        <td>Aspects/interface advice, custom proxies, integration-test browser model, explicit SQL transactions, theme,
+          advanced refresh events.</td>
+        <td>Extension points; testing; SQL; theme/events.</td>
+      </tr>
+      <tr>
+        <td>Annotation reference</td>
+        <td>Class annotations, method annotations, shared values, action results, UI parameters, configuration values,
+          browser storage, plain HTTP endpoint annotations, persistence annotations, test annotations, rare annotations,
+          include syntax.</td>
+        <td>Reference.</td>
+      </tr>
+      </tbody>
+    </table>
+
+  </main>
+</div>
+</body>
+</html>
