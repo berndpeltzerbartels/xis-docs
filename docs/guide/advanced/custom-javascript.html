@@ -41,7 +41,7 @@ src/main/resources/js/analytics.js</code></pre>
 <h3 id="add-a-javascript-extension-dependency">Add A JavaScript Extension Dependency</h3>
 <p>Some browser libraries can be added as ordinary dependencies. For example, XIS provides a small jQuery extension artifact:</p>
 <pre><code class="language-groovy">dependencies {
-    implementation &quot;one.xis:xis-javascript-jquery:0.18.0&quot;
+    implementation &quot;one.xis:xis-javascript-jquery:0.19.0&quot;
 }</code></pre>
 <p>That artifact depends on the jQuery WebJar and registers the minified jQuery file as a XIS JavaScript extension. The application does not need to copy <code>jquery.min.js</code> into its own resources.</p>
 <p>Use this style when a library should be shared by several applications or when you want a dependency to bring its own browser integration. The JavaScript is still bundled into the XIS browser runtime; it is not loaded from a CDN.</p>

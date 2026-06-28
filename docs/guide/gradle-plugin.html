@@ -21,7 +21,7 @@
 <p>Use the plugin when you want the usual XIS layout:</p>
 <pre><code class="language-groovy">plugins {
     id &quot;java&quot;
-    id &quot;one.xis.plugin&quot; version &quot;0.18.0&quot;
+    id &quot;one.xis.plugin&quot; version &quot;0.19.0&quot;
 }</code></pre>
 <p>You still choose the runtime dependency yourself:</p>
 <pre><code class="language-groovy">dependencies {
@@ -127,7 +127,7 @@ class DashboardPageTest {
 <p>If you use the XIS Gradle plugin, the test starter is already added for tests. Generated tests should compile without an explicit XIS test dependency in your <code>dependencies</code> block.</p>
 <p>Without the plugin, add the dependency that matches the style of test you want:</p>
 <pre><code class="language-groovy">dependencies {
-    testImplementation &quot;one.xis:xis-boot-starter-test:0.18.0&quot;
+    testImplementation &quot;one.xis:xis-boot-starter-test:0.19.0&quot;
 }</code></pre>
 <p>Use this when you want <code>@XisBootTest</code>, generated-test style, and JUnit Jupiter. If you only want the lower-level <code>IntegrationTestContext</code> API and manage JUnit yourself, add <code>one.xis:xis-test</code> explicitly instead. In builds without the plugin, use the same XIS version for all XIS modules.</p>
 <p>See <a href="/docs/guide/examples-and-tests.html">Examples and tests</a> for the testing API and examples.</p>
